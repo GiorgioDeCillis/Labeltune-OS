@@ -10,7 +10,8 @@ import {
     CheckCircle,
     Settings,
     LogOut,
-    GraduationCap
+    GraduationCap,
+    Search
 } from 'lucide-react';
 
 export function Sidebar({ userRole }: { userRole: string }) {
@@ -23,6 +24,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
 
     const pmLinks = [
         { href: '/dashboard/projects', label: 'Projects', icon: FolderPlus },
+        { href: '/dashboard/datasets', label: 'Dataset Explorer', icon: Search },
         { href: '/dashboard/courses', label: 'Courses', icon: GraduationCap },
     ];
 
@@ -35,8 +37,13 @@ export function Sidebar({ userRole }: { userRole: string }) {
         { href: '/dashboard/history', label: 'History', icon: CheckCircle },
     ];
 
+    const clientLinks = [
+        { href: '/dashboard/client', label: 'Enterprise Overview', icon: LayoutDashboard },
+        { href: '/dashboard/projects', label: 'Projects', icon: FolderPlus },
+    ];
+
     const links = [
-        ...commonLinks,
+        ...(userRole === 'client' ? clientLinks : commonLinks),
         ...(userRole === 'pm' || userRole === 'admin' ? pmLinks : []),
         ...(userRole === 'pm' || userRole === 'admin' || userRole === 'reviewer' ? reviewLinks : []),
         ...(userRole === 'annotator' || userRole === 'reviewer' ? workerLinks : []),

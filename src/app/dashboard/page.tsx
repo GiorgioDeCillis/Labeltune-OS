@@ -19,7 +19,10 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-8">
-            {userRole === 'pm' || userRole === 'admin' ? (
+            {userRole === 'client' ? (
+                // This component is server side, but better to redirect or render ClientDashboard here
+                redirect('/dashboard/client')
+            ) : userRole === 'pm' || userRole === 'admin' ? (
                 <PMDashboard user={user} profile={profile} />
             ) : (
                 <WorkerDashboard user={user} profile={profile} />
