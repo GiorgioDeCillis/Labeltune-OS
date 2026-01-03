@@ -99,7 +99,9 @@ export function Sidebar({ userRole }: { userRole: string }) {
                 <nav className="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
                     {links.map((link) => {
                         const Icon = link.icon;
-                        const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+                        const isActive = link.href === '/dashboard'
+                            ? pathname === '/dashboard'
+                            : pathname.startsWith(link.href);
 
                         return (
                             <Link
