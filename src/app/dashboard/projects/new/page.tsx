@@ -1,4 +1,4 @@
-'use client';
+
 
 import { createProject } from '../actions';
 import Link from 'next/link';
