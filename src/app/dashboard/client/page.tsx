@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import { BarChart3, Clock, CheckCircle, Wallet, TrendingUp, Users } from 'lucide-react';
 import Link from 'next/link';
+import { SpendChart } from '@/components/analytics/SpendChart';
+import { QualityMetric } from '@/components/analytics/QualityMetric';
 
 export default async function ClientDashboardPage() {
     const supabase = await createClient();
@@ -100,34 +102,25 @@ export default async function ClientDashboardPage() {
 
             {/* Analytics Area */}
             <div className="grid md:grid-cols-2 gap-8">
-                <div className="glass-panel p-6 rounded-xl space-y-4">
-                    <h3 className="font-bold flex items-center gap-2">
-                        <Wallet className="w-5 h-5 text-muted-foreground" /> Spend Analysis
-                    </h3>
-                    <div className="h-64 flex items-end justify-between gap-2 px-4 border-b border-white/10 pb-2">
-                        {[40, 65, 30, 80, 55, 90, 70].map((h, i) => (
-                            <div key={i} className="w-full bg-primary/20 hover:bg-primary/40 transition-colors rounded-t" style={{ height: `${h}%` }}></div>
-                        ))}
-                    </div>
-                    <div className="flex justify-between text-xs text-muted-foreground uppercase font-bold">
-                        <span>Mon</span>
-                        <span>Tue</span>
-                        <span>Wed</span>
-                        <span>Thu</span>
-                        <span>Fri</span>
-                        <span>Sat</span>
-                        <span>Sun</span>
-                    </div>
-                </div>
+                <SpendChart
+                    total={totalSpend}
+                    data={[
+                        { label: 'Mon', value: 450 },
+                        { label: 'Tue', value: 1200 },
+                        { label: 'Wed', value: 890 },
+                        { label: 'Thu', value: 1500 },
+                        { label: 'Fri', value: 2100 },
+                        { label: 'Sat', value: 800 },
+                        { label: 'Sun', value: 400 },
+                    ]}
+                />
 
-                <div className="glass-panel p-6 rounded-xl space-y-4">
-                    <h3 className="font-bold flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-muted-foreground" /> Throughput Volume
-                    </h3>
-                    <div className="h-64 flex items-center justify-center text-muted-foreground bg-white/5 rounded-lg border border-dashed border-white/10">
-                        Chart Placeholder
-                    </div>
-                </div>
+                <QualityMetric
+                    label="Throughput / Agreement"
+                    score={98.5}
+                    trend={1.2}
+                    data={[85, 88, 92, 90, 95, 96, 98, 99]}
+                />
             </div>
         </div>
     );
