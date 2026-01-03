@@ -116,6 +116,81 @@ export interface Database {
                     created_at?: string
                 }
             }
+            courses: {
+                Row: {
+                    id: string
+                    project_id: string
+                    title: string
+                    description: string | null
+                    duration: string | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    project_id: string
+                    title: string
+                    description?: string | null
+                    duration?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    project_id?: string
+                    title?: string
+                    description?: string | null
+                    duration?: string | null
+                    created_at?: string
+                }
+            }
+            lessons: {
+                Row: {
+                    id: string
+                    course_id: string
+                    title: string
+                    content: string | null
+                    order: number
+                }
+                Insert: {
+                    id?: string
+                    course_id: string
+                    title: string
+                    content?: string | null
+                    order?: number
+                }
+                Update: {
+                    id?: string
+                    course_id?: string
+                    title?: string
+                    content?: string | null
+                    order?: number
+                }
+            }
+            user_course_progress: {
+                Row: {
+                    id: string
+                    user_id: string
+                    course_id: string
+                    status: string
+                    completed_lessons: string[]
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    course_id: string
+                    status?: string
+                    completed_lessons?: string[]
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    course_id?: string
+                    status?: string
+                    completed_lessons?: string[]
+                    updated_at?: string
+                }
+            }
         }
         Views: {
             [_ in never]: never

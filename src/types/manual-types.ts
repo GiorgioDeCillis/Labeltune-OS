@@ -21,4 +21,31 @@ export interface Project {
     type: string;
     status: string;
     created_at: string;
+    template_schema?: any; // JSON
+}
+
+export interface Course {
+    id: string;
+    project_id: string;
+    title: string;
+    description: string | null;
+    duration: string | null;
+    created_at: string;
+}
+
+export interface Lesson {
+    id: string;
+    course_id: string;
+    title: string;
+    content: string | null;
+    order: number;
+}
+
+export interface UserCourseProgress {
+    id: string;
+    user_id: string;
+    course_id: string;
+    status: 'not_started' | 'in_progress' | 'completed';
+    completed_lessons: string[];
+    updated_at: string;
 }
