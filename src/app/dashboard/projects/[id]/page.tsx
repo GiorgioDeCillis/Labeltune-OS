@@ -54,7 +54,14 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                 </div>
 
                 <div className="glass-panel p-6 rounded-2xl border-white/10">
-                    <h3 className="font-bold mb-4">Linked Courses (Training)</h3>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold">Linked Courses (Training)</h3>
+                        <Link href={`/dashboard/projects/${id}/courses/new`}>
+                            <button className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                                <Settings className="w-3 h-3" /> Manage Courses
+                            </button>
+                        </Link>
+                    </div>
                     {(!courses || courses.length === 0) ? (
                         <div className="text-muted-foreground text-sm">No courses linked yet.</div>
                     ) : (
@@ -141,14 +148,16 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
                 <div className="space-y-1">
                     {courses && courses.length > 0 ? courses.map((course) => (
-                        <div key={course.id} className="group p-4 -mx-4 rounded-xl hover:bg-white/5 transition-all cursor-pointer flex items-center justify-between">
-                            <div className="space-y-1">
-                                <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{course.title}</h3>
-                                <p className="text-muted-foreground text-sm max-w-2xl">{course.description}</p>
-                                <p className="text-xs text-muted-foreground pt-2">{course.duration || '30m'}</p>
+                        <Link href={`/dashboard/courses/${course.id}`} key={course.id}>
+                            <div className="group p-4 -mx-4 rounded-xl hover:bg-white/5 transition-all cursor-pointer flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{course.title}</h3>
+                                    <p className="text-muted-foreground text-sm max-w-2xl">{course.description}</p>
+                                    <p className="text-xs text-muted-foreground pt-2">{course.duration || '30m'}</p>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                             </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                        </div>
+                        </Link>
                     )) : (
                         <div className="text-center py-8 text-muted-foreground">
                             <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
