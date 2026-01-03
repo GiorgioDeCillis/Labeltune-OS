@@ -29,8 +29,8 @@ export default function ProfilePage() {
             url: `/themes/ayaka/${n}.jpg`,
             id: n
         })),
-        'purple-moon': ['BG09', 'mythical-dragon-beast-anime-style'].map(n => ({
-            url: `/themes/purple-moon/${n === 'BG09' ? 'BG09' : 'mythical-dragon-beast-anime-style'}.jpg`,
+        'purple-moon': ['BG09', 'mythical-dragon-beast-anime-style', 'CC05'].map(n => ({
+            url: `/themes/purple-moon/${n}.jpg`,
             id: n
         }))
     };
