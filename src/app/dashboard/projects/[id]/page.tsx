@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { Settings, ListTodo } from 'lucide-react';
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,9 +23,11 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                     <p className="text-muted-foreground">{project.description}</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-all">
-                        <Settings className="w-4 h-4" /> Settings
-                    </button>
+                    <Link href={`/dashboard/projects/${id}/builder`}>
+                        <button className="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-all">
+                            <Settings className="w-4 h-4" /> Open Builder
+                        </button>
+                    </Link>
                     <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground font-medium rounded-lg hover:opacity-90 transition-all">
                         <ListTodo className="w-4 h-4" /> View Tasks
                     </button>
