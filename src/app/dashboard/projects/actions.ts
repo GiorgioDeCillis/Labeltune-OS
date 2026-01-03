@@ -60,7 +60,7 @@ export async function createProject(formData: FormData) {
 
     if (error) {
         console.error('Error creating project:', error);
-        return { error: 'Failed to create project' };
+        redirect('/dashboard/projects/new?error=Failed to create project');
     }
 
     revalidatePath('/dashboard/projects');
