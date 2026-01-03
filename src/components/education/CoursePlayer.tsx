@@ -49,8 +49,8 @@ export function CoursePlayer({ course, completedLessonIds = [] }: CoursePlayerPr
             {/* Sidebar (Lesson List) */}
             <div className={`glass-panel flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-80' : 'w-0 opacity-0 overflow-hidden'}`}>
                 <div className="p-4 border-b border-white/5">
-                    <h2 className="font-bold text-sm text-muted-foreground uppercase tracking-wider mb-1">Course Content</h2>
-                    <p className="font-bold truncate">{course.title}</p>
+                    <h2 className="font-bold text-sm text-white/40 uppercase tracking-wider mb-1">Course Content</h2>
+                    <p className="font-bold truncate text-white">{course.title}</p>
                 </div>
                 <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
                     {course.lessons.map((lesson, index) => {
@@ -87,10 +87,10 @@ export function CoursePlayer({ course, completedLessonIds = [] }: CoursePlayerPr
                 {/* Toolbar */}
                 <div className="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-black/20">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground hover:text-foreground">
+                        <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-white/5 rounded-lg text-white/60 hover:text-white">
                             <Menu className="w-5 h-5" />
                         </button>
-                        <h3 className="font-bold">{activeLesson?.title}</h3>
+                        <h3 className="font-bold text-white">{activeLesson?.title}</h3>
                     </div>
                     <Link href={`/dashboard/projects/${course.project_id}`}>
                         <button className="text-xs font-bold text-muted-foreground hover:text-white transition-colors">

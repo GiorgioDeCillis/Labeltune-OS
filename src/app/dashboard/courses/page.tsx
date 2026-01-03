@@ -13,8 +13,8 @@ export default async function CoursesPage() {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-                <h1 className="text-3xl font-black tracking-tight">Courses & Training</h1>
-                <p className="text-muted-foreground mt-2">
+                <h1 className="text-3xl font-black tracking-tight text-white">Courses & Training</h1>
+                <p className="text-white/60 mt-2">
                     Enhance your skills with our curated curriculum for data specialists.
                 </p>
             </div>

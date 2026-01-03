@@ -11,7 +11,7 @@ export function Navbar({ user }: { user: any }) {
         <header className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-40">
             <div className="flex items-center gap-4">
                 {/* Breadcrumbs can go here */}
-                <span className="text-sm text-muted-foreground">Dashboard</span>
+                <span className="text-sm text-white/50">Dashboard</span>
             </div>
 
             <div className="flex items-center gap-4">
@@ -22,8 +22,8 @@ export function Navbar({ user }: { user: any }) {
 
                 <Link href="/dashboard/profile" className="flex items-center gap-3 pl-4 border-l border-white/5 hover:opacity-80 transition-opacity group">
                     <div className="text-right hidden md:block">
-                        <p className="text-sm font-medium leading-none">{user?.user_metadata?.full_name || user?.email}</p>
-                        <p className="text-xs text-muted-foreground mt-1 capitalize">{user?.user_metadata?.role || 'User'}</p>
+                        <p className="text-sm font-medium leading-none text-white">{user?.user_metadata?.full_name || user?.email}</p>
+                        <p className="text-xs text-white/50 mt-1 capitalize">{user?.user_metadata?.role || 'User'}</p>
                     </div>
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all ${theme === 'osaka-jade' ? 'border-emerald-500/50 bg-emerald-500/10 group-hover:border-emerald-400' : 'border-violet-500/50 bg-violet-500/10 group-hover:border-violet-400'
                         }`}>

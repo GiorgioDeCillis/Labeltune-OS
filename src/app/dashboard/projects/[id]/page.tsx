@@ -38,8 +38,8 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             <div className="space-y-8">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-3xl font-bold tracking-tight">{project.name}</h2>
-                        <p className="text-muted-foreground">{project.description}</p>
+                        <h2 className="text-3xl font-bold tracking-tight text-white">{project.name}</h2>
+                        <p className="text-white/60">{project.description}</p>
                     </div>
                     <div className="flex gap-2">
                         <Link href={`/dashboard/projects/${id}/edit`}>
@@ -100,8 +100,8 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                             <BookOpen className="w-6 h-6" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight">Project Overview</h1>
-                            <p className="text-muted-foreground text-sm">Manage your work and training for this project</p>
+                            <h1 className="text-2xl font-bold tracking-tight text-white">Project Overview</h1>
+                            <p className="text-white/60 text-sm">Manage your work and training for this project</p>
                         </div>
                     </div>
                 </div>

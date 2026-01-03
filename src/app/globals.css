@@ -82,54 +82,63 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply text-foreground;
+  }
 }
 
 /* Theme Variables and Hyprland Components */
 :root {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 240 5.9% 10%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --ring: 240 4.9% 83.9%;
+  --background: hsl(240 10% 3.9%);
+  --foreground: hsl(0 0% 98%);
+  --card: hsl(240 10% 3.9%);
+  --card-foreground: hsl(0 0% 98%);
+  --popover: hsl(240 10% 3.9%);
+  --popover-foreground: hsl(0 0% 98%);
+  --primary: hsl(0 0% 98%);
+  --primary-foreground: hsl(240 5.9% 10%);
+  --secondary: hsl(240 3.7% 15.9%);
+  --secondary-foreground: hsl(0 0% 98%);
+  --muted: hsl(240 3.7% 15.9%);
+  --muted-foreground: hsl(240 5% 64.9%);
+  --accent: hsl(240 3.7% 15.9%);
+  --accent-foreground: hsl(0 0% 98%);
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(240 3.7% 15.9%);
+  --input: hsl(240 3.7% 15.9%);
+  --ring: hsl(240 4.9% 83.9%);
   --radius: 0.5rem;
 }
 
 /* Custom Theme Presets */
 [data-theme="osaka-jade"] {
-  --background: 154 30% 5%;
-  --foreground: 0 0% 100%;
-  --primary: 154 70% 45%;
-  --primary-foreground: 0 0% 100%;
-  --accent: 154 70% 35%;
-  --surface: 154 30% 8%;
-  --muted: 154 30% 15%;
-  --muted-foreground: 154 10% 80%;
+  --background: hsl(154 30% 5%);
+  --foreground: hsl(0 0% 100%);
+  --primary: hsl(154 70% 45%);
+  --primary-foreground: hsl(0 0% 100%);
+  --accent: hsl(154 70% 35%);
+  --surface: hsl(154 30% 8%);
+  --muted: hsl(154 30% 15%);
+  --muted-foreground: hsl(154 10% 80%);
   --glow-color: rgba(34, 197, 94, 0.5);
 }
 
 [data-theme="ayaka"] {
-  --background: 260 20% 5%;
-  --foreground: 0 0% 100%;
-  --primary: 265 80% 70%;
-  --primary-foreground: 0 0% 100%;
-  --accent: 320 80% 60%;
-  --surface: 260 20% 10%;
-  --muted: 260 20% 15%;
-  --muted-foreground: 260 10% 80%;
+  --background: hsl(260 20% 5%);
+  --foreground: hsl(0 0% 100%);
+  --primary: hsl(265 80% 70%);
+  --primary-foreground: hsl(0 0% 100%);
+  --accent: hsl(320 80% 60%);
+  --surface: hsl(260 20% 10%);
+  --muted: hsl(260 20% 15%);
+  --muted-foreground: hsl(260 10% 80%);
   --glow-color: rgba(167, 139, 250, 0.5);
 }
 

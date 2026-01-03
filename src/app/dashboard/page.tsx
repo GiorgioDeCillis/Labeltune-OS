@@ -36,8 +36,8 @@ function PMDashboard({ user, profile }: { user: any, profile: any }) {
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight">Welcome back, {profile?.full_name?.split(' ')[0]}</h2>
-                <p className="text-muted-foreground">Project Manager Dashboard</p>
+                <h2 className="text-3xl font-bold tracking-tight text-white">Welcome back, {profile?.full_name?.split(' ')[0]}</h2>
+                <p className="text-white/60">Project Manager Dashboard</p>
             </div>
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard title="Total Projects" value="12" icon={BarChart3} />
@@ -98,8 +98,8 @@ async function WorkerDashboard({ user, profile }: { user: any, profile: any }) {
                     </div>
                 </div>
                 <div>
-                    <h1 className="text-4xl font-bold tracking-tight">{profile?.full_name}</h1>
-                    <p className="text-lg text-muted-foreground">{user.email}</p>
+                    <h1 className="text-4xl font-bold tracking-tight text-white">{profile?.full_name}</h1>
+                    <p className="text-lg text-white/60">{user.email}</p>
                 </div>
             </div>
 

@@ -55,7 +55,7 @@ export function LandingPage() {
                                 deployment
                             </span>
                         </h1>
-                        <p className="max-w-2xl mx-auto text-lg md:text-xl text-white/50 leading-relaxed font-medium">
+                        <p className="max-w-2xl mx-auto text-lg md:text-xl text-white/70 leading-relaxed font-medium">
                             Soluzioni di intelligenza artificiale su misura. Massimizza l'efficienza dei tuoi dati con la piattaforma di labeling più avanzata sul mercato.
                         </p>
                         <div className="flex justify-center gap-4">
@@ -75,8 +75,8 @@ export function LandingPage() {
                 {/* Features Grid */}
                 <section id="servizi" className="max-w-7xl mx-auto py-32 space-y-16">
                     <div className="text-center space-y-4">
-                        <h2 className="text-3xl md:text-5xl font-black tracking-tight">I nostri servizi</h2>
-                        <p className="text-white/40 font-medium">Potenzia il tuo workflow con strumenti all'avanguardia.</p>
+                        <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">I nostri servizi</h2>
+                        <p className="text-white/60 font-medium">Potenzia il tuo workflow con strumenti all'avanguardia.</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
