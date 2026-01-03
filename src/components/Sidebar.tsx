@@ -14,7 +14,8 @@ import {
     GraduationCap,
     Search,
     Menu,
-    X
+    X,
+    User
 } from 'lucide-react';
 
 export function Sidebar({ userRole }: { userRole: string }) {
