@@ -3,13 +3,27 @@
 import { useTheme } from '@/context/ThemeContext';
 import { motion } from 'framer-motion';
 import { login, signup } from './actions';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Zap, Lock, Mail, User, ChevronRight } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
     const { theme } = useTheme();
+    const router = useRouter();
     const [isLogin, setIsLogin] = useState(true);
     const [role, setRole] = useState('annotator');
+    const supabase = createClient();
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                router.push('/dashboard');
+            }
+        };
+        checkAuth();
+    }, []);
 
     return (
         <div className='min-h-screen flex items-center justify-center p-4'>
