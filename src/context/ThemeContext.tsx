@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type ThemeType = 'osaka-jade' | 'ayaka' | 'custom';
+type ThemeType = 'osaka-jade' | 'ayaka' | 'purple-moon' | 'custom';
 
 interface ThemeConfig {
   name: ThemeType;
@@ -26,7 +26,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Load from localStorage if available
     const savedTheme = localStorage.getItem('labeltune-theme') as ThemeType;
     const savedWallpaper = localStorage.getItem('labeltune-wallpaper');
-    
+
     if (savedTheme) setThemeState(savedTheme);
     if (savedWallpaper) setWallpaperState(savedWallpaper);
   }, []);
@@ -34,12 +34,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setTheme = (newTheme: ThemeType) => {
     setThemeState(newTheme);
     localStorage.setItem('labeltune-theme', newTheme);
-    
+
     // Set default wallpaper if switching theme
     if (newTheme === 'osaka-jade') {
       setWallpaper('/themes/osaka-jade/2-osaka-jade-bg.jpg');
     } else if (newTheme === 'ayaka') {
       setWallpaper('/themes/ayaka/b2.jpg');
+    } else if (newTheme === 'purple-moon') {
+      setWallpaper('/themes/purple-moon/BG09.jpg');
     }
   };
 
@@ -50,7 +52,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   return (
     <ThemeContext.Provider value={{ theme, wallpaper, setTheme, setWallpaper }}>
-      <div 
+      <div
         data-theme={theme}
         className="min-h-screen transition-all duration-500 ease-in-out"
         style={{

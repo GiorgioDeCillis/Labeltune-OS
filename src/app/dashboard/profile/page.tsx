@@ -28,6 +28,10 @@ export default function ProfilePage() {
         'ayaka': ['b2', 'b8'].map(n => ({
             url: `/themes/ayaka/${n}.jpg`,
             id: n
+        })),
+        'purple-moon': ['BG09', 'mythical-dragon-beast-anime-style'].map(n => ({
+            url: `/themes/purple-moon/${n === 'BG09' ? 'BG09' : 'mythical-dragon-beast-anime-style'}.jpg`,
+            id: n
         }))
     };
 
@@ -39,7 +43,7 @@ export default function ProfilePage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="glass-panel p-8 rounded-3xl flex flex-col md:flex-row items-center gap-8 relative overflow-hidden"
             >
-                <div className={`w-32 h-32 rounded-full flex items-center justify-center border-4 ${theme === 'osaka-jade' ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-[#DB595C]/30 bg-[#DB595C]/10'
+                <div className={`w-32 h-32 rounded-full flex items-center justify-center border-4 ${theme === 'osaka-jade' ? 'border-emerald-500/30 bg-emerald-500/10' : theme === 'purple-moon' ? 'border-[#A949D9]/30 bg-[#A949D9]/10' : 'border-[#DB595C]/30 bg-[#DB595C]/10'
                     } relative z-10 shadow-2xl`}>
                     <User className="w-16 h-16 text-primary" />
                 </div>
@@ -94,6 +98,13 @@ export default function ProfilePage() {
                             desc="Elegant coral and misty quartz"
                             color="bg-[#DB595C]"
                         />
+                        <ThemeButton
+                            active={theme === 'purple-moon'}
+                            onClick={() => setTheme('purple-moon')}
+                            title="Purple Moon"
+                            desc="Enchanting violet and cosmic dust"
+                            color="bg-[#A949D9]"
+                        />
                     </div>
                 </motion.section>
 
@@ -112,7 +123,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : wallpaperOptions['ayaka']).map((wp) => (
+                        {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
                             <button
                                 key={wp.id}
                                 onClick={() => setWallpaper(wp.url)}
