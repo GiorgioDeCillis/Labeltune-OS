@@ -26,6 +26,14 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
         .eq('course_id', id)
         .order('order', { ascending: true });
 
+    // Fetch User Progress
+    const { data: progressData } = await supabase
+        .from('user_course_progress')
+        .select('completed_lessons')
+        .eq('user_id', user.id)
+        .eq('course_id', id)
+        .single();
+
     const fullCourse: Course & { lessons: Lesson[] } = {
         ...courseData,
         lessons: lessonsData || []
@@ -33,7 +41,10 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
 
     return (
         <div className="h-full">
-            <CoursePlayer course={fullCourse} />
+            <CoursePlayer
+                course={fullCourse}
+                completedLessonIds={progressData?.completed_lessons || []}
+            />
         </div>
     );
 }

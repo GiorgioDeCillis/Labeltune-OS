@@ -5,12 +5,14 @@ import { Course, Lesson } from '@/types/manual-types';
 import { PlayCircle, CheckCircle, ChevronLeft, ChevronRight, Menu, FileText } from 'lucide-react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
+import { completeLesson } from '@/app/dashboard/courses/actions';
 
 interface CoursePlayerProps {
     course: Course & { lessons: Lesson[] };
+    completedLessonIds?: string[];
 }
 
-export function CoursePlayer({ course }: CoursePlayerProps) {
+export function CoursePlayer({ course, completedLessonIds = [] }: CoursePlayerProps) {
     const [activeLessonId, setActiveLessonId] = useState<string>(course.lessons?.[0]?.id || '');
     const [isSidebarOpen, setSidebarOpen] = useState(true);
 
@@ -20,9 +22,16 @@ export function CoursePlayer({ course }: CoursePlayerProps) {
     const hasNext = activeIndex < course.lessons.length - 1;
     const hasPrev = activeIndex > 0;
 
-    const handleNext = () => {
-        if (hasNext) {
-            setActiveLessonId(course.lessons[activeIndex + 1].id);
+    const handleNext = async () => {
+        // Optimistic update or wait? Let's wait for simplicity in this MVP
+        try {
+            await completeLesson(course.id, activeLessonId);
+            if (hasNext) {
+                setActiveLessonId(course.lessons[activeIndex + 1].id);
+            }
+        } catch (error) {
+            console.error("Failed to complete lesson", error);
+            // Optionally show toast error
         }
     };
 
@@ -43,6 +52,8 @@ export function CoursePlayer({ course }: CoursePlayerProps) {
                 <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
                     {course.lessons.map((lesson, index) => {
                         const isActive = lesson.id === activeLessonId;
+                        const isCompleted = completedLessonIds.includes(lesson.id);
+
                         return (
                             <button
                                 key={lesson.id}
@@ -53,7 +64,13 @@ export function CoursePlayer({ course }: CoursePlayerProps) {
                                     }`}
                             >
                                 <div className="mt-0.5">
-                                    {isActive ? <PlayCircle className="w-4 h-4" /> : <div className="w-4 h-4 rounded-full border border-white/20 text-xs flex items-center justify-center">{index + 1}</div>}
+                                    {isActive ? (
+                                        <PlayCircle className="w-4 h-4" />
+                                    ) : isCompleted ? (
+                                        <CheckCircle className="w-4 h-4 text-green-500" />
+                                    ) : (
+                                        <div className="w-4 h-4 rounded-full border border-white/20 text-xs flex items-center justify-center">{index + 1}</div>
+                                    )}
                                 </div>
                                 <span className="line-clamp-2">{lesson.title}</span>
                             </button>
@@ -134,8 +151,8 @@ export function CoursePlayer({ course }: CoursePlayerProps) {
                         onClick={handleNext}
                         disabled={!hasNext} // Later: change to "Complete & Continue" if last?
                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${hasNext
-                                ? 'bg-primary text-primary-foreground hover:opacity-90 shadow-[0_0_15px_rgba(var(--primary),0.3)]'
-                                : 'bg-white/10 text-muted-foreground cursor-not-allowed'
+                            ? 'bg-primary text-primary-foreground hover:opacity-90 shadow-[0_0_15px_rgba(var(--primary),0.3)]'
+                            : 'bg-white/10 text-muted-foreground cursor-not-allowed'
                             }`}
                     >
                         {hasNext ? 'Next Lesson' : 'Course Completed'} <ChevronRight className="w-4 h-4" />
