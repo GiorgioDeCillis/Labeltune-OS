@@ -26,6 +26,10 @@ export function Sidebar({ userRole }: { userRole: string }) {
         { href: '/dashboard/courses', label: 'Courses', icon: GraduationCap },
     ];
 
+    const reviewLinks = [
+        { href: '/dashboard/review', label: 'Review Queue', icon: CheckCircle },
+    ];
+
     const workerLinks = [
         { href: '/dashboard/tasks', label: 'My Tasks', icon: ListTodo },
         { href: '/dashboard/history', label: 'History', icon: CheckCircle },
@@ -34,6 +38,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
     const links = [
         ...commonLinks,
         ...(userRole === 'pm' || userRole === 'admin' ? pmLinks : []),
+        ...(userRole === 'pm' || userRole === 'admin' || userRole === 'reviewer' ? reviewLinks : []),
         ...(userRole === 'annotator' || userRole === 'reviewer' ? workerLinks : []),
         { href: '/dashboard/settings', label: 'Settings', icon: Settings },
     ];
@@ -57,8 +62,8 @@ export function Sidebar({ userRole }: { userRole: string }) {
                             key={link.href}
                             href={link.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive
-                                    ? 'bg-primary/20 text-primary font-medium'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                ? 'bg-primary/20 text-primary font-medium'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
                                 }`}
                         >
                             {isActive && (
