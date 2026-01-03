@@ -39,17 +39,24 @@ export default function NewProjectPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Type</label>
-                        <select
-                            name="type"
-                            className="w-full bg-background/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none"
-                        >
-                            <option value="text_classification">Text Classification</option>
-                            <option value="image_bounding_box">Image Bounding Box</option>
-                            <option value="ner">Named Entity Recognition</option>
-                            <option value="rlhf">RLHF / Ranking</option>
-                        </select>
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold uppercase text-muted-foreground">Project Type</label>
+                            <select name="type" className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary">
+                                <option value="text_classification">Text Classification</option>
+                                <option value="image_bounding_box">Image Bounding Box</option>
+                                <option value="sentiment_analysis">Sentiment Analysis</option>
+                                <option value="generation">Generation (RLHF)</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold uppercase text-muted-foreground">Pay Rate</label>
+                            <input
+                                name="pay_rate"
+                                placeholder="$15.00 / hr"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary"
+                            />
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Priority</label>

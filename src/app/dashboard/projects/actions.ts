@@ -14,6 +14,7 @@ export async function createProject(formData: FormData) {
     const description = formData.get('description') as string;
     const type = formData.get('type') as string;
     const guidelines = formData.get('guidelines') as string;
+    const pay_rate = formData.get('pay_rate') as string;
 
     // 1. Check if user has an organization
     const { data: profile } = await supabase
@@ -54,6 +55,7 @@ export async function createProject(formData: FormData) {
             description,
             type,
             guidelines,
+            pay_rate,
             organization_id: orgId,
             status: 'active'
         });
@@ -65,4 +67,38 @@ export async function createProject(formData: FormData) {
 
     revalidatePath('/dashboard/projects');
     redirect('/dashboard/projects');
+}
+
+export async function updateProject(id: string, formData: FormData) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) redirect('/login');
+
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const type = formData.get('type') as string;
+    const guidelines = formData.get('guidelines') as string;
+    const pay_rate = formData.get('pay_rate') as string;
+    const status = formData.get('status') as string;
+
+    const { error } = await supabase
+        .from('projects')
+        .update({
+            name,
+            description,
+            type,
+            guidelines,
+            pay_rate,
+            status
+        })
+        .eq('id', id);
+
+    if (error) {
+        console.error('Error updating project:', error);
+        redirect(`/dashboard/projects/${id}/edit?error=Failed to update project`);
+    }
+
+    revalidatePath(`/dashboard/projects/${id}`);
+    redirect(`/dashboard/projects/${id}`);
 }

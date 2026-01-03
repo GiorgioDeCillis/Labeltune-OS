@@ -42,6 +42,11 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                         <p className="text-muted-foreground">{project.description}</p>
                     </div>
                     <div className="flex gap-2">
+                        <Link href={`/dashboard/projects/${id}/edit`}>
+                            <button className="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-all">
+                                <Settings className="w-4 h-4" /> Edit Project
+                            </button>
+                        </Link>
                         <Link href={`/dashboard/projects/${id}/builder`}>
                             <button className="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-all">
                                 <Settings className="w-4 h-4" /> Open Builder
@@ -148,16 +153,23 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
                 <div className="space-y-1">
                     {courses && courses.length > 0 ? courses.map((course) => (
-                        <Link href={`/dashboard/courses/${course.id}`} key={course.id}>
-                            <div className="group p-4 -mx-4 rounded-xl hover:bg-white/5 transition-all cursor-pointer flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{course.title}</h3>
-                                    <p className="text-muted-foreground text-sm max-w-2xl">{course.description}</p>
-                                    <p className="text-xs text-muted-foreground pt-2">{course.duration || '30m'}</p>
+                        <div key={course.id} className="relative group">
+                            <Link href={`/dashboard/courses/${course.id}`}>
+                                <div className="p-4 -mx-4 rounded-xl hover:bg-white/5 transition-all cursor-pointer flex items-center justify-between">
+                                    <div className="space-y-1">
+                                        <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{course.title}</h3>
+                                        <p className="text-muted-foreground text-sm max-w-2xl">{course.description}</p>
+                                        <p className="text-xs text-muted-foreground pt-2">{course.duration || '30m'}</p>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                                 </div>
-                                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                            </div>
-                        </Link>
+                            </Link>
+                            {isPM && (
+                                <Link href={`/dashboard/projects/${id}/courses/${course.id}/edit`} className="absolute top-4 right-12 p-2 hover:bg-white/20 rounded-lg text-muted-foreground hover:text-white transition-colors opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                                    <Settings className="w-4 h-4" />
+                                </Link>
+                            )}
+                        </div>
                     )) : (
                         <div className="text-center py-8 text-muted-foreground">
                             <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -166,6 +178,6 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
