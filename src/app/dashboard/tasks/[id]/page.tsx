@@ -1,8 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import { claimTask } from '../actions';
-import { ChevronLeft, Save, AlertCircle } from 'lucide-react';
+import { ChevronLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { TaskRenderer } from '@/components/TaskRenderer';
+import { FormComponent } from '@/components/builder/TaskBuilder';
 
 export default async function TaskLabelingPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -21,6 +23,7 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
 
     const isAssignedToMe = task.assigned_to === user.id;
     const canClaim = !task.assigned_to;
+    const templateSchema = (task.projects?.template_schema as FormComponent[]) || [];
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 h-full flex flex-col">
@@ -64,54 +67,34 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Data</h3>
                     <div className="flex-1 bg-black/20 rounded-xl p-6 font-serif leading-relaxed text-lg border border-white/5 overflow-y-auto">
                         {/* Placeholder for dynamic content rendering */}
-                        {task.data?.text || JSON.stringify(task.data, null, 2)}
+                        {typeof task.data === 'string' ? task.data : (task.data as any)?.text || JSON.stringify(task.data, null, 2)}
                     </div>
                 </div>
 
                 {/* Tool Panel */}
-                <div className="glass-panel p-6 rounded-2xl flex flex-col">
+                <div className="glass-panel p-6 rounded-2xl flex flex-col h-full">
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Labeling</h3>
 
-                    <div className="flex-1 flex flex-col gap-4">
-                        {task.projects?.type === 'text_classification' ? (
-                            <TextClassificationInterface />
+                    <div className="flex-1 relative">
+                        {templateSchema.length > 0 ? (
+                            <div className="absolute inset-0">
+                                <TaskRenderer
+                                    schema={templateSchema}
+                                    taskId={task.id}
+                                    initialData={task.labels}
+                                    isReadOnly={!isAssignedToMe}
+                                />
+                            </div>
                         ) : (
-                            <div className="text-center text-muted-foreground py-10">
-                                This task type ({task.projects?.type}) is not yet fully supported in the UI.
+                            <div className="text-center text-muted-foreground py-10 flex flex-col gap-2">
+                                <AlertCircle className="w-8 h-8 mx-auto opacity-50" />
+                                <p>No workflow template defined.</p>
+                                <p className="text-xs opacity-50">Please ask the project manager to configure the builder.</p>
                             </div>
                         )}
-                    </div>
-
-                    <div className="pt-6 border-t border-white/5 space-y-3">
-                        <button disabled={!isAssignedToMe} className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                            Submit & Next
-                        </button>
-                        <button disabled={!isAssignedToMe} className="w-full py-3 bg-white/5 hover:bg-white/10 text-foreground font-medium rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-                            Skip
-                        </button>
                     </div>
                 </div>
             </div>
         </div>
     );
-}
-
-function TextClassificationInterface() {
-    return (
-        <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">Select the sentiment of the text:</p>
-            <label className="flex items-center gap-3 p-4 rounded-xl border border-white/10 hover:bg-white/5 hover:border-primary/50 cursor-pointer transition-all">
-                <input type="radio" name="sentiment" value="positive" className="w-4 h-4 accent-primary" />
-                <span className="font-medium">Positive</span>
-            </label>
-            <label className="flex items-center gap-3 p-4 rounded-xl border border-white/10 hover:bg-white/5 hover:border-primary/50 cursor-pointer transition-all">
-                <input type="radio" name="sentiment" value="neutral" className="w-4 h-4 accent-primary" />
-                <span className="font-medium">Neutral</span>
-            </label>
-            <label className="flex items-center gap-3 p-4 rounded-xl border border-white/10 hover:bg-white/5 hover:border-primary/50 cursor-pointer transition-all">
-                <input type="radio" name="sentiment" value="negative" className="w-4 h-4 accent-primary" />
-                <span className="font-medium">Negative</span>
-            </label>
-        </div>
-    )
 }
