@@ -53,9 +53,11 @@ export default function Home() {
             Enterprise-grade labeling platform for AI models. Scale your data production with real-time analytics, automated workflows, and a premium developer experience.
           </p>
           <div className="flex gap-4">
-            <button className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold hyprland-window hover:scale-105 transition-transform active:scale-95">
-              Get Started
-            </button>
+            <Link href="/login">
+              <button className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold hyprland-window hover:scale-105 transition-transform active:scale-95">
+                Get Started
+              </button>
+            </Link>
             <button className="px-8 py-4 glass-panel rounded-xl font-bold hover:bg-white/5 transition-all">
               View Demo
             </button>
