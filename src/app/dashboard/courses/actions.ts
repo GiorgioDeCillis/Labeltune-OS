@@ -127,6 +127,14 @@ export async function completeLesson(courseId: string, lessonId: string) {
     if (!completedLessons.includes(lessonId)) {
         const newCompletedLessons = [...completedLessons, lessonId];
 
+        // Check if all lessons are completed
+        const { count } = await supabase
+            .from('lessons')
+            .select('*', { count: 'exact', head: true })
+            .eq('course_id', courseId);
+
+        const isCourseCompleted = count ? newCompletedLessons.length === count : false;
+
         // Upsert progress
         const { error: upsertError } = await supabase
             .from('user_course_progress')
@@ -134,7 +142,7 @@ export async function completeLesson(courseId: string, lessonId: string) {
                 user_id: user.id,
                 course_id: courseId,
                 completed_lessons: newCompletedLessons,
-                status: 'in_progress', // You logic to determine 'completed' can go here
+                status: isCourseCompleted ? 'completed' : 'in_progress',
                 updated_at: new Date().toISOString()
             });
 
