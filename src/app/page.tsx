@@ -3,6 +3,7 @@
 import { useTheme } from '@/context/ThemeContext';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Settings, Layout, Users, BarChart3, ShieldCheck, Zap } from 'lucide-react';
 
 export default function Home() {
@@ -144,9 +145,15 @@ function WallpaperItem({ url, active, onClick }: { url: string, active: boolean,
       onClick={onClick}
       className={`relative min-w-[200px] h-[120px] rounded-xl overflow-hidden border-2 transition-all ${active ? 'border-primary scale-105 shadow-xl' : 'border-transparent opacity-60 hover:opacity-100'}`}
     >
-      <img src={url} alt="Wallpaper" className="w-full h-full object-cover" />
+      <Image
+        src={url}
+        alt="Wallpaper"
+        fill
+        className="object-cover"
+        sizes="200px"
+      />
       {active && (
-        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center z-10">
           <div className="bg-primary text-primary-foreground p-1 rounded-full">
             <Zap className="w-4 h-4" />
           </div>

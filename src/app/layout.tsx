@@ -14,8 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Labeltune OS",
-  description: "Modern Data Labeling & AI Evaluation Platform",
+  title: {
+    default: "Labeltune OS | Enterprise Data Labeling Platform",
+    template: "%s | Labeltune OS"
+  },
+  description: "Advanced data labeling and AI evaluation platform for enterprise teams. Manage projects, automated workflows, and quality metrics.",
+  keywords: ["Data Labeling", "AI", "RLHF", "Annotation", "Machine Learning", "Enterprise"],
 };
 
 export default function RootLayout({
