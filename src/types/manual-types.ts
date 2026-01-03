@@ -39,6 +39,7 @@ export interface Lesson {
     title: string;
     content: string | null;
     order: number;
+    video_url?: string | null;
 }
 
 export interface UserCourseProgress {

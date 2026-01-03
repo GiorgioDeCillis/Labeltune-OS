@@ -147,22 +147,25 @@ export interface Database {
                     id: string
                     course_id: string
                     title: string
-                    content: string | null
-                    order: number
+                    content: string | null;
+                    order: number;
+                    video_url: string | null;
                 }
                 Insert: {
                     id?: string
                     course_id: string
                     title: string
-                    content?: string | null
-                    order?: number
+                    content?: string | null;
+                    order?: number;
+                    video_url?: string | null;
                 }
                 Update: {
                     id?: string
                     course_id?: string
                     title?: string
-                    content?: string | null
-                    order?: number
+                    content?: string | null;
+                    order?: number;
+                    video_url?: string | null;
                 }
             }
             user_course_progress: {
