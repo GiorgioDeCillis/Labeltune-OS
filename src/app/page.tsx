@@ -2,6 +2,7 @@
 
 import { useTheme } from '@/context/ThemeContext';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { Settings, Layout, Users, BarChart3, ShieldCheck, Zap } from 'lucide-react';
 
 export default function Home() {
