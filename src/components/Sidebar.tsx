@@ -52,7 +52,6 @@ export function Sidebar({ userRole }: { userRole: string }) {
         ...(userRole === 'pm' || userRole === 'admin' || userRole === 'reviewer' ? reviewLinks : []),
         ...(userRole === 'annotator' || userRole === 'reviewer' ? workerLinks : []),
         { href: '/dashboard/profile', label: 'Profile', icon: User },
-        { href: '/dashboard/settings', label: 'Settings', icon: Settings },
     ];
 
     const [isMobileOpen, setIsMobileOpen] = useState(false);
