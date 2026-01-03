@@ -112,7 +112,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
                                     }`}
                             >
                                 {isActive && (
-                                    <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full ${theme === 'osaka-jade' ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]'
+                                    <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full ${theme === 'osaka-jade' ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-[#DB595C] shadow-[0_0_10px_rgba(219,89,92,0.5)]'
                                         }`} />
                                 )}
                                 <Icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'group-hover:text-primary transition-colors'}`} />

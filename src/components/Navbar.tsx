@@ -25,7 +25,7 @@ export function Navbar({ user }: { user: any }) {
                         <p className="text-sm font-medium leading-none text-white">{user?.user_metadata?.full_name || user?.email}</p>
                         <p className="text-xs text-white/50 mt-1 capitalize">{user?.user_metadata?.role || 'User'}</p>
                     </div>
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all ${theme === 'osaka-jade' ? 'border-emerald-500/50 bg-emerald-500/10 group-hover:border-emerald-400' : 'border-violet-500/50 bg-violet-500/10 group-hover:border-violet-400'
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all ${theme === 'osaka-jade' ? 'border-emerald-500/50 bg-emerald-500/10 group-hover:border-emerald-400' : 'border-[#DB595C]/50 bg-[#DB595C]/10 group-hover:border-[#DB595C]'
                         }`}>
                         <User className="w-5 h-5" />
                     </div>

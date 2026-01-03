@@ -131,15 +131,15 @@
 }
 
 [data-theme="ayaka"] {
-  --background: hsl(260 20% 5%);
+  --background: hsl(359 20% 5%);
   --foreground: hsl(0 0% 100%);
-  --primary: hsl(265 80% 70%);
+  --primary: hsl(359 64% 60%);
   --primary-foreground: hsl(0 0% 100%);
-  --accent: hsl(320 80% 60%);
-  --surface: hsl(260 20% 10%);
-  --muted: hsl(260 20% 15%);
-  --muted-foreground: hsl(260 10% 80%);
-  --glow-color: rgba(167, 139, 250, 0.5);
+  --accent: hsl(359 64% 45%);
+  --surface: hsl(359 20% 10%);
+  --muted: hsl(359 20% 15%);
+  --muted-foreground: hsl(359 10% 80%);
+  --glow-color: rgba(219, 89, 92, 0.5);
 }
 
 /* Hyprland Styling Utilities */

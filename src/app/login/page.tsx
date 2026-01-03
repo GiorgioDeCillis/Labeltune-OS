@@ -33,7 +33,7 @@ export default function LoginPage() {
                 className="glass-panel w-full max-w-md p-8 rounded-2xl border-t-2 border-primary/20"
             >
                 <div className="flex justify-center mb-8">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme === 'osaka-jade' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-violet-500/20 text-violet-400'}`}>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${theme === 'osaka-jade' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#DB595C]/20 text-[#DB595C]'}`}>
                         <Zap className="w-6 h-6" />
                     </div>
                 </div>

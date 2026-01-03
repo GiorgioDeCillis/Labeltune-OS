@@ -88,7 +88,7 @@ async function WorkerDashboard({ user, profile }: { user: any, profile: any }) {
         <div className="space-y-12">
             {/* Hero Profile Section */}
             <div className="flex flex-col items-center justify-center text-center space-y-4 py-8">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-purple-600 p-[2px]">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-[#DB595C] p-[2px]">
                     <div className="w-full h-full rounded-full bg-black/50 backdrop-blur-sm overflow-hidden flex items-center justify-center">
                         {profile?.avatar_url ? (
                             <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />

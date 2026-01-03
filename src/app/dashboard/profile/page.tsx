@@ -39,7 +39,7 @@ export default function ProfilePage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="glass-panel p-8 rounded-3xl flex flex-col md:flex-row items-center gap-8 relative overflow-hidden"
             >
-                <div className={`w-32 h-32 rounded-full flex items-center justify-center border-4 ${theme === 'osaka-jade' ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-violet-500/30 bg-violet-500/10'
+                <div className={`w-32 h-32 rounded-full flex items-center justify-center border-4 ${theme === 'osaka-jade' ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-[#DB595C]/30 bg-[#DB595C]/10'
                     } relative z-10 shadow-2xl`}>
                     <User className="w-16 h-16 text-primary" />
                 </div>
@@ -91,8 +91,8 @@ export default function ProfilePage() {
                             active={theme === 'ayaka'}
                             onClick={() => setTheme('ayaka')}
                             title="Ayaka"
-                            desc="Elegant violet and misty quartz"
-                            color="bg-violet-500"
+                            desc="Elegant coral and misty quartz"
+                            color="bg-[#DB595C]"
                         />
                     </div>
                 </motion.section>
