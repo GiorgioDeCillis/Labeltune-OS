@@ -21,7 +21,7 @@ export async function claimTask(taskId: string) {
 
     if (error) {
         console.error('Error claiming task:', error);
-        return { error: 'Failed to claim task. It may have been taken.' };
+        redirect('/dashboard/tasks?error=Failed to claim task');
     }
 
     revalidatePath('/dashboard/tasks');
