@@ -8,6 +8,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Plus, Trash2, Save, X, Video, FileText } from 'lucide-react';
+import { QuizBuilder } from './QuizBuilder';
 
 interface CourseBuilderProps {
     projectId: string;
@@ -111,7 +112,9 @@ export function CourseBuilder({ projectId, existingCourse }: CourseBuilderProps)
                         title: lesson.title,
                         content: lesson.content,
                         video_url: lesson.video_url,
-                        order: i // Update order based on current index
+                        order: i, // Update order based on current index
+                        type: lesson.type,
+                        quiz_data: lesson.quiz_data
                     };
 
                     if (lesson.id && !lesson.id.startsWith('temp-')) {
@@ -241,28 +244,55 @@ export function CourseBuilder({ projectId, existingCourse }: CourseBuilderProps)
                                         />
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-xs uppercase text-muted-foreground font-bold flex items-center gap-2">
-                                            <Video className="w-3 h-3" /> Loom Video URL
-                                        </label>
-                                        <input
-                                            value={l.video_url || ''}
-                                            onChange={(e) => handleUpdateLesson(l.id!, 'video_url', e.target.value)}
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg p-2 font-mono text-sm focus:outline-none focus:border-primary"
-                                            placeholder="https://www.loom.com/share/..."
-                                        />
-                                        <p className="text-xs text-muted-foreground">Paste the share link from Loom. It will be automatically embedded.</p>
+                                    <div className="space-y-4">
+                                        <label className="text-xs uppercase text-muted-foreground font-bold">Lesson Type</label>
+                                        <div className="flex gap-4">
+                                            <button
+                                                onClick={() => handleUpdateLesson(l.id!, 'type', 'text')}
+                                                className={`px-4 py-2 rounded-lg text-sm font-bold border transition-colors ${l.type === 'text' || !l.type ? 'bg-primary/20 border-primary text-primary' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                                            >
+                                                Text / Video
+                                            </button>
+                                            <button
+                                                onClick={() => handleUpdateLesson(l.id!, 'type', 'quiz')}
+                                                className={`px-4 py-2 rounded-lg text-sm font-bold border transition-colors ${l.type === 'quiz' ? 'bg-primary/20 border-primary text-primary' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                                            >
+                                                Quiz
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-2 h-full flex flex-col">
-                                        <label className="text-xs uppercase text-muted-foreground font-bold">Content (Markdown)</label>
-                                        <textarea
-                                            value={l.content || ''}
-                                            onChange={(e) => handleUpdateLesson(l.id!, 'content', e.target.value)}
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg p-4 font-mono text-sm focus:outline-none focus:border-primary min-h-[300px] flex-1"
-                                            placeholder="# Lesson Content..."
+                                    {(l.type === 'quiz') ? (
+                                        <QuizBuilder
+                                            lesson={l}
+                                            onChange={(data) => handleUpdateLesson(l.id!, 'quiz_data', data)}
                                         />
-                                    </div>
+                                    ) : (
+                                        <>
+                                            <div className="space-y-2">
+                                                <label className="text-xs uppercase text-muted-foreground font-bold flex items-center gap-2">
+                                                    <Video className="w-3 h-3" /> Loom Video URL
+                                                </label>
+                                                <input
+                                                    value={l.video_url || ''}
+                                                    onChange={(e) => handleUpdateLesson(l.id!, 'video_url', e.target.value)}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg p-2 font-mono text-sm focus:outline-none focus:border-primary"
+                                                    placeholder="https://www.loom.com/share/..."
+                                                />
+                                                <p className="text-xs text-muted-foreground">Paste the share link from Loom. It will be automatically embedded.</p>
+                                            </div>
+
+                                            <div className="space-y-2 h-full flex flex-col">
+                                                <label className="text-xs uppercase text-muted-foreground font-bold">Content (Markdown)</label>
+                                                <textarea
+                                                    value={l.content || ''}
+                                                    onChange={(e) => handleUpdateLesson(l.id!, 'content', e.target.value)}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg p-4 font-mono text-sm focus:outline-none focus:border-primary min-h-[300px] flex-1"
+                                                    placeholder="# Lesson Content..."
+                                                />
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             )
                         })}
@@ -297,8 +327,8 @@ function SortableLessonItem({ id, lesson, isActive, onClick, onDelete }: any) {
             <div
                 onClick={onClick}
                 className={`p-3 pl-10 rounded-lg border flex items-center justify-between cursor-pointer transition-all ${isActive
-                        ? 'bg-primary/10 border-primary text-primary'
-                        : 'bg-white/5 border-transparent hover:bg-white/10'
+                    ? 'bg-primary/10 border-primary text-primary'
+                    : 'bg-white/5 border-transparent hover:bg-white/10'
                     }`}
             >
                 <span className="truncate text-sm font-medium">{lesson.title}</span>

@@ -37,9 +37,24 @@ export interface Lesson {
     id: string;
     course_id: string;
     title: string;
-    content: string | null;
+    content: string; // Markdown or Quiz Description
+    video_url?: string;
     order: number;
-    video_url?: string | null;
+    type: 'text' | 'video' | 'quiz';
+    quiz_data?: {
+        questions: QuizQuestion[];
+        passing_score: number; // Percentage, e.g. 80
+    };
+    created_at?: string;
+}
+
+export interface QuizQuestion {
+    id: string;
+    text: string;
+    type: 'multiple_choice' | 'open_text';
+    options?: string[]; // For multiple_choice
+    correct_answer?: string | string[]; // Index or value
+    grading_criteria?: string; // For open_text AI grading
 }
 
 export interface UserCourseProgress {

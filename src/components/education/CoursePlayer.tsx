@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Course, Lesson } from '@/types/manual-types';
 import { PlayCircle, CheckCircle, ChevronLeft, ChevronRight, Menu, FileText } from 'lucide-react';
 import Link from 'next/link';
+import { QuizPlayer } from './QuizPlayer';
+import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { completeLesson } from '@/app/dashboard/courses/actions';
 
@@ -13,6 +15,7 @@ interface CoursePlayerProps {
 }
 
 export function CoursePlayer({ course, completedLessonIds = [] }: CoursePlayerProps) {
+    const router = useRouter();
     const [activeLessonId, setActiveLessonId] = useState<string>(course.lessons?.[0]?.id || '');
     const [isSidebarOpen, setSidebarOpen] = useState(true);
 
@@ -59,8 +62,8 @@ export function CoursePlayer({ course, completedLessonIds = [] }: CoursePlayerPr
                                 key={lesson.id}
                                 onClick={() => setActiveLessonId(lesson.id)}
                                 className={`w-full text-left p-3 rounded-lg text-sm flex items-start gap-3 transition-colors ${isActive
-                                        ? 'bg-primary/20 text-primary font-medium'
-                                        : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                    ? 'bg-primary/20 text-primary font-medium'
+                                    : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                             >
                                 <div className="mt-0.5">
@@ -99,32 +102,57 @@ export function CoursePlayer({ course, completedLessonIds = [] }: CoursePlayerPr
                 {/* Scrollable Content Area */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-8 max-w-4xl mx-auto w-full">
                     {activeLesson ? (
-                        <div className="space-y-8 animate-in fade-in duration-500">
-                            {/* Loom/Video Embed */}
-                            {activeLesson.video_url && (
-                                <div className="aspect-video w-full bg-black rounded-xl overflow-hidden border border-white/10 shadow-2xl relative group">
-                                    {activeLesson.video_url.includes('loom.com') ? (
-                                        <iframe
-                                            src={activeLesson.video_url.replace('/share/', '/embed/')}
-                                            className="w-full h-full"
-                                            frameBorder="0"
-                                            allowFullScreen
-                                        />
-                                    ) : (
-                                        // Generic fallback or other providers could go here
-                                        <div className="flex items-center justify-center h-full text-muted-foreground">
-                                            Video source not supported for generic embed yet.
+                        <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+                            {activeLesson.type === 'quiz' ? (
+                                <QuizPlayer
+                                    key={activeLesson.id}
+                                    lesson={activeLesson}
+                                    onComplete={() => {
+                                        // Refresh passed state logic if needed, usually handled by parent re-render or internal state
+                                        router.refresh();
+                                    }}
+                                />
+                            ) : (
+                                <div className="max-w-4xl mx-auto p-12 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    {/* Video Player */}
+                                    {activeLesson.video_url && (
+                                        <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative group">
+                                            <iframe
+                                                src={activeLesson.video_url.replace('share', 'embed')}
+                                                className="w-full h-full"
+                                                frameBorder="0"
+                                                allowFullScreen
+                                            ></iframe>
                                         </div>
                                     )}
-                                </div>
-                            )}
 
-                            {/* Text Content */}
-                            {activeLesson.content && (
-                                <div className="prose prose-invert prose-blue max-w-none">
-                                    {/* Using simple div for now, but configured for ReactMarkdown later if needed */}
-                                    <div className="whitespace-pre-wrap font-serif text-lg leading-relaxed text-gray-300">
-                                        {activeLesson.content}
+                                    {/* Content */}
+                                    <div className="prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-h1:text-3xl prose-a:text-primary">
+                                        <ReactMarkdown>{activeLesson.content || ''}</ReactMarkdown>
+                                    </div>
+
+                                    {/* Navigation Footer */}
+                                    <div className="pt-12 mt-12 border-t border-white/5 flex items-center justify-between">
+                                        <button
+                                            disabled={!hasPrev}
+                                            onClick={() => setActiveLessonId(course.lessons[activeIndex - 1].id)}
+                                            className="px-6 py-3 rounded-lg border border-white/10 hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2 font-medium transition-all"
+                                        >
+                                            <ChevronLeft className="w-4 h-4" /> Previous
+                                        </button>
+
+                                        {hasNext ? (
+                                            <button
+                                                onClick={handleNext}
+                                                className="px-6 py-3 bg-white text-black font-bold rounded-lg hover:bg-white/90 flex items-center gap-2 transform hover:scale-105 transition-all"
+                                            >
+                                                Next Lesson <ChevronRight className="w-4 h-4" />
+                                            </button>
+                                        ) : (
+                                            <button className="px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 flex items-center gap-2">
+                                                Complete Course <CheckCircle className="w-4 h-4" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             )}

@@ -55,7 +55,9 @@ export async function createLesson(courseId: string, data: Partial<Lesson>) {
             title: data.title!,
             content: data.content,
             order: data.order || 0,
-            video_url: data.video_url
+            video_url: data.video_url,
+            type: data.type || 'text',
+            quiz_data: data.quiz_data
         })
         .select()
         .single();
@@ -76,7 +78,9 @@ export async function updateLesson(lessonId: string, data: Partial<Lesson>) {
             title: data.title,
             content: data.content,
             order: data.order,
-            video_url: data.video_url
+            video_url: data.video_url,
+            type: data.type,
+            quiz_data: data.quiz_data
         })
         .eq('id', lessonId);
 
