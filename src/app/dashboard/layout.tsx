@@ -29,11 +29,13 @@ export default async function DashboardLayout({
     const userRole = user.user_metadata?.role || profile?.role || 'annotator';
 
     return (
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen relative">
+            {/* Sidebar handles its own visibility on mobile */}
             <Sidebar userRole={userRole} />
-            <div className="flex-1 ml-64 flex flex-col min-h-screen">
+
+            <div className="flex-1 md:ml-64 flex flex-col min-h-screen transition-all duration-300 w-full">
                 <Navbar user={user} />
-                <main className="flex-1 p-8 overflow-y-auto">
+                <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full max-w-[100vw] overflow-x-hidden">
                     {children}
                 </main>
             </div>

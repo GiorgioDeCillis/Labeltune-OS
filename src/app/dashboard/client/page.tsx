@@ -42,7 +42,7 @@ export default async function ClientDashboardPage() {
             </div>
 
             {/* High-Level Stats */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard title="Total Spend" value={totalSpend} icon={Wallet} trend="+12% this month" trendUp={true} />
                 <StatCard title="Tasks Delivered" value={tasksCompleted} icon={CheckCircle} trend="+540 this week" trendUp={true} />
                 <StatCard title="Quality Score" value={qualityScore} icon={TrendingUp} trend="+0.2% vs last batch" trendUp={true} />
@@ -101,7 +101,7 @@ export default async function ClientDashboardPage() {
             </div>
 
             {/* Analytics Area */}
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <SpendChart
                     total={totalSpend}
                     data={[

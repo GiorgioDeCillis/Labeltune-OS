@@ -39,14 +39,14 @@ function PMDashboard({ user, profile }: { user: any, profile: any }) {
                 <h2 className="text-3xl font-bold tracking-tight">Welcome back, {profile?.full_name?.split(' ')[0]}</h2>
                 <p className="text-muted-foreground">Project Manager Dashboard</p>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard title="Total Projects" value="12" icon={BarChart3} />
                 <StatCard title="Active Tasks" value="1,234" icon={Clock} />
                 <StatCard title="Completed" value="89%" icon={CheckCircle} />
                 <StatCard title="Team Velocity" value="24/hr" icon={BarChart3} />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="glass-panel p-6 rounded-xl space-y-4">
                     <div className="flex items-center justify-between">
                         <h3 className="text-xl font-bold">Recent Projects</h3>
