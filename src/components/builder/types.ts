@@ -14,7 +14,12 @@ export type TaskComponentType =
     | 'PolygonLabels'
     // Layout
     | 'View'
-    | 'Header';
+    | 'Header'
+    // Advanced
+    | 'Video'
+    | 'TimeSeries'
+    | 'PDF'
+    | 'MultiMessage';
 
 export interface TaskComponent {
     id: string;

@@ -13,7 +13,11 @@ import {
     ChoicesControl,
     RatingControl,
     TextAreaControl,
-    ImageLabelsControl
+    ImageLabelsControl,
+    VideoObject,
+    TimeSeriesObject,
+    PDFObject,
+    MultiMessageObject
 } from '@/components/builder/Renderers';
 
 export function ReviewTaskRenderer({
@@ -70,6 +74,10 @@ export function ReviewTaskRenderer({
                     if (component.type === 'Text') return <TextObject key={component.id} component={component} data={taskData} />;
                     if (component.type === 'Audio') return <AudioObject key={component.id} component={component} data={taskData} />;
                     if (component.type === 'Header') return <HeaderComponent key={component.id} component={component} />;
+                    if (component.type === 'Video') return <VideoObject key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'TimeSeries') return <TimeSeriesObject key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'PDF') return <PDFObject key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'MultiMessage') return <MultiMessageObject key={component.id} component={component} data={taskData} />;
 
                     // Controls
                     const value = formData[component.name] || formData[component.id];

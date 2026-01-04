@@ -26,18 +26,20 @@ export function PropertiesPanel({ component, onChange }: {
             </div>
 
             {/* Object Binding */}
-            {(component.type === 'Image' || component.type === 'Text' || component.type === 'Audio') && (
-                <div className="space-y-1">
-                    <label className="text-xs font-bold text-muted-foreground">Value (Data Key)</label>
-                    <input
-                        value={component.value || ''}
-                        onChange={(e) => onChange({ value: e.target.value })}
-                        className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono text-xs"
-                        placeholder="$data_key"
-                    />
-                    <p className="text-[10px] text-muted-foreground">Key in your data JSON, e.g. $image</p>
-                </div>
-            )}
+            {(component.type === 'Image' || component.type === 'Text' || component.type === 'Audio' ||
+                component.type === 'Video' || component.type === 'TimeSeries' || component.type === 'PDF' ||
+                component.type === 'MultiMessage') && (
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground">Value (Data Key)</label>
+                        <input
+                            value={component.value || ''}
+                            onChange={(e) => onChange({ value: e.target.value })}
+                            className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono text-xs"
+                            placeholder="$data_key"
+                        />
+                        <p className="text-[10px] text-muted-foreground">Key in your data JSON, e.g. $image</p>
+                    </div>
+                )}
 
             {/* Control Binding */}
             {(component.type === 'Choices' || component.type === 'Labels' || component.type === 'RectangleLabels' || component.type === 'TextArea') && (

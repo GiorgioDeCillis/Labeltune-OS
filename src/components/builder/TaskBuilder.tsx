@@ -58,6 +58,14 @@ function createDefaultComponent(type: TaskComponentType): TaskComponent {
             return { ...base, title: 'Comment', placeholder: 'Enter text here...' };
         case 'Rating':
             return { ...base, title: 'Rate this' };
+        case 'Video':
+            return { ...base, value: '$video', title: 'Video' };
+        case 'TimeSeries':
+            return { ...base, value: '$timeseries', title: 'Time Series' };
+        case 'PDF':
+            return { ...base, value: '$pdf', title: 'PDF Document' };
+        case 'MultiMessage':
+            return { ...base, value: '$messages', title: 'Chat / Conversation' };
         default:
             return { ...base, title: `New ${type}` };
     }

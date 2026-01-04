@@ -7,11 +7,15 @@ import {
     AlignLeft,
     Star,
     Code,
-    Image as ImageIcon,
+    ImageIcon,
     Music,
     MessageSquare,
     MousePointer2,
-    Hash
+    Hash,
+    Video,
+    Activity,
+    FileText,
+    MessagesSquare
 } from 'lucide-react';
 import { TaskComponentType } from './types';
 
@@ -67,6 +71,14 @@ export function Toolbox() {
                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Layout</h4>
                 <DraggableTool type="Header" label="Header" icon={Type} />
                 <DraggableTool type="View" label="View / Container" icon={AlignLeft} />
+            </div>
+
+            <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Advanced</h4>
+                <DraggableTool type="Video" label="Video player" icon={Video} />
+                <DraggableTool type="TimeSeries" label="Time Series Chart" icon={Activity} />
+                <DraggableTool type="PDF" label="PDF Document" icon={FileText} />
+                <DraggableTool type="MultiMessage" label="Conversation (LLM)" icon={MessagesSquare} />
             </div>
         </div>
     );

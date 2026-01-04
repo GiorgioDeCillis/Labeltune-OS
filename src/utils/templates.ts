@@ -175,5 +175,97 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
                 placeholder: 'Any further comments?'
             }
         ]
+    },
+    {
+        id: 'video-object-tracking',
+        name: 'Video Object Tracking',
+        description: 'Track and label objects across video frames.',
+        type: 'video_tracking',
+        icon: 'Video',
+        schema: [
+            {
+                id: nanoid(),
+                type: 'Video',
+                name: 'video_1',
+                value: '$video',
+                title: 'Video source'
+            },
+            {
+                id: nanoid(),
+                type: 'Labels',
+                name: 'objects',
+                title: 'Tracked Objects',
+                toName: ['video_1'],
+                labels: [
+                    { value: 'Car', background: '#33FF57' },
+                    { value: 'Pedestrian', background: '#FF5733' },
+                    { value: 'Cyclist', background: '#3357FF' }
+                ]
+            }
+        ]
+    },
+    {
+        id: 'time-series-anomaly',
+        name: 'Time Series Anomaly',
+        description: 'Identify and label anomalies in sensor data.',
+        type: 'time_series',
+        icon: 'Mic',
+        schema: [
+            {
+                id: nanoid(),
+                type: 'TimeSeries',
+                name: 'sensor_data',
+                value: '$data',
+                title: 'Sensor Data Stream'
+            },
+            {
+                id: nanoid(),
+                type: 'Choices',
+                name: 'anomaly_type',
+                title: 'Anomaly Type',
+                required: true,
+                options: [
+                    { label: 'Spike', value: 'spike' },
+                    { label: 'Drop', value: 'drop' },
+                    { label: 'Noise', value: 'noise' },
+                    { label: 'Pattern Change', value: 'pattern' }
+                ]
+            }
+        ]
+    },
+    {
+        id: 'pdf-data-extraction',
+        name: 'PDF Data Extraction',
+        description: 'Extract structured information from PDF documents.',
+        type: 'pdf_extraction',
+        icon: 'Box',
+        schema: [
+            {
+                id: nanoid(),
+                type: 'PDF',
+                name: 'document',
+                value: '$pdf_url',
+                title: 'Financial Report'
+            },
+            {
+                id: nanoid(),
+                type: 'TextArea',
+                name: 'summary',
+                title: 'Executive Summary',
+                placeholder: 'Summarize the key findings...',
+                required: true
+            },
+            {
+                id: nanoid(),
+                type: 'Choices',
+                name: 'document_type',
+                title: 'Form Type',
+                options: [
+                    { label: 'Invoice', value: 'invoice' },
+                    { label: 'Receipt', value: 'receipt' },
+                    { label: 'Contract', value: 'contract' }
+                ]
+            }
+        ]
     }
 ];
