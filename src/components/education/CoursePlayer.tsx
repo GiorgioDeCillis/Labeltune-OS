@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Course, Lesson } from '@/types/manual-types';
-import { PlayCircle, CheckCircle, ChevronLeft, ChevronRight, Menu, FileText } from 'lucide-react';
+import { PlayCircle, CheckCircle, ChevronLeft, ChevronRight, Menu, FileText, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { QuizPlayer } from './QuizPlayer';
 import { useRouter } from 'next/navigation';
@@ -12,9 +12,10 @@ import { completeLesson } from '@/app/dashboard/courses/actions';
 interface CoursePlayerProps {
     course: Course & { lessons: Lesson[] };
     completedLessonIds?: string[];
+    isAdmin?: boolean;
 }
 
-export function CoursePlayer({ course, completedLessonIds = [] }: CoursePlayerProps) {
+export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false }: CoursePlayerProps) {
     const router = useRouter();
     const [activeLessonId, setActiveLessonId] = useState<string>(course.lessons?.[0]?.id || '');
     const [isSidebarOpen, setSidebarOpen] = useState(true);
@@ -92,11 +93,20 @@ export function CoursePlayer({ course, completedLessonIds = [] }: CoursePlayerPr
                         </button>
                         <h3 className="font-bold text-white">{activeLesson?.title}</h3>
                     </div>
-                    <Link href={`/dashboard/projects/${course.project_id}`}>
-                        <button className="text-xs font-bold text-muted-foreground hover:text-white transition-colors">
-                            Exit Course
-                        </button>
-                    </Link>
+                    <div className="flex items-center gap-4">
+                        {isAdmin && (
+                            <Link href={`/dashboard/courses/${course.id}/edit`}>
+                                <button className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
+                                    <Pencil className="w-3 h-3" /> Edit Course
+                                </button>
+                            </Link>
+                        )}
+                        <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/courses'}>
+                            <button className="text-xs font-bold text-muted-foreground hover:text-white transition-colors">
+                                Exit Course
+                            </button>
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Scrollable Content Area */}

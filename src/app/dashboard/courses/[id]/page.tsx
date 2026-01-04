@@ -34,6 +34,15 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
         .eq('course_id', id)
         .single();
 
+    // Fetch user profile for admin check
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    const isAdmin = profile?.role === 'admin' || profile?.role === 'pm';
+
     const fullCourse: Course & { lessons: Lesson[] } = {
         ...courseData,
         lessons: lessonsData || []
@@ -44,6 +53,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             <CoursePlayer
                 course={fullCourse}
                 completedLessonIds={progressData?.completed_lessons || []}
+                isAdmin={isAdmin}
             />
         </div>
     );
