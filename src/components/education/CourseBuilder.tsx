@@ -203,7 +203,7 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
                         {isLoading ? 'Saving...' : <><Save className="w-4 h-4" /> Save Course</>}
                     </button>
                     <button
-                        onClick={() => router.back()}
+                        onClick={() => onCancel ? onCancel() : router.back()}
                         className="w-full py-2 border border-white/10 hover:bg-white/5 rounded-lg text-sm"
                     >
                         Cancel
