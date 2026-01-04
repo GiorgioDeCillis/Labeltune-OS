@@ -166,8 +166,8 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                                             onClick={() => toggleAssignment(worker)}
                                             disabled={processingId === worker.id}
                                             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors flex items-center gap-2 ml-auto disabled:opacity-50 ${worker.isAssigned
-                                                    ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
-                                                    : 'bg-primary/10 text-primary hover:bg-primary/20'
+                                                ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
+                                                : 'bg-primary/10 text-primary hover:bg-primary/20'
                                                 }`}
                                         >
                                             {processingId === worker.id ? 'Updating...' : (

@@ -30,11 +30,15 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
 
     // 2. Fetch ALL eligible profiles (excluding enterprise_client and guest?)
     // We want admins, pms, annotators, reviewers.
-    const { data: allProfiles } = await supabase
+    const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email, full_name, role, avatar_url, tags')
         .neq('role', 'enterprise_client')
         .order('full_name');
+
+    console.log('ProjectTeamPage: allProfiles length:', allProfiles?.length);
+    if (profilesError) console.error('ProjectTeamPage: profilesError:', profilesError);
+
 
     // 3. Fetch current assignments for this project
     const { data: assignments } = await supabase
