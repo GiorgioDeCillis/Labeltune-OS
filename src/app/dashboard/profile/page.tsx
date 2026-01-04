@@ -3,22 +3,71 @@
 import { useTheme } from '@/context/ThemeContext';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles, Camera, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
 export default function ProfilePage() {
     const { theme, setTheme, wallpaper, setWallpaper, blur, setBlur, transparency, setTransparency } = useTheme();
     const [user, setUser] = useState<any>(null);
+    const [profile, setProfile] = useState<any>(null);
+    const [isUploading, setIsUploading] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
+
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+                setProfile(profile);
+            }
         };
-        fetchUser();
+        fetchData();
     }, []);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !user) return;
+
+        try {
+            setIsUploading(true);
+            const fileExt = file.name.split('.').pop();
+            const filePath = `${user.id}/avatar.${fileExt}`;
+
+            // Upload to storage
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            // Update profile record
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ avatar_url: publicUrl })
+                .eq('id', user.id);
+
+            if (updateError) throw updateError;
+
+            setProfile({ ...profile, avatar_url: publicUrl });
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('Errore durante il caricamento dell\'immagine');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const wallpaperOptions = {
         'osaka-jade': ['1', '2', '3'].map(n => ({
@@ -43,14 +92,40 @@ export default function ProfilePage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="glass-panel p-8 rounded-3xl flex flex-col md:flex-row items-center gap-8 relative overflow-hidden"
             >
-                <div className={`w-32 h-32 rounded-full flex items-center justify-center border-4 ${theme === 'osaka-jade' ? 'border-emerald-500/30 bg-emerald-500/10' : theme === 'purple-moon' ? 'border-[#A949D9]/30 bg-[#A949D9]/10' : 'border-[#DB595C]/30 bg-[#DB595C]/10'
-                    } relative z-10 shadow-2xl`}>
-                    <User className="w-16 h-16 text-primary" />
+                <div className="relative group">
+                    <div className={`w-32 h-32 rounded-full flex items-center justify-center border-4 ${theme === 'osaka-jade' ? 'border-emerald-500/30 bg-emerald-500/10' : theme === 'purple-moon' ? 'border-[#A949D9]/30 bg-[#A949D9]/10' : 'border-[#DB595C]/30 bg-[#DB595C]/10'
+                        } relative z-10 shadow-2xl overflow-hidden`}>
+                        {profile?.avatar_url ? (
+                            <Image
+                                src={profile.avatar_url}
+                                alt="Avatar"
+                                fill
+                                className="object-cover"
+                            />
+                        ) : (
+                            <User className="w-16 h-16 text-primary" />
+                        )}
+
+                        <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-20">
+                            <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                disabled={isUploading}
+                            />
+                            {isUploading ? (
+                                <Loader2 className="w-8 h-8 text-white animate-spin" />
+                            ) : (
+                                <Camera className="w-8 h-8 text-white" />
+                            )}
+                        </label>
+                    </div>
                 </div>
 
                 <div className="flex-1 space-y-2 text-center md:text-left relative z-10">
                     <h2 className="text-3xl font-black tracking-tight">
-                        {user?.user_metadata?.full_name || 'User Profile'}
+                        {profile?.full_name || user?.user_metadata?.full_name || 'User Profile'}
                     </h2>
                     <div className="flex flex-wrap justify-center md:justify-start gap-4 text-muted-foreground">
                         <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
@@ -59,7 +134,7 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 uppercase tracking-wider">
                             <Shield className="w-4 h-4" />
-                            <span className="text-sm font-bold">{user?.user_metadata?.role || 'Annotator'}</span>
+                            <span className="text-sm font-bold">{profile?.role || user?.user_metadata?.role || 'Annotator'}</span>
                         </div>
                     </div>
                 </div>
