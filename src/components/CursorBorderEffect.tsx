@@ -1,22 +1,26 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useRef, useLayoutEffect } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 
 export const CursorBorderEffect: React.FC = () => {
-    const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-    const [borderRadius, setBorderRadius] = useState<string>('0px');
     const [isVisible, setIsVisible] = useState(false);
-    const lastMousePos = useRef({ x: 0, y: 0 });
+    const containerRef = useRef<HTMLDivElement>(null);
+    const borderTrailRef = useRef<HTMLDivElement>(null);
     const currentTargetRef = useRef<HTMLElement | null>(null);
+    const lastMousePos = useRef({ x: 0, y: 0 });
 
-    // Re-check target under cursor
+    // Helper to update DOM directly for performance
+    const updateDOM = useCallback((rect: DOMRect, borderRadius: string) => {
+        if (!containerRef.current || !borderTrailRef.current) return;
+
+        containerRef.current.style.transform = `translate3d(${rect.left - 2}px, ${rect.top - 2}px, 0)`;
+        containerRef.current.style.width = `${rect.width + 4}px`;
+        containerRef.current.style.height = `${rect.height + 4}px`;
+        containerRef.current.style.borderRadius = `calc(${borderRadius} + 2px)`;
+    }, []);
+
     const refreshTarget = useCallback((clientX: number, clientY: number) => {
-        // Temporarily hide trail to get the element underneath it
-        const trailBase = document.getElementById('cursor-trail-container');
-        if (trailBase) trailBase.style.pointerEvents = 'none';
-
         const target = document.elementFromPoint(clientX, clientY) as HTMLElement;
-
         if (!target) {
             setIsVisible(false);
             currentTargetRef.current = null;
@@ -29,15 +33,15 @@ export const CursorBorderEffect: React.FC = () => {
         if (interactiveTarget && !isInsideSidebar) {
             const rect = interactiveTarget.getBoundingClientRect();
             const style = window.getComputedStyle(interactiveTarget);
-            setBorderRadius(style.borderRadius);
-            setTargetRect(rect);
-            setIsVisible(true);
             currentTargetRef.current = interactiveTarget;
+            setIsVisible(true);
+            // Wait for next frame to ensure ref is ready if it was just turned visible
+            requestAnimationFrame(() => updateDOM(rect, style.borderRadius));
         } else {
             setIsVisible(false);
             currentTargetRef.current = null;
         }
-    }, []);
+    }, [updateDOM]);
 
     useEffect(() => {
         const onMouseMove = (e: MouseEvent) => {
@@ -46,7 +50,6 @@ export const CursorBorderEffect: React.FC = () => {
         };
 
         const onScroll = () => {
-            // Re-target because elements moved under the static cursor
             refreshTarget(lastMousePos.current.x, lastMousePos.current.y);
         };
 
@@ -54,12 +57,18 @@ export const CursorBorderEffect: React.FC = () => {
         window.addEventListener('scroll', onScroll, { capture: true, passive: true });
         window.addEventListener('resize', onScroll, { passive: true });
 
-        // High frequency sync loop for position ONLY
+        // High frequency sync loop using direct DOM manipulation
         let rafId: number;
         const syncLoop = () => {
             if (currentTargetRef.current && isVisible) {
                 const rect = currentTargetRef.current.getBoundingClientRect();
-                setTargetRect(rect);
+                // We don't call updateDOM here for EVERY frame unless needed, 
+                // but for scrolling it helps stay perfectly synced.
+                if (containerRef.current) {
+                    containerRef.current.style.transform = `translate3d(${rect.left - 2}px, ${rect.top - 2}px, 0)`;
+                    containerRef.current.style.width = `${rect.width + 4}px`;
+                    containerRef.current.style.height = `${rect.height + 4}px`;
+                }
             }
             rafId = requestAnimationFrame(syncLoop);
         };
@@ -73,22 +82,19 @@ export const CursorBorderEffect: React.FC = () => {
         };
     }, [refreshTarget, isVisible]);
 
-    if (!targetRect || !isVisible) return null;
+    if (!isVisible) return null;
 
     return (
         <div
-            id="cursor-trail-container"
+            ref={containerRef}
             className="fixed pointer-events-none z-[9999] top-0 left-0 will-change-transform"
             style={{
-                transform: `translate3d(${targetRect.left - 2}px, ${targetRect.top - 2}px, 0)`,
-                width: targetRect.width + 4,
-                height: targetRect.height + 4,
-                borderRadius: `calc(${borderRadius} + 2px)`,
-                // No transitions for transform to avoid lag during scroll
+                // No initial styles that React needs to track, we use the ref
                 transition: 'width 0.15s ease-out, height 0.15s ease-out, border-radius 0.15s ease-out',
             }}
         >
             <div
+                ref={borderTrailRef}
                 className="absolute inset-0 border-2 rounded-[inherit] animate-border-follow"
                 style={{
                     borderColor: 'var(--primary)',
