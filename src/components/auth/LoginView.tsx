@@ -160,13 +160,10 @@ export default function LoginView() {
                         <ChevronRight className="w-4 h-4" />
                     </button>
 
-                    <div className="relative my-8">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-white/10"></div>
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-[#121212] px-2 text-muted-foreground">Or continue with</span>
-                        </div>
+                    <div className="relative my-8 flex items-center gap-3">
+                        <div className="flex-1 border-t border-white/10"></div>
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Or continue with</span>
+                        <div className="flex-1 border-t border-white/10"></div>
                     </div>
 
                     <button
