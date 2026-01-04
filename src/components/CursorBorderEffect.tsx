@@ -12,20 +12,25 @@ export const CursorBorderEffect: React.FC = () => {
         const container = containerRef.current;
         if (!container) return;
 
+        // Use CSS custom properties to avoid layout triggers
+        const updatePosition = (x: number, y: number, w: number, h: number) => {
+            container.style.setProperty('--tx', `${x}px`);
+            container.style.setProperty('--ty', `${y}px`);
+            container.style.setProperty('--tw', `${w}px`);
+            container.style.setProperty('--th', `${h}px`);
+        };
+
         const updateVisibility = (visible: boolean) => {
             if (isVisibleRef.current === visible) return;
             isVisibleRef.current = visible;
-            container.style.opacity = visible ? '1' : '0';
+            container.style.setProperty('--opacity', visible ? '1' : '0');
         };
 
         const updateFromTarget = () => {
             const target = currentTargetRef.current;
             if (!target) return;
-
             const rect = target.getBoundingClientRect();
-            container.style.transform = `translate3d(${rect.left - 2}px, ${rect.top - 2}px, 0)`;
-            container.style.width = `${rect.width + 4}px`;
-            container.style.height = `${rect.height + 4}px`;
+            updatePosition(rect.left - 2, rect.top - 2, rect.width + 4, rect.height + 4);
         };
 
         const setTarget = (newTarget: HTMLElement | null) => {
@@ -33,7 +38,7 @@ export const CursorBorderEffect: React.FC = () => {
                 currentTargetRef.current = newTarget;
                 if (newTarget) {
                     const style = window.getComputedStyle(newTarget);
-                    container.style.borderRadius = style.borderRadius || '0px';
+                    container.style.setProperty('--br', style.borderRadius || '0px');
                     updateFromTarget();
                     updateVisibility(true);
                 } else {
@@ -61,7 +66,6 @@ export const CursorBorderEffect: React.FC = () => {
         window.addEventListener('mousemove', onMouseMove, { passive: true });
         window.addEventListener('scroll', onScroll, { capture: true, passive: true });
 
-        // Single RAF loop for smooth tracking
         let rafId: number;
         const loop = () => {
             if (isVisibleRef.current && currentTargetRef.current) {
@@ -81,16 +85,30 @@ export const CursorBorderEffect: React.FC = () => {
     return (
         <div
             ref={containerRef}
-            className="fixed pointer-events-none z-[9999] top-0 left-0 opacity-0"
-            style={{ willChange: 'transform' }}
+            className="cursor-trail-container"
+            style={{
+                position: 'fixed',
+                pointerEvents: 'none',
+                zIndex: 9999,
+                top: 0,
+                left: 0,
+                transform: 'translate3d(var(--tx, 0), var(--ty, 0), 0)',
+                width: 'var(--tw, 0)',
+                height: 'var(--th, 0)',
+                borderRadius: 'var(--br, 0)',
+                opacity: 'var(--opacity, 0)',
+                contain: 'layout style',
+                willChange: 'transform, opacity',
+            }}
         >
             <div
-                className="absolute inset-0 border-2 rounded-[inherit] animate-border-follow"
+                className="animate-border-follow"
                 style={{
-                    borderColor: 'var(--primary)',
-                    boxShadow: '0 0 12px var(--primary)',
-                    WebkitMaskImage: 'conic-gradient(from var(--trail-angle), black 0%, transparent 35%, transparent 100%)',
-                    maskImage: 'conic-gradient(from var(--trail-angle), black 0%, transparent 35%, transparent 100%)',
+                    position: 'absolute',
+                    inset: 0,
+                    border: '2px solid var(--primary)',
+                    borderRadius: 'inherit',
+                    // Removed box-shadow for performance
                 }}
             />
         </div>
