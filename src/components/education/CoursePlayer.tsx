@@ -45,7 +45,7 @@ export function CoursePlayer({ course, completedLessonIds = [] }: CoursePlayerPr
     };
 
     return (
-        <div className="flex h-[calc(100vh-2rem)] gap-6 overflow-hidden">
+        <div className="flex flex-1 gap-6 overflow-hidden h-full min-h-0">
             {/* Sidebar (Lesson List) */}
             <div className={`glass-panel flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-80' : 'w-0 opacity-0 overflow-hidden'}`}>
                 <div className="p-4 border-b border-white/5">
