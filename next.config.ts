@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   experimental: {
-    viewTransitions: true,
+    viewTransition: true,
   },
   images: {
     remotePatterns: [
