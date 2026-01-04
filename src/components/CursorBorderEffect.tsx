@@ -9,8 +9,14 @@ export const CursorBorderEffect: React.FC = () => {
     const lastMousePos = useRef({ x: 0, y: 0 });
     const currentTargetRef = useRef<HTMLElement | null>(null);
 
-    const updateTarget = useCallback((clientX: number, clientY: number) => {
+    // Re-check target under cursor
+    const refreshTarget = useCallback((clientX: number, clientY: number) => {
+        // Temporarily hide trail to get the element underneath it
+        const trailBase = document.getElementById('cursor-trail-container');
+        if (trailBase) trailBase.style.pointerEvents = 'none';
+
         const target = document.elementFromPoint(clientX, clientY) as HTMLElement;
+
         if (!target) {
             setIsVisible(false);
             currentTargetRef.current = null;
@@ -33,61 +39,62 @@ export const CursorBorderEffect: React.FC = () => {
         }
     }, []);
 
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        lastMousePos.current = { x: e.clientX, y: e.clientY };
-        updateTarget(e.clientX, e.clientY);
-    }, [updateTarget]);
+    useEffect(() => {
+        const onMouseMove = (e: MouseEvent) => {
+            lastMousePos.current = { x: e.clientX, y: e.clientY };
+            refreshTarget(e.clientX, e.clientY);
+        };
 
-    const handleScroll = useCallback(() => {
-        // When scrolling, re-check what's under the last known mouse position
-        updateTarget(lastMousePos.current.x, lastMousePos.current.y);
-    }, [updateTarget]);
+        const onScroll = () => {
+            // Re-target because elements moved under the static cursor
+            refreshTarget(lastMousePos.current.x, lastMousePos.current.y);
+        };
 
-    useLayoutEffect(() => {
-        window.addEventListener('mousemove', handleMouseMove);
-        // Use capturing phase for scroll to ensure we catch it from any scrollable container
-        window.addEventListener('scroll', handleScroll, true);
-        window.addEventListener('resize', handleScroll);
+        window.addEventListener('mousemove', onMouseMove, { passive: true });
+        window.addEventListener('scroll', onScroll, { capture: true, passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
 
-        // Continuous sync to handle any other layout shifts or animations
+        // High frequency sync loop for position ONLY
         let rafId: number;
-        const tick = () => {
+        const syncLoop = () => {
             if (currentTargetRef.current && isVisible) {
                 const rect = currentTargetRef.current.getBoundingClientRect();
                 setTargetRect(rect);
             }
-            rafId = requestAnimationFrame(tick);
+            rafId = requestAnimationFrame(syncLoop);
         };
-        rafId = requestAnimationFrame(tick);
+        rafId = requestAnimationFrame(syncLoop);
 
         return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('scroll', handleScroll, true);
-            window.removeEventListener('resize', handleScroll);
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('scroll', onScroll, true);
+            window.removeEventListener('resize', onScroll);
             cancelAnimationFrame(rafId);
         };
-    }, [handleMouseMove, handleScroll, isVisible]);
+    }, [refreshTarget, isVisible]);
 
     if (!targetRect || !isVisible) return null;
 
     return (
         <div
-            className="fixed pointer-events-none z-[9999] top-0 left-0"
+            id="cursor-trail-container"
+            className="fixed pointer-events-none z-[9999] top-0 left-0 will-change-transform"
             style={{
-                transform: `translate(${targetRect.left - 2}px, ${targetRect.top - 2}px)`,
+                transform: `translate3d(${targetRect.left - 2}px, ${targetRect.top - 2}px, 0)`,
                 width: targetRect.width + 4,
                 height: targetRect.height + 4,
                 borderRadius: `calc(${borderRadius} + 2px)`,
-                transition: 'transform 0.05s linear, width 0.1s ease-out, height 0.1s ease-out, border-radius 0.1s ease-out',
+                // No transitions for transform to avoid lag during scroll
+                transition: 'width 0.15s ease-out, height 0.15s ease-out, border-radius 0.15s ease-out',
             }}
         >
             <div
                 className="absolute inset-0 border-2 rounded-[inherit] animate-border-follow"
                 style={{
                     borderColor: 'var(--primary)',
-                    boxShadow: '0 0 10px var(--primary)',
-                    WebkitMaskImage: 'conic-gradient(from var(--trail-angle), black 0%, transparent 25%, transparent 100%)',
-                    maskImage: 'conic-gradient(from var(--trail-angle), black 0%, transparent 25%, transparent 100%)',
+                    boxShadow: '0 0 12px var(--primary)',
+                    WebkitMaskImage: 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
+                    maskImage: 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
                 }}
             />
         </div>
