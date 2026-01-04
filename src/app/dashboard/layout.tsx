@@ -1,5 +1,6 @@
 import { Sidebar } from '@/components/Sidebar';
 import { Navbar } from '@/components/Navbar';
+import { CursorBorderEffect } from '@/components/CursorBorderEffect';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -31,6 +32,7 @@ export default async function DashboardLayout({
 
     return (
         <div className="flex min-h-screen relative">
+            <CursorBorderEffect />
             {/* Sidebar handles its own visibility on mobile */}
             <Sidebar userRole={userRole} />
 
