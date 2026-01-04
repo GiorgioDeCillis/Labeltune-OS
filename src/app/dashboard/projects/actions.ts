@@ -50,7 +50,7 @@ export async function createProject(formData: FormData) {
     }
 
     // 3. Create Project
-    const { error } = await supabase
+    const { data: newProject, error } = await supabase
         .from('projects')
         .insert({
             name,
@@ -61,11 +61,29 @@ export async function createProject(formData: FormData) {
             template_schema: template_schema ? JSON.parse(template_schema) : [],
             organization_id: orgId,
             status: 'active'
-        });
+        })
+        .select()
+        .single();
 
     if (error) {
         console.error('Error creating project:', error);
         redirect('/dashboard/projects/new?error=Failed to create project');
+    }
+
+    // 4. Link courses if any
+    const selectedCourseIds = formData.get('course_ids') as string;
+    if (selectedCourseIds && newProject) {
+        try {
+            const courseIds = JSON.parse(selectedCourseIds);
+            if (Array.isArray(courseIds) && courseIds.length > 0) {
+                await supabase
+                    .from('courses')
+                    .update({ project_id: newProject.id })
+                    .in('id', courseIds);
+            }
+        } catch (e) {
+            console.error('Error linking courses:', e);
+        }
     }
 
     revalidatePath('/dashboard/projects');

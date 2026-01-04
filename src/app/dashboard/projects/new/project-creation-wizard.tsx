@@ -15,48 +15,83 @@ const iconMap = {
     Bot
 };
 
-export function ProjectCreationWizard() {
-    const [step, setStep] = useState<'template' | 'builder' | 'details'>('template');
+import { ProjectTemplate, PROJECT_TEMPLATES } from '@/utils/templates';
+import { TaskBuilder } from '@/components/builder/TaskBuilder';
+import { TaskComponent } from '@/components/builder/types';
+import { createProject } from '../actions';
+import { ChevronRight, ChevronLeft, Save, LayoutGrid, Settings2, MessageSquare, Image as ImageIcon, Box, Mic, Bot, BookOpen, FileText, CheckCircle2 } from 'lucide-react';
+import { InstructionsStep, InstructionSection } from './steps/InstructionsStep';
+import { CoursesStep } from './steps/CoursesStep';
+import { Course } from '@/types/manual-types';
+
+const iconMap = {
+    MessageSquare,
+    Image: ImageIcon,
+    Box,
+    Mic,
+    Bot
+};
+
+type Step = 'template' | 'instructions' | 'courses' | 'builder' | 'details';
+
+interface ProjectCreationWizardProps {
+    availableCourses: Course[];
+}
+
+export function ProjectCreationWizard({ availableCourses: initialCourses }: ProjectCreationWizardProps) {
+    const [step, setStep] = useState<Step>('template');
     const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
     const [components, setComponents] = useState<TaskComponent[]>([]);
+    const [instructions, setInstructions] = useState<InstructionSection[]>([
+        { id: '1', title: 'General Guidelines', content: '# Welcome\n\nPlease follow these rules...' }
+    ]);
+    const [availableCourses, setAvailableCourses] = useState<Course[]>(initialCourses);
+    const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
 
     const handleSelectTemplate = (template: ProjectTemplate) => {
         setSelectedTemplate(template);
         setComponents(template.schema);
-        setStep('builder');
+        setStep('instructions');
     };
 
     const nextStep = () => {
-        if (step === 'template' && selectedTemplate) setStep('builder');
+        if (step === 'template' && selectedTemplate) setStep('instructions');
+        else if (step === 'instructions') setStep('courses');
+        else if (step === 'courses') setStep('builder');
         else if (step === 'builder') setStep('details');
     };
 
     const prevStep = () => {
-        if (step === 'builder') setStep('template');
+        if (step === 'instructions') setStep('template');
+        else if (step === 'courses') setStep('instructions');
+        else if (step === 'builder') setStep('courses');
         else if (step === 'details') setStep('builder');
     };
+
+    const steps = [
+        { id: 'template', label: 'Template', icon: LayoutGrid },
+        { id: 'instructions', label: 'Instructions', icon: FileText },
+        { id: 'courses', label: 'Courses', icon: BookOpen },
+        { id: 'builder', label: 'Builder', icon: Settings2 },
+        { id: 'details', label: 'Details', icon: Save },
+    ];
+
+    const currentStepIndex = steps.findIndex(s => s.id === step);
 
     return (
         <div className="space-y-8">
             {/* Stepper */}
             <div className="flex items-center justify-center gap-4 mb-8">
-                {['Template', 'Builder', 'Details'].map((s, i) => (
-                    <React.Fragment key={s}>
-                        <div className={`flex items-center gap-2 ${(i === 0 && step === 'template') ||
-                            (i === 1 && step === 'builder') ||
-                            (i === 2 && step === 'details')
-                            ? 'text-primary' : 'text-muted-foreground'
-                            }`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${(i === 0 && step === 'template') ||
-                                (i === 1 && step === 'builder') ||
-                                (i === 2 && step === 'details')
-                                ? 'border-primary bg-primary/10' : 'border-white/10'
+                {steps.map((s, i) => (
+                    <React.Fragment key={s.id}>
+                        <div className={`flex items-center gap-2 ${i === currentStepIndex ? 'text-primary' : 'text-muted-foreground'}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${i <= currentStepIndex ? 'border-primary bg-primary/10 text-primary' : 'border-white/10'
                                 }`}>
                                 {i + 1}
                             </div>
-                            <span className="font-medium">{s}</span>
+                            <span className="font-medium hidden md:inline">{s.label}</span>
                         </div>
-                        {i < 2 && <div className="w-12 h-px bg-white/10" />}
+                        {i < steps.length - 1 && <div className={`w-8 md:w-12 h-px ${i < currentStepIndex ? 'bg-primary/50' : 'bg-white/10'}`} />}
                     </React.Fragment>
                 ))}
             </div>
@@ -88,7 +123,7 @@ export function ProjectCreationWizard() {
                         onClick={() => {
                             setSelectedTemplate(null);
                             setComponents([]);
-                            setStep('builder');
+                            setStep('instructions');
                         }}
                         className="glass-panel p-6 rounded-2xl text-left border-dashed border-2 border-white/10 hover:border-primary/50 transition-all group flex flex-col h-full"
                     >
@@ -99,6 +134,39 @@ export function ProjectCreationWizard() {
                             Start empty <ChevronRight className="w-4 h-4" />
                         </div>
                     </button>
+                </div>
+            )}
+
+            {step === 'instructions' && (
+                <div className="space-y-6">
+                    <InstructionsStep sections={instructions} onChange={setInstructions} />
+                    <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/10">
+                        <button onClick={prevStep} className="px-6 py-2 border border-white/10 hover:bg-white/5 rounded-xl font-bold transition-all flex items-center gap-2">
+                            <ChevronLeft className="w-4 h-4" /> Back to Templates
+                        </button>
+                        <button onClick={nextStep} className="px-6 py-2 bg-primary text-primary-foreground rounded-xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
+                            Next: Training Courses <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {step === 'courses' && (
+                <div className="space-y-6">
+                    <CoursesStep
+                        availableCourses={availableCourses}
+                        selectedCourseIds={selectedCourseIds}
+                        onToggleCourse={(id) => setSelectedCourseIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])}
+                        onCourseCreated={(course) => setAvailableCourses(prev => [...prev, course])}
+                    />
+                    <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/10">
+                        <button onClick={prevStep} className="px-6 py-2 border border-white/10 hover:bg-white/5 rounded-xl font-bold transition-all flex items-center gap-2">
+                            <ChevronLeft className="w-4 h-4" /> Back to Instructions
+                        </button>
+                        <button onClick={nextStep} className="px-6 py-2 bg-primary text-primary-foreground rounded-xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
+                            Next: Task Builder <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -136,6 +204,8 @@ export function ProjectCreationWizard() {
                 <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <form action={createProject} className="glass-panel p-8 rounded-2x space-y-6">
                         <input type="hidden" name="template_schema" value={JSON.stringify(components)} />
+                        <input type="hidden" name="guidelines" value={JSON.stringify(instructions)} />
+                        <input type="hidden" name="course_ids" value={JSON.stringify(selectedCourseIds)} />
 
                         <div className="flex items-center gap-4 mb-6">
                             <button type="button" onClick={prevStep} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
@@ -194,14 +264,14 @@ export function ProjectCreationWizard() {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Guidelines (Markdown)</label>
-                            <textarea
-                                name="guidelines"
-                                rows={4}
-                                placeholder="# Labeling Guidelines..."
-                                className="w-full bg-background/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-mono text-sm"
-                            />
+                        <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-2">
+                            <div className="flex items-center gap-2 text-sm font-bold text-primary">
+                                <CheckCircle2 className="w-4 h-4" />
+                                Ready to Launch
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                You have defined <strong>{instructions.length}</strong> instruction sections and linked <strong>{selectedCourseIds.length}</strong> training courses.
+                            </p>
                         </div>
 
                         <div className="pt-4 flex justify-end gap-4">

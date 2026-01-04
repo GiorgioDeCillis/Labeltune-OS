@@ -5,6 +5,7 @@ import { ChevronLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { TaskRenderer } from '@/components/TaskRenderer';
 import { TaskComponent } from '@/components/builder/types';
+import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
 
 export default async function TaskLabelingPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -40,7 +41,11 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
                                 {task.projects?.type}
                             </span>
                         </div>
-                        <p className="text-xs text-muted-foreground font-mono">Task ID: {task.id}</p>
+                        <div className="flex items-center gap-4 mt-1">
+                            <p className="text-xs text-muted-foreground font-mono">Task ID: {task.id}</p>
+                            <span className="text-white/20">|</span>
+                            <ProjectGuidelinesLink guidelines={task.projects?.guidelines} label="Read Guidelines" />
+                        </div>
                     </div>
                 </div>
 

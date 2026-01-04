@@ -1,10 +1,13 @@
 
-
 import { ProjectCreationWizard } from './project-creation-wizard';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
+import { createClient } from '@/utils/supabase/server';
 
-export default function NewProjectPage() {
+export default async function NewProjectPage() {
+    const supabase = await createClient();
+    const { data: courses } = await supabase.from('courses').select('*');
+
     return (
         <div className="max-w-6xl mx-auto space-y-8">
             <div className="flex items-center gap-4">
@@ -17,7 +20,7 @@ export default function NewProjectPage() {
                 </div>
             </div>
 
-            <ProjectCreationWizard />
+            <ProjectCreationWizard availableCourses={courses || []} />
         </div>
     );
 }

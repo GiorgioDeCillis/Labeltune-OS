@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Settings, ListTodo, Wallet, Clock, BookOpen, ChevronRight, CheckCircle2, AlertCircle, Users } from 'lucide-react';
+import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
+
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -143,9 +145,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                     <Link href="#" className="text-primary hover:text-primary/80 text-sm font-bold flex items-center gap-1">
                         View Pay Terms <ChevronRight className="w-4 h-4" />
                     </Link>
-                    <Link href="#" className="text-primary hover:text-primary/80 text-sm font-bold flex items-center gap-1">
-                        View Project Guidelines <ChevronRight className="w-4 h-4" />
-                    </Link>
+                    <ProjectGuidelinesLink guidelines={project.guidelines} />
                 </div>
             </div>
 
