@@ -1,9 +1,21 @@
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import { Type, List, CheckSquare, AlignLeft, Star, Code } from 'lucide-react';
-import { ComponentType } from './TaskBuilder';
+import {
+    Type,
+    List,
+    CheckSquare,
+    AlignLeft,
+    Star,
+    Code,
+    Image as ImageIcon,
+    Music,
+    MessageSquare,
+    MousePointer2,
+    Hash
+} from 'lucide-react';
+import { TaskComponentType } from './types';
 
-function DraggableTool({ type, label, icon: Icon }: { type: ComponentType, label: string, icon: any }) {
+function DraggableTool({ type, label, icon: Icon }: { type: TaskComponentType, label: string, icon: any }) {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: `toolbox-${type}`,
         data: {
@@ -32,13 +44,30 @@ function DraggableTool({ type, label, icon: Icon }: { type: ComponentType, label
 
 export function Toolbox() {
     return (
-        <div className="flex flex-col gap-2">
-            <DraggableTool type="text_input" label="Short Text" icon={Type} />
-            <DraggableTool type="textarea" label="Long Text" icon={AlignLeft} />
-            <DraggableTool type="single_select" label="Single Select" icon={List} />
-            <DraggableTool type="multi_select" label="Multi Select" icon={CheckSquare} />
-            <DraggableTool type="rating" label="Rating Scale" icon={Star} />
-            <DraggableTool type="markdown_display" label="Instruction / Markdown" icon={Code} />
+        <div className="flex flex-col gap-6 overflow-y-auto pr-2">
+            <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Objects</h4>
+                <DraggableTool type="Image" label="Image" icon={ImageIcon} />
+                <DraggableTool type="Text" label="Text" icon={Type} />
+                <DraggableTool type="Audio" label="Audio" icon={Music} />
+                <DraggableTool type="HyperText" label="HTML / HyperText" icon={Code} />
+            </div>
+
+            <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Controls</h4>
+                <DraggableTool type="Choices" label="Choices (Select)" icon={List} />
+                <DraggableTool type="Labels" label="Labels (Tags)" icon={CheckSquare} />
+                <DraggableTool type="TextArea" label="Text Area input" icon={AlignLeft} />
+                <DraggableTool type="Rating" label="Rating" icon={Star} />
+                <DraggableTool type="Number" label="Number" icon={Hash} />
+                <DraggableTool type="RectangleLabels" label="Rectangle Labels" icon={MousePointer2} />
+            </div>
+
+            <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Layout</h4>
+                <DraggableTool type="Header" label="Header" icon={Type} />
+                <DraggableTool type="View" label="View / Container" icon={AlignLeft} />
+            </div>
         </div>
     );
 }

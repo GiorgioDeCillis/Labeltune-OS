@@ -1,10 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FormComponent } from '@/components/builder/TaskBuilder';
+import { TaskComponent } from '@/components/builder/types';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import {
+    ImageObject,
+    TextObject,
+    AudioObject,
+    HeaderComponent,
+    ChoicesControl,
+    RatingControl,
+    TextAreaControl,
+    ImageLabelsControl
+} from '@/components/builder/Renderers';
 
 export function TaskRenderer({
     schema,
@@ -12,7 +22,7 @@ export function TaskRenderer({
     initialData,
     isReadOnly = false
 }: {
-    schema: FormComponent[],
+    schema: TaskComponent[],
     taskId: string,
     initialData?: any,
     isReadOnly?: boolean
@@ -21,6 +31,10 @@ export function TaskRenderer({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
     const supabase = createClient();
+
+    // In a real Label Studio implementation, Objects are rendered once and controls might attach to them.
+    // For this simplified version, we just render everything in order.
+    // But we need to make sure "data" (the object content) is passed to Object components.
 
     const handleChange = (id: string, value: any) => {
         if (isReadOnly) return;
@@ -50,22 +64,35 @@ export function TaskRenderer({
         }
     };
 
+    // Mock data for objects if not provided (usually comes from task.data column)
+    // In a real app we'd fetch the task data. For now assuming initialData or some context has it.
+    // Hack: if initialData has '$image' keys etc, use them.
+    const taskData = initialData || {};
+
     return (
         <div className="flex flex-col h-full">
-            <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
-                {schema.map((component) => (
-                    <div key={component.id} className="space-y-2">
-                        {component.type !== 'markdown_display' && (
-                            <label className="text-sm font-bold block">
-                                {component.label} {component.required && <span className="text-red-400">*</span>}
-                            </label>
-                        )}
+            <div className="flex-1 space-y-8 overflow-y-auto pr-2 custom-scrollbar p-1">
+                {schema.map((component) => {
+                    // Objects
+                    if (component.type === 'Image') return <ImageObject key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'Text') return <TextObject key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'Audio') return <AudioObject key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'Header') return <HeaderComponent key={component.id} component={component} />;
 
-                        <div className="text-xs text-muted-foreground mb-1">{component.description}</div>
+                    // Controls
+                    const value = formData[component.name] || formData[component.id];
+                    // Note: Label Studio uses 'name' for result keys. We should ideally use component.name.
+                    // Fallback to ID if name not set (though we default name now).
 
-                        {renderInput(component, formData[component.id], (val) => handleChange(component.id, val), isReadOnly)}
-                    </div>
-                ))}
+                    const onChange = (val: any) => handleChange(component.name || component.id, val);
+
+                    if (component.type === 'Choices') return <ChoicesControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'Rating') return <RatingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'TextArea') return <TextAreaControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'Labels' || component.type === 'RectangleLabels') return <ImageLabelsControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+
+                    return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
+                })}
             </div>
 
             {!isReadOnly && (
@@ -91,113 +118,4 @@ export function TaskRenderer({
     );
 }
 
-function renderInput(
-    component: FormComponent,
-    value: any,
-    onChange: (val: any) => void,
-    readOnly: boolean
-) {
-    if (component.type === 'text_input') {
-        return (
-            <input
-                type="text"
-                value={value || ''}
-                onChange={(e) => onChange(e.target.value)}
-                disabled={readOnly}
-                placeholder={component.placeholder}
-                className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 disabled:opacity-50"
-            />
-        );
-    }
-
-    if (component.type === 'textarea') {
-        return (
-            <textarea
-                value={value || ''}
-                onChange={(e) => onChange(e.target.value)}
-                disabled={readOnly}
-                rows={4}
-                placeholder={component.placeholder}
-                className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 resize-none disabled:opacity-50"
-            />
-        );
-    }
-
-    if (component.type === 'single_select') {
-        return (
-            <select
-                value={value || ''}
-                onChange={(e) => onChange(e.target.value)}
-                disabled={readOnly}
-                className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 disabled:opacity-50"
-            >
-                <option value="">Select an option</option>
-                {component.options?.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                ))}
-            </select>
-        )
-    }
-
-    if (component.type === 'multi_select') {
-        // Simple implementation for multi-select
-        const selected = Array.isArray(value) ? value : [];
-        const toggleOption = (opt: string) => {
-            if (selected.includes(opt)) {
-                onChange(selected.filter((s: string) => s !== opt));
-            } else {
-                onChange([...selected, opt]);
-            }
-        };
-
-        return (
-            <div className="space-y-2">
-                {component.options?.map((opt) => (
-                    <label key={opt} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${selected.includes(opt)
-                            ? 'bg-primary/10 border-primary/50'
-                            : 'bg-white/5 border-transparent hover:bg-white/10'
-                        } ${readOnly ? 'opacity-50 pointer-events-none' : ''}`}>
-                        <input
-                            type="checkbox"
-                            checked={selected.includes(opt)}
-                            onChange={() => toggleOption(opt)}
-                            className="accent-primary w-4 h-4"
-                        />
-                        <span className="text-sm">{opt}</span>
-                    </label>
-                ))}
-            </div>
-        )
-    }
-
-    if (component.type === 'rating') {
-        return (
-            <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((num) => (
-                    <button
-                        key={num}
-                        onClick={() => onChange(num)}
-                        disabled={readOnly}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${value === num
-                                ? 'bg-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.5)] scale-110'
-                                : 'bg-white/10 hover:bg-white/20 text-muted-foreground'
-                            } ${readOnly ? 'pointer-events-none' : ''}`}
-                    >
-                        {num}
-                    </button>
-                ))}
-            </div>
-        )
-    }
-
-    if (component.type === 'markdown_display') {
-        return (
-            <div className="prose prose-invert prose-sm bg-white/5 p-4 rounded-lg border border-white/5">
-                {/* Normally render Markdown properly here */}
-                {component.description || 'No content'}
-            </div>
-        )
-    }
-
-    return <div className="text-red-400 text-xs">Unsupported component type: {component.type}</div>;
-}
+// Deprecated old helper removed as we use component renderers now
