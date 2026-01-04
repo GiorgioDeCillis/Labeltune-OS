@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { ChevronLeft, Info } from 'lucide-react';
 import Link from 'next/link';
 import { ReviewTaskRenderer } from '@/components/ReviewTaskRenderer';
-import { FormComponent } from '@/components/builder/TaskBuilder';
+import { TaskComponent } from '@/components/builder/types';
 
 export default async function ReviewTaskPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -22,7 +22,7 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
 
     // Ideally check permissions here
 
-    const templateSchema = (task.projects?.template_schema as FormComponent[]) || [];
+    const templateSchema = (task.projects?.template_schema as TaskComponent[]) || [];
 
     return (
         <div className="max-w-6xl mx-auto space-y-6 h-full flex flex-col">

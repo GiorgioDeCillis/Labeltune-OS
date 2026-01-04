@@ -1,23 +1,35 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FormComponent } from '@/components/builder/TaskBuilder';
+import { TaskComponent } from '@/components/builder/types';
 import { useRouter } from 'next/navigation';
-import { Loader2, ThumbsUp, ThumbsDown, Save } from 'lucide-react';
+import { Loader2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { approveTask, rejectTask } from '@/app/dashboard/review/actions';
+import {
+    ImageObject,
+    TextObject,
+    AudioObject,
+    HeaderComponent,
+    ChoicesControl,
+    RatingControl,
+    TextAreaControl,
+    ImageLabelsControl
+} from '@/components/builder/Renderers';
 
 export function ReviewTaskRenderer({
     schema,
     taskId,
     initialData
 }: {
-    schema: FormComponent[],
+    schema: TaskComponent[],
     taskId: string,
     initialData?: any
 }) {
     const [formData, setFormData] = useState<any>(initialData || {});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const router = useRouter();
+
+    // Hack: if initialData has '$image' keys etc, use them.
+    const taskData = initialData || {};
 
     const handleChange = (id: string, value: any) => {
         setFormData((prev: any) => ({ ...prev, [id]: value }));
@@ -29,7 +41,6 @@ export function ReviewTaskRenderer({
         setIsSubmitting(true);
         try {
             await approveTask(taskId, formData);
-            // Router redirect handled in server action, but in client component we might need to wait or handle manually if server action redirect doesn't trigger full page reload effectively in some next.js versions, but usually it does.
         } catch (e) {
             console.error(e);
             alert('Failed to approve task');
@@ -52,20 +63,25 @@ export function ReviewTaskRenderer({
 
     return (
         <div className="flex flex-col h-full">
-            <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
-                {schema.map((component) => (
-                    <div key={component.id} className="space-y-2">
-                        {component.type !== 'markdown_display' && (
-                            <label className="text-sm font-bold block">
-                                {component.label} {component.required && <span className="text-red-400">*</span>}
-                            </label>
-                        )}
+            <div className="flex-1 space-y-8 overflow-y-auto pr-2 custom-scrollbar p-1">
+                {schema.map((component) => {
+                    // Objects
+                    if (component.type === 'Image') return <ImageObject key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'Text') return <TextObject key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'Audio') return <AudioObject key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'Header') return <HeaderComponent key={component.id} component={component} />;
 
-                        <div className="text-xs text-muted-foreground mb-1">{component.description}</div>
+                    // Controls
+                    const value = formData[component.name] || formData[component.id];
+                    const onChange = (val: any) => handleChange(component.name || component.id, val);
 
-                        {renderInput(component, formData[component.id], (val) => handleChange(component.id, val))}
-                    </div>
-                ))}
+                    if (component.type === 'Choices') return <ChoicesControl key={component.id} component={component} value={value} onChange={onChange} />;
+                    if (component.type === 'Rating') return <RatingControl key={component.id} component={component} value={value} onChange={onChange} />;
+                    if (component.type === 'TextArea') return <TextAreaControl key={component.id} component={component} value={value} onChange={onChange} />;
+                    if (component.type === 'Labels' || component.type === 'RectangleLabels') return <ImageLabelsControl key={component.id} component={component} value={value} onChange={onChange} />;
+
+                    return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
+                })}
             </div>
 
             <div className="pt-6 border-t border-white/5 grid grid-cols-2 gap-4 mt-4">
@@ -86,58 +102,6 @@ export function ReviewTaskRenderer({
                     Approve & Validate
                 </button>
             </div>
-        </div>
-    );
-}
-
-// Duplicated helper for now to avoid circular deps or weird imports, can be shared in utils later
-function renderInput(
-    component: FormComponent,
-    value: any,
-    onChange: (val: any) => void
-) {
-    if (component.type === 'text_input') {
-        return (
-            <input
-                type="text"
-                value={value || ''}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder={component.placeholder}
-                className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50"
-            />
-        );
-    }
-    // ... Simplified renderer for other types
-    if (component.type === 'textarea') {
-        return (
-            <textarea
-                value={value || ''}
-                onChange={(e) => onChange(e.target.value)}
-                rows={4}
-                placeholder={component.placeholder}
-                className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 resize-none"
-            />
-        );
-    }
-    if (component.type === 'single_select') {
-        return (
-            <select
-                value={value || ''}
-                onChange={(e) => onChange(e.target.value)}
-                className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50"
-            >
-                <option value="">Select an option</option>
-                {component.options?.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                ))}
-            </select>
-        )
-    }
-    // Minimal fallback for others
-    return (
-        <div className="p-2 border border-white/10 rounded-lg bg-white/5 text-sm text-muted-foreground">
-            {component.type} - Value: {JSON.stringify(value)}
-            {/* Full implementation would copy TaskRenderer logic */}
         </div>
     );
 }

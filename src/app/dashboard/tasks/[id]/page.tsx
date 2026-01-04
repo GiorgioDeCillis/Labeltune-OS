@@ -4,7 +4,7 @@ import { claimTask } from '../actions';
 import { ChevronLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { TaskRenderer } from '@/components/TaskRenderer';
-import { FormComponent } from '@/components/builder/TaskBuilder';
+import { TaskComponent } from '@/components/builder/types';
 
 export default async function TaskLabelingPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -23,7 +23,7 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
 
     const isAssignedToMe = task.assigned_to === user.id;
     const canClaim = !task.assigned_to;
-    const templateSchema = (task.projects?.template_schema as FormComponent[]) || [];
+    const templateSchema = (task.projects?.template_schema as TaskComponent[]) || [];
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 h-full flex flex-col">
