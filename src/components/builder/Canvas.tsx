@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDroppable } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FormComponent } from './TaskBuilder';
@@ -10,16 +11,23 @@ export function Canvas({ components, selectedId, onSelect, onDelete }: {
     onSelect: (id: string) => void,
     onDelete: (id: string) => void
 }) {
+    const { setNodeRef } = useDroppable({
+        id: 'canvas-droppable',
+    });
+
     if (components.length === 0) {
         return (
-            <div className="flex-1 border-2 border-dashed border-white/10 rounded-xl flex items-center justify-center text-muted-foreground">
+            <div
+                ref={setNodeRef}
+                className="flex-1 border-2 border-dashed border-white/10 rounded-xl flex items-center justify-center text-muted-foreground"
+            >
                 Drag components here to build your template
             </div>
         );
     }
 
     return (
-        <div className="flex-1 space-y-4 overflow-y-auto pr-2">
+        <div ref={setNodeRef} className="flex-1 space-y-4 overflow-y-auto pr-2">
             {components.map((component) => (
                 <SortableComponent
                     key={component.id}
@@ -60,8 +68,8 @@ function SortableComponent({ component, isSelected, onSelect, onDelete }: {
             {...listeners}
             onClick={onSelect}
             className={`p-4 rounded-xl border-2 cursor-default transition-all group relative ${isSelected
-                    ? 'border-primary bg-primary/5'
-                    : 'border-transparent bg-white/5 hover:border-white/10'
+                ? 'border-primary bg-primary/5'
+                : 'border-transparent bg-white/5 hover:border-white/10'
                 }`}
         >
             <div className="pointer-events-none">

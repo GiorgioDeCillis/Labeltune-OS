@@ -56,7 +56,7 @@ export function TaskBuilder({ project }: { project: any }) {
                 type,
                 label: `New ${type.replace('_', ' ')}`,
                 required: false,
-                options: type.includes('select') ? ['Option 1', 'Option 2'] : undefined
+                options: (type === 'single_select' || type === 'multi_select') ? ['Option 1', 'Option 2'] : undefined
             };
             setComponents((items) => [...items, newComponent]);
             setSelectedId(newComponent.id);
