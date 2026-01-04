@@ -152,3 +152,92 @@ export async function updateProjectInstructions(projectId: string, guidelines: s
 
     revalidatePath(`/dashboard/projects/${projectId}`);
 }
+
+export async function assignUserToProject(projectId: string, userId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Verify admin/pm
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'pm' && profile?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const { error } = await supabase
+        .from('project_assignees')
+        .insert({
+            project_id: projectId,
+            user_id: userId
+        });
+
+    if (error) {
+        console.error('Error assigning user:', error);
+        throw new Error('Failed to assign user');
+    }
+
+    revalidatePath(`/dashboard/projects/${projectId}/team`);
+}
+
+export async function removeUserFromProject(projectId: string, userId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Verify admin/pm
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'pm' && profile?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const { error } = await supabase
+        .from('project_assignees')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('Error removing user:', error);
+        throw new Error('Failed to remove user');
+    }
+
+    revalidatePath(`/dashboard/projects/${projectId}/team`);
+}
+
+export async function searchProfiles(query: string, tags: string[] = []) {
+    const supabase = await createClient();
+
+    let dbQuery = supabase
+        .from('profiles')
+        .select('*')
+        .order('role');
+
+    if (query) {
+        dbQuery = dbQuery.or(`full_name.ilike.%${query}%,email.ilike.%${query}%,id.eq.${query}`);
+    }
+
+    if (tags && tags.length > 0) {
+        dbQuery = dbQuery.contains('tags', tags);
+    }
+
+    const { data, error } = await dbQuery;
+
+    if (error) {
+        console.error('Error searching profiles:', error);
+        return [];
+    }
+
+    return data;
+}
