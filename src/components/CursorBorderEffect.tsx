@@ -6,84 +6,79 @@ export const CursorBorderEffect: React.FC = () => {
     const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
     const [borderRadius, setBorderRadius] = useState<string>('0px');
     const [isVisible, setIsVisible] = useState(false);
-    const [currentTarget, setCurrentTarget] = useState<HTMLElement | null>(null);
-    const trailRef = useRef<HTMLDivElement>(null);
+    const lastMousePos = useRef({ x: 0, y: 0 });
+    const currentTargetRef = useRef<HTMLElement | null>(null);
 
-    // Update rect based on current target
-    const updateRect = useCallback(() => {
-        if (currentTarget) {
-            const rect = currentTarget.getBoundingClientRect();
-            setTargetRect(rect);
-            const style = window.getComputedStyle(currentTarget);
-            setBorderRadius(style.borderRadius);
+    const updateTarget = useCallback((clientX: number, clientY: number) => {
+        const target = document.elementFromPoint(clientX, clientY) as HTMLElement;
+        if (!target) {
+            setIsVisible(false);
+            currentTargetRef.current = null;
+            return;
         }
-    }, [currentTarget]);
 
-    const handleMouseMove = useCallback((e: MouseEvent) => {
-        const target = e.target as HTMLElement;
-
-        // Find the nearest meaningful interactive parent or the element itself
-        const interactiveTarget = target.closest('button, a, input, select, textarea, [role="button"], .glass-panel, .hyprland-window, .cursor-pointer, .card');
-
-        // Check if inside sidebar
-        const isInsideSidebar = target.closest('aside') || (target.closest('.Sidebar') !== null);
+        const interactiveTarget = target.closest('button, a, input, select, textarea, [role="button"], .glass-panel, .hyprland-window, .cursor-pointer, .card') as HTMLElement;
+        const isInsideSidebar = target.closest('aside') || target.closest('.Sidebar') !== null;
 
         if (interactiveTarget && !isInsideSidebar) {
-            if (currentTarget !== interactiveTarget) {
-                setCurrentTarget(interactiveTarget as HTMLElement);
-            }
+            const rect = interactiveTarget.getBoundingClientRect();
+            const style = window.getComputedStyle(interactiveTarget);
+            setBorderRadius(style.borderRadius);
+            setTargetRect(rect);
             setIsVisible(true);
+            currentTargetRef.current = interactiveTarget;
         } else {
             setIsVisible(false);
-            setCurrentTarget(null);
+            currentTargetRef.current = null;
         }
-    }, [currentTarget]);
+    }, []);
 
-    // Track scroll and resize
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        lastMousePos.current = { x: e.clientX, y: e.clientY };
+        updateTarget(e.clientX, e.clientY);
+    }, [updateTarget]);
+
+    const handleScroll = useCallback(() => {
+        // When scrolling, re-check what's under the last known mouse position
+        updateTarget(lastMousePos.current.x, lastMousePos.current.y);
+    }, [updateTarget]);
+
     useLayoutEffect(() => {
-        const main = document.querySelector('main');
-
-        const sync = () => {
-            updateRect();
-        };
-
-        if (main) {
-            main.addEventListener('scroll', sync, { passive: true });
-        }
-        window.addEventListener('resize', sync);
         window.addEventListener('mousemove', handleMouseMove);
+        // Use capturing phase for scroll to ensure we catch it from any scrollable container
+        window.addEventListener('scroll', handleScroll, true);
+        window.addEventListener('resize', handleScroll);
 
-        // Continuous sync when visible to handle animations/shifts
+        // Continuous sync to handle any other layout shifts or animations
         let rafId: number;
         const tick = () => {
-            if (isVisible) {
-                updateRect();
+            if (currentTargetRef.current && isVisible) {
+                const rect = currentTargetRef.current.getBoundingClientRect();
+                setTargetRect(rect);
             }
             rafId = requestAnimationFrame(tick);
         };
         rafId = requestAnimationFrame(tick);
 
         return () => {
-            main?.removeEventListener('scroll', sync);
-            window.removeEventListener('resize', sync);
             window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('scroll', handleScroll, true);
+            window.removeEventListener('resize', handleScroll);
             cancelAnimationFrame(rafId);
         };
-    }, [handleMouseMove, updateRect, isVisible]);
+    }, [handleMouseMove, handleScroll, isVisible]);
 
     if (!targetRect || !isVisible) return null;
 
     return (
         <div
-            ref={trailRef}
             className="fixed pointer-events-none z-[9999] top-0 left-0"
             style={{
                 transform: `translate(${targetRect.left - 2}px, ${targetRect.top - 2}px)`,
                 width: targetRect.width + 4,
                 height: targetRect.height + 4,
                 borderRadius: `calc(${borderRadius} + 2px)`,
-                // We keep a very fast transition for smoothness during element shifts, but snap on big jumps
-                transition: 'transform 0.1s ease-out, width 0.1s ease-out, height 0.1s ease-out, border-radius 0.1s ease-out',
+                transition: 'transform 0.05s linear, width 0.1s ease-out, height 0.1s ease-out, border-radius 0.1s ease-out',
             }}
         >
             <div

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Rethink_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { CursorBorderEffect } from "@/components/CursorBorderEffect";
 
 const rethinkSans = Rethink_Sans({
   variable: "--font-rethink-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${rethinkSans.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
+          <CursorBorderEffect />
           {children}
         </ThemeProvider>
       </body>
