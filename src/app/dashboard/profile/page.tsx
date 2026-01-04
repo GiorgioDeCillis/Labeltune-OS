@@ -3,7 +3,7 @@
 import { useTheme } from '@/context/ThemeContext';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles, Camera, Loader2 } from 'lucide-react';
+import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles, Camera, Loader2, Copy, Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
@@ -16,6 +16,7 @@ export default function ProfilePage() {
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [copied, setCopied] = useState(false);
     const supabase = createClient();
 
     useEffect(() => {
@@ -75,6 +76,13 @@ export default function ProfilePage() {
         } finally {
             setIsUploading(false);
         }
+    };
+
+    const handleCopyId = () => {
+        if (!user?.id) return;
+        navigator.clipboard.writeText(user.id);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     const wallpaperOptions = {
@@ -143,6 +151,21 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 uppercase tracking-wider">
                             <Shield className="w-4 h-4" />
                             <span className="text-sm font-bold">{profile?.role || user?.user_metadata?.role || 'Annotator'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 group/id transition-all hover:bg-white/10">
+                            <span className="text-[10px] font-bold uppercase opacity-40">Labeltune ID</span>
+                            <span className="text-sm font-mono opacity-70">{user?.id?.slice(0, 8)}...</span>
+                            <button
+                                onClick={handleCopyId}
+                                className="p-1 hover:bg-white/10 rounded-md transition-colors"
+                                title="Copy ID"
+                            >
+                                {copied ? (
+                                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                ) : (
+                                    <Copy className="w-3.5 h-3.5 opacity-40 group-hover/id:opacity-100 transition-opacity" />
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
