@@ -9,6 +9,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Plus, Trash2, Save, X, Video, FileText } from 'lucide-react';
 import { QuizBuilder } from './QuizBuilder';
+import { useToast } from '@/components/Toast';
 
 interface CourseBuilderProps {
     projectId?: string;
@@ -18,6 +19,7 @@ interface CourseBuilderProps {
 
 export function CourseBuilder({ projectId: initialProjectId, existingCourse, projects }: CourseBuilderProps) {
     const router = useRouter();
+    const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [selectedProjectId, setSelectedProjectId] = useState(initialProjectId || existingCourse?.project_id || '');
 
@@ -132,11 +134,13 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
             } else {
                 router.push('/dashboard/courses');
             }
+            showToast('Course saved successfully!', 'success');
             router.refresh();
 
         } catch (error) {
             console.error(error);
-            alert('Failed to save course');
+            const message = error instanceof Error ? error.message : 'Failed to save course';
+            showToast(message, 'error');
         } finally {
             setIsLoading(false);
         }

@@ -38,12 +38,14 @@ export async function updateCourse(courseId: string, data: Partial<Course>) {
         .update({
             title: data.title,
             description: data.description,
-            duration: data.duration
+            duration: data.duration,
+            updated_at: new Date().toISOString()
         })
         .eq('id', courseId);
 
     if (error) throw new Error(error.message);
     revalidatePath(`/dashboard/courses/${courseId}`);
+    revalidatePath('/dashboard/courses');
 }
 
 export async function createLesson(courseId: string, data: Partial<Lesson>) {
