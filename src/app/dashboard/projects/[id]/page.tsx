@@ -36,6 +36,20 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         .eq('project_id', project.id)
         .order('created_at', { ascending: true });
 
+    // For non-admins, check if they are assigned and active
+    if (!isPM) {
+        const { data: assignment } = await supabase
+            .from('project_assignees')
+            .select('status')
+            .eq('project_id', id)
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+        if (!assignment || assignment.status !== 'active') {
+            redirect('/dashboard');
+        }
+    }
+
     if (isPM) {
         return (
             <div className="space-y-8">

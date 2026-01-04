@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { User, CheckCircle, XCircle, Trash2, Plus, Search } from 'lucide-react';
-import { assignUserToProject, removeUserFromProject } from '@/app/dashboard/projects/actions';
+import { User, CheckCircle, XCircle, Trash2, Plus, Search, Pause, Play, ArrowLeft, Users } from 'lucide-react';
+import { assignUserToProject, removeUserFromProject, updateAssigneeStatus } from '@/app/dashboard/projects/actions';
 import { useToast } from '@/components/Toast';
 
 interface TeamMember {
@@ -16,6 +16,7 @@ interface TeamMember {
     totalCourses: number;
     isQualified: boolean;
     isAssigned: boolean;
+    status: 'active' | 'paused' | 'inactive';
 }
 
 interface TeamManagementClientProps {
@@ -29,30 +30,52 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [filterQuery, setFilterQuery] = useState('');
     const [tagFilter, setTagFilter] = useState('');
+    const [showAddView, setShowAddView] = useState(false);
 
-    const toggleAssignment = async (member: TeamMember) => {
+    const handleAssign = async (member: TeamMember) => {
         if (processingId) return;
+        setProcessingId(member.id);
+        try {
+            await assignUserToProject(projectId, member.id);
+            showToast('Member added to team', 'success');
+            setMembers(prev => prev.map(m => m.id === member.id ? { ...m, isAssigned: true, status: 'active' } : m));
+        } catch (error) {
+            console.error('Failed to add member:', error);
+            showToast('Failed to add member', 'error');
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    const handleRemove = async (member: TeamMember) => {
+        if (processingId) return;
+        if (!confirm('Are you sure you want to remove this member from the project?')) return;
 
         setProcessingId(member.id);
         try {
-            if (member.isAssigned) {
-                // Remove
-                if (!confirm('Are you sure you want to remove this member?')) {
-                    setProcessingId(null);
-                    return;
-                }
-                await removeUserFromProject(projectId, member.id);
-                showToast('Member removed', 'success');
-                setMembers(prev => prev.map(m => m.id === member.id ? { ...m, isAssigned: false } : m));
-            } else {
-                // Add
-                await assignUserToProject(projectId, member.id);
-                showToast('Member added', 'success');
-                setMembers(prev => prev.map(m => m.id === member.id ? { ...m, isAssigned: true } : m));
-            }
+            await removeUserFromProject(projectId, member.id);
+            showToast('Member removed from team', 'success');
+            setMembers(prev => prev.map(m => m.id === member.id ? { ...m, isAssigned: false, status: 'inactive' } : m));
         } catch (error) {
-            console.error('Failed to update assignment:', error);
-            showToast('Failed to update assignment', 'error');
+            console.error('Failed to remove member:', error);
+            showToast('Failed to remove member', 'error');
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    const handleToggleStatus = async (member: TeamMember) => {
+        if (processingId) return;
+        const newStatus = member.status === 'active' ? 'paused' : 'active';
+
+        setProcessingId(member.id);
+        try {
+            await updateAssigneeStatus(projectId, member.id, newStatus);
+            showToast(`Member ${newStatus === 'active' ? 'resumed' : 'paused'}`, 'success');
+            setMembers(prev => prev.map(m => m.id === member.id ? { ...m, status: newStatus } : m));
+        } catch (error) {
+            console.error('Failed to update status:', error);
+            showToast('Failed to update status', 'error');
         } finally {
             setProcessingId(null);
         }
@@ -61,6 +84,13 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
     const normalize = (str?: string) => (str || '').toLowerCase();
 
     const filteredMembers = members.filter(m => {
+        // Apply view filter (Team vs Add)
+        if (showAddView) {
+            if (m.isAssigned) return false;
+        } else {
+            if (!m.isAssigned) return false;
+        }
+
         const matchesQuery =
             normalize(m.full_name).includes(normalize(filterQuery)) ||
             normalize(m.email).includes(normalize(filterQuery));
@@ -70,21 +100,37 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
         return matchesQuery && matchesTag;
     });
 
-    // Sort: Assigned first, then by name
     const sortedMembers = [...filteredMembers].sort((a, b) => {
-        if (a.isAssigned === b.isAssigned) {
-            return (a.full_name || '').localeCompare(b.full_name || '');
-        }
-        return a.isAssigned ? -1 : 1;
+        return (a.full_name || '').localeCompare(b.full_name || '');
     });
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Project Workers</h2>
-                    <p className="text-muted-foreground">Manage annotators and verify qualifications.</p>
+                    <h2 className="text-3xl font-bold tracking-tight">
+                        {showAddView ? 'Add Members' : 'Project Workers'}
+                    </h2>
+                    <p className="text-muted-foreground">
+                        {showAddView
+                            ? 'Search and add new workers to the project.'
+                            : 'Manage currently assigned workers and their status.'}
+                    </p>
                 </div>
+                <button
+                    onClick={() => setShowAddView(!showAddView)}
+                    className="px-4 py-2 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                >
+                    {showAddView ? (
+                        <>
+                            <ArrowLeft className="w-4 h-4" /> Back to Team
+                        </>
+                    ) : (
+                        <>
+                            <Plus className="w-4 h-4" /> Add Members
+                        </>
+                    )}
+                </button>
             </div>
 
             <div className="glass-panel rounded-xl overflow-hidden p-4 space-y-4">
@@ -118,13 +164,13 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                                 <th className="p-4">User</th>
                                 <th className="p-4">Tags</th>
                                 <th className="p-4">Role</th>
-                                <th className="p-4">Assignment</th>
+                                {!showAddView && <th className="p-4">Status</th>}
                                 <th className="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {sortedMembers.map((worker) => (
-                                <tr key={worker.id} className={`hover:bg-white/5 transition-colors ${worker.isAssigned ? 'bg-primary/5' : ''}`}>
+                                <tr key={worker.id} className="hover:bg-white/5 transition-colors">
                                     <td className="p-4 font-medium flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary overflow-hidden">
                                             {worker.avatar_url ? (
@@ -152,39 +198,64 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                                             {worker.role}
                                         </span>
                                     </td>
-                                    <td className="p-4">
-                                        {worker.isAssigned ? (
-                                            <span className="text-green-500 font-bold text-xs flex items-center gap-1">
-                                                <CheckCircle className="w-3 h-3" /> Assigned
-                                            </span>
-                                        ) : (
-                                            <span className="text-muted-foreground font-bold text-xs">Not Assigned</span>
-                                        )}
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        <button
-                                            onClick={() => toggleAssignment(worker)}
-                                            disabled={processingId === worker.id}
-                                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors flex items-center gap-2 ml-auto disabled:opacity-50 ${worker.isAssigned
-                                                ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
-                                                : 'bg-primary/10 text-primary hover:bg-primary/20'
-                                                }`}
-                                        >
-                                            {processingId === worker.id ? 'Updating...' : (
-                                                worker.isAssigned ? (
-                                                    <><Trash2 className="w-3 h-3" /> Remove</>
-                                                ) : (
-                                                    <><Plus className="w-3 h-3" /> Add to Team</>
-                                                )
+                                    {!showAddView && (
+                                        <td className="p-4">
+                                            {worker.status === 'active' ? (
+                                                <span className="text-green-500 font-bold text-xs flex items-center gap-1">
+                                                    <CheckCircle className="w-3 h-3" /> Active
+                                                </span>
+                                            ) : (
+                                                <span className="text-yellow-500 font-bold text-xs flex items-center gap-1">
+                                                    <Pause className="w-3 h-3" /> Paused
+                                                </span>
                                             )}
-                                        </button>
+                                        </td>
+                                    )}
+                                    <td className="p-4 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            {showAddView ? (
+                                                <button
+                                                    onClick={() => handleAssign(worker)}
+                                                    disabled={processingId === worker.id}
+                                                    className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                                                >
+                                                    {processingId === worker.id ? 'Adding...' : <><Plus className="w-3 h-3" /> Add to Team</>}
+                                                </button>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleToggleStatus(worker)}
+                                                        disabled={processingId === worker.id}
+                                                        title={worker.status === 'active' ? 'Pause worker' : 'Resume worker'}
+                                                        className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${worker.status === 'active'
+                                                                ? 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20'
+                                                                : 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
+                                                            }`}
+                                                    >
+                                                        {processingId === worker.id ? '...' : (
+                                                            worker.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />
+                                                        )}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleRemove(worker)}
+                                                        disabled={processingId === worker.id}
+                                                        title="Remove from project"
+                                                        className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50"
+                                                    >
+                                                        {processingId === worker.id ? '...' : <Trash2 className="w-4 h-4" />}
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                             {sortedMembers.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="p-8 text-center text-muted-foreground text-sm">
-                                        No users found matching your filter.
+                                        {showAddView
+                                            ? 'No eligible users found to add.'
+                                            : 'No workers assigned to this project yet.'}
                                     </td>
                                 </tr>
                             )}

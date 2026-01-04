@@ -43,10 +43,11 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
     // 3. Fetch current assignments for this project
     const { data: assignments } = await supabase
         .from('project_assignees')
-        .select('user_id')
+        .select('user_id, status')
         .eq('project_id', id);
 
-    const assignedUserIds = new Set(assignments?.map(a => a.user_id) || []);
+    const assignmentMap = new Map((assignments || []).map(a => [a.user_id, a.status || 'active']));
+    const assignedUserIds = new Set(assignmentMap.keys());
 
     // 4. Fetch All Progress for this project's courses
     // Optimization: only fetch if there are courses
@@ -67,13 +68,15 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
         const totalCourses = requiredCourseIds.length;
         const isQualified = totalCourses === 0 || completedCourses === totalCourses;
         const isAssigned = assignedUserIds.has(u.id);
+        const status = assignmentMap.get(u.id) || 'inactive'; // Use 'inactive' for unassigned users
 
         return {
             ...u,
             completedCourses,
             totalCourses,
             isQualified,
-            isAssigned
+            isAssigned,
+            status
         };
     });
 

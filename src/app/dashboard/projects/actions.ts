@@ -241,3 +241,34 @@ export async function searchProfiles(query: string, tags: string[] = []) {
 
     return data;
 }
+
+export async function updateAssigneeStatus(projectId: string, userId: string, status: 'active' | 'paused') {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Verify admin/pm
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'pm' && profile?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const { error } = await supabase
+        .from('project_assignees')
+        .update({ status })
+        .eq('project_id', projectId)
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('Error updating assignee status:', error);
+        throw new Error('Failed to update status');
+    }
+
+    revalidatePath(`/dashboard/projects/${projectId}/team`);
+}

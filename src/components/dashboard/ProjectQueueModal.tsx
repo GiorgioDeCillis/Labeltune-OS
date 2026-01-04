@@ -41,7 +41,8 @@ export default function ProjectQueueModal({ isOpen, onClose, userId }: ProjectQu
                 project_id,
                 projects:projects (*)
             `)
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .eq('status', 'active');
 
         if (error) {
             console.error('Error fetching assigned projects:', error);
@@ -130,8 +131,8 @@ export default function ProjectQueueModal({ isOpen, onClose, userId }: ProjectQu
                                                     <div className="flex items-center justify-between mt-4">
                                                         <div className="flex gap-3 text-xs text-muted-foreground">
                                                             <span className={`px-2 py-0.5 rounded-full border ${project.status === 'active'
-                                                                    ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/5'
-                                                                    : 'border-white/10'
+                                                                ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/5'
+                                                                : 'border-white/10'
                                                                 }`}>
                                                                 {project.status}
                                                             </span>
