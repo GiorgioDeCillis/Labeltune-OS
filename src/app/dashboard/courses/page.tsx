@@ -30,7 +30,7 @@ export default async function CoursesPage() {
                 </div>
                 {isAdmin && (
                     <Link href="/dashboard/courses/new">
-                        <button className="px-6 py-2.5 bg-primary text-primary-foreground font-black rounded-xl hover:scale-[1.02] transition-all shadow-lg flex items-center gap-2">
+                        <button className="px-6 py-2.5 bg-primary text-primary-foreground font-black rounded-xl hover:opacity-90 transition-opacity shadow-lg flex items-center gap-2">
                             <BookOpen className="w-4 h-4" />
                             NEW COURSE
                         </button>
@@ -44,7 +44,7 @@ export default async function CoursesPage() {
                         <Link
                             key={course.id}
                             href={`/dashboard/courses/${course.id}`}
-                            className="glass-panel p-6 rounded-2xl hover:scale-[1.02] transition-all group flex flex-col gap-4 border border-white/5"
+                            className="glass-panel p-6 rounded-2xl hover:bg-white/5 transition-colors group flex flex-col gap-4 border border-white/5"
                         >
                             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors shadow-lg">
                                 <BookOpen className="w-6 h-6" />

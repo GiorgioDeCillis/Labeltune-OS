@@ -12,7 +12,6 @@ export const CursorBorderEffect: React.FC = () => {
         const container = containerRef.current;
         if (!container) return;
 
-        // Use CSS custom properties to avoid layout triggers
         const updatePosition = (x: number, y: number, w: number, h: number) => {
             container.style.setProperty('--tx', `${x}px`);
             container.style.setProperty('--ty', `${y}px`);
@@ -108,7 +107,9 @@ export const CursorBorderEffect: React.FC = () => {
                     inset: 0,
                     border: '2px solid var(--primary)',
                     borderRadius: 'inherit',
-                    // Removed box-shadow for performance
+                    boxShadow: '0 0 10px var(--primary)',
+                    WebkitMaskImage: 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
+                    maskImage: 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
                 }}
             />
         </div>

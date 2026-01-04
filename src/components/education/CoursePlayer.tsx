@@ -144,7 +144,7 @@ export function CoursePlayer({ course, completedLessonIds = [] }: CoursePlayerPr
                                         {hasNext ? (
                                             <button
                                                 onClick={handleNext}
-                                                className="px-6 py-3 bg-white text-black font-bold rounded-lg hover:bg-white/90 flex items-center gap-2 transform hover:scale-105 transition-all"
+                                                className="px-6 py-3 bg-white text-black font-bold rounded-lg hover:bg-white/90 flex items-center gap-2 transition-colors"
                                             >
                                                 Next Lesson <ChevronRight className="w-4 h-4" />
                                             </button>
