@@ -96,7 +96,6 @@ export const CursorBorderEffect: React.FC = () => {
                 height: 'var(--th, 0)',
                 borderRadius: 'var(--br, 0)',
                 opacity: 'var(--opacity, 0)',
-                contain: 'layout style',
                 willChange: 'transform, opacity',
             }}
         >
