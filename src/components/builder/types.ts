@@ -56,7 +56,7 @@ export interface TaskComponent {
     rubricCriteria?: {
         id: string;
         title: string;
-        points: number;
+        points?: number;
         category?: string;
         description?: string;
     }[]; // For RubricScorer

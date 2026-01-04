@@ -412,9 +412,10 @@ export function RubricScorerControl({ component, value, onChange, readOnly }: {
     };
 
     const getScorePoints = (criterion: any, score: string | undefined) => {
+        const basePoints = criterion.points || 0;
         switch (score) {
-            case 'full': return criterion.points;
-            case 'partial': return Math.floor(criterion.points * 0.6);
+            case 'full': return basePoints;
+            case 'partial': return Math.floor(basePoints * 0.6);
             case 'none': return 0;
             default: return null;
         }
