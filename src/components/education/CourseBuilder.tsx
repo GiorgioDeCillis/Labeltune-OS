@@ -15,9 +15,11 @@ interface CourseBuilderProps {
     projectId?: string;
     existingCourse?: Course & { lessons: Lesson[] };
     projects?: { id: string, name: string }[];
+    onSaveSuccess?: (courseId: string) => void;
+    onCancel?: () => void;
 }
 
-export function CourseBuilder({ projectId: initialProjectId, existingCourse, projects }: CourseBuilderProps) {
+export function CourseBuilder({ projectId: initialProjectId, existingCourse, projects, onSaveSuccess, onCancel }: CourseBuilderProps) {
     const router = useRouter();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
@@ -129,13 +131,18 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
                 }
             }
 
-            if (selectedProjectId) {
-                router.push(`/dashboard/projects/${selectedProjectId}`);
-            } else {
-                router.push('/dashboard/courses');
-            }
             showToast('Course saved successfully!', 'success');
-            router.refresh();
+
+            if (onSaveSuccess && courseId) {
+                onSaveSuccess(courseId);
+            } else {
+                if (selectedProjectId) {
+                    router.push(`/dashboard/projects/${selectedProjectId}`);
+                } else {
+                    router.push('/dashboard/courses');
+                }
+                router.refresh();
+            }
 
         } catch (error) {
             console.error(error);
