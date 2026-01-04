@@ -19,7 +19,6 @@ export function Navbar({ user, initialAvatar }: { user: any, initialAvatar?: str
         <header className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-40">
             <div className="flex items-center gap-4">
                 {/* Breadcrumbs can go here */}
-                <span className="text-sm text-white/50">Dashboard</span>
             </div>
 
             <div className="flex items-center gap-4">
