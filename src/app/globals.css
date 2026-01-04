@@ -158,8 +158,8 @@
 @layer components {
   .glass-panel {
     @apply relative overflow-hidden;
-    background: rgba(15, 15, 25, 0.75);
-    backdrop-filter: blur(20px) saturate(160%);
+    background: rgba(15, 15, 25, var(--glass-opacity));
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
     color: white;

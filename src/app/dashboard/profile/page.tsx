@@ -3,12 +3,12 @@
 import { useTheme } from '@/context/ThemeContext';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { User, Mail, Shield, Zap, Palette, Image as ImageIcon } from 'lucide-react';
+import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
 export default function ProfilePage() {
-    const { theme, setTheme, wallpaper, setWallpaper } = useTheme();
+    const { theme, setTheme, wallpaper, setWallpaper, blur, setBlur, transparency, setTransparency } = useTheme();
     const [user, setUser] = useState<any>(null);
     const supabase = createClient();
 
@@ -146,6 +146,57 @@ export default function ProfilePage() {
                     </div>
                 </motion.section>
             </div>
+
+            {/* Appearance Settings */}
+            <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="glass-panel p-6 rounded-3xl space-y-8"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <Sparkles className="text-primary w-5 h-5" />
+                    </div>
+                    <h3 className="text-xl font-bold">Advanced Appearance</h3>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-12">
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <label className="font-bold text-sm uppercase tracking-wider opacity-60">Background Blur</label>
+                            <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded text-xs">{blur}px</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="0"
+                            max="20"
+                            step="1"
+                            value={blur}
+                            onChange={(e) => setBlur(parseInt(e.target.value))}
+                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        <p className="text-xs text-muted-foreground">Adjust the depth of field for the desktop wallpaper.</p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <label className="font-bold text-sm uppercase tracking-wider opacity-60">Glass Transparency</label>
+                            <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded text-xs">{Math.round(transparency * 100)}%</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="0.1"
+                            max="0.95"
+                            step="0.05"
+                            value={transparency}
+                            onChange={(e) => setTransparency(parseFloat(e.target.value))}
+                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        <p className="text-xs text-muted-foreground">Regulate the opacity of all interface panels.</p>
+                    </div>
+                </div>
+            </motion.section>
         </div>
     );
 }
