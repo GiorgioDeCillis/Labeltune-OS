@@ -3,6 +3,23 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, GripVertical, FileText, Download, Eye } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 export interface InstructionSection {
     id: string;
@@ -15,11 +32,80 @@ interface InstructionsStepProps {
     onChange: (sections: InstructionSection[]) => void;
 }
 
+function SortableSectionItem({
+    section,
+    isActive,
+    onSelect,
+    onDelete,
+    onUpdateTitle
+}: {
+    section: InstructionSection;
+    isActive: boolean;
+    onSelect: () => void;
+    onDelete: (id: string) => void;
+    onUpdateTitle: (id: string, title: string) => void;
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: section.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 10 : 1,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            onClick={onSelect}
+            className={`group p-3 rounded-lg flex items-center justify-between cursor-pointer transition-all border ${isActive ? 'bg-primary/10 border-primary/30 text-primary' : 'hover:bg-white/5 border-transparent text-muted-foreground hover:text-white'
+                }`}
+        >
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing hover:text-white transition-colors p-1 -ml-1">
+                    <GripVertical className="w-4 h-4 opacity-30" />
+                </div>
+                <input
+                    value={section.title}
+                    onChange={(e) => onUpdateTitle(section.id, e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`text-sm font-medium bg-transparent focus:outline-none w-full ${isActive ? 'text-primary' : 'text-inherit'}`}
+                    placeholder="Enter section title..."
+                />
+            </div>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(section.id);
+                }}
+                className="p-1 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+            >
+                <Trash2 className="w-3 h-3" />
+            </button>
+        </div>
+    );
+}
+
 export function InstructionsStep({ sections, onChange }: InstructionsStepProps) {
     const [activeSectionId, setActiveSectionId] = useState<string | null>(
         sections.length > 0 ? sections[0].id : null
     );
     const [isPreview, setIsPreview] = useState(false);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     const handleAddSection = () => {
         const newSection: InstructionSection = {
@@ -42,6 +128,17 @@ export function InstructionsStep({ sections, onChange }: InstructionsStepProps) 
         onChange(updated);
         if (activeSectionId === id) {
             setActiveSectionId(updated.length > 0 ? updated[0].id : null);
+        }
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (over && active.id !== over.id) {
+            const oldIndex = sections.findIndex((s) => s.id === active.id);
+            const newIndex = sections.findIndex((s) => s.id === over.id);
+
+            onChange(arrayMove(sections, oldIndex, newIndex));
         }
     };
 
@@ -124,28 +221,27 @@ export function InstructionsStep({ sections, onChange }: InstructionsStepProps) 
                         </button>
                     </div>
                     <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                        {sections.map((section) => (
-                            <div
-                                key={section.id}
-                                onClick={() => setActiveSectionId(section.id)}
-                                className={`group p-3 rounded-lg flex items-center justify-between cursor-pointer transition-all ${activeSectionId === section.id ? 'bg-primary/10 border-primary text-primary' : 'hover:bg-white/5 text-muted-foreground hover:text-white'
-                                    }`}
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                        >
+                            <SortableContext
+                                items={sections.map((s) => s.id)}
+                                strategy={verticalListSortingStrategy}
                             >
-                                <div className="flex items-center gap-3 truncate">
-                                    <GripVertical className="w-4 h-4 opacity-30" />
-                                    <span className="text-sm font-medium truncate">{section.title}</span>
-                                </div>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteSection(section.id);
-                                    }}
-                                    className="p-1 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                    <Trash2 className="w-3 h-3" />
-                                </button>
-                            </div>
-                        ))}
+                                {sections.map((section) => (
+                                    <SortableSectionItem
+                                        key={section.id}
+                                        section={section}
+                                        isActive={activeSectionId === section.id}
+                                        onSelect={() => setActiveSectionId(section.id)}
+                                        onDelete={handleDeleteSection}
+                                        onUpdateTitle={(id, title) => handleUpdateSection(id, 'title', title)}
+                                    />
+                                ))}
+                            </SortableContext>
+                        </DndContext>
                     </div>
                 </div>
 
@@ -155,7 +251,7 @@ export function InstructionsStep({ sections, onChange }: InstructionsStepProps) 
                         <div className="flex flex-col h-full">
                             {!isPreview ? (
                                 <>
-                                    <div className="p-4 border-b border-white/10">
+                                    <div className="p-4 border-b border-white/10 bg-white/5">
                                         <input
                                             value={activeSection.title}
                                             onChange={(e) => handleUpdateSection(activeSection.id, 'title', e.target.value)}
@@ -163,7 +259,7 @@ export function InstructionsStep({ sections, onChange }: InstructionsStepProps) 
                                             className="w-full bg-transparent text-xl font-bold focus:outline-none"
                                         />
                                     </div>
-                                    <div className="flex-1 p-4">
+                                    <div className="flex-1 p-4 bg-black/20">
                                         <textarea
                                             value={activeSection.content}
                                             onChange={(e) => handleUpdateSection(activeSection.id, 'content', e.target.value)}
@@ -173,14 +269,14 @@ export function InstructionsStep({ sections, onChange }: InstructionsStepProps) 
                                     </div>
                                 </>
                             ) : (
-                                <div className="p-8 prose prose-invert max-w-none overflow-y-auto h-full">
-                                    <h1 className="text-3xl font-bold mb-6 border-b border-white/10 pb-4">{activeSection.title}</h1>
+                                <div className="p-8 prose prose-invert max-w-none overflow-y-auto h-full bg-black/40">
+                                    <h1 className="text-3xl font-black mb-8 border-b border-white/10 pb-6">{activeSection.title}</h1>
                                     <ReactMarkdown>{activeSection.content || '_No content yet._'}</ReactMarkdown>
                                 </div>
                             )}
                         </div>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-12 text-center">
+                        <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-12 text-center bg-white/5">
                             <FileText className="w-12 h-12 mb-4 opacity-20" />
                             <h4 className="font-bold mb-1">No Section Selected</h4>
                             <p className="text-sm">Create or select a section from the sidebar to start writing guidelines.</p>
