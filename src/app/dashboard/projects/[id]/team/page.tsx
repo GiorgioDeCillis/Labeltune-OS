@@ -20,7 +20,7 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
         redirect('/dashboard');
     }
 
-    // 1. Fetch Project Courses
+    // 1. Fetch Project Courses (for qualification check)
     const { data: courses } = await supabase
         .from('courses')
         .select('id, title')
@@ -28,50 +28,48 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
 
     const requiredCourseIds = courses?.map(c => c.id) || [];
 
-    // 2. Fetch Assigned Users
-    // Join project_assignees with profiles
-    const { data: assignedUsers } = await supabase
+    // 2. Fetch ALL eligible profiles (excluding enterprise_client and guest?)
+    // We want admins, pms, annotators, reviewers.
+    const { data: allProfiles } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, role, avatar_url, tags')
+        .neq('role', 'enterprise_client')
+        .order('full_name');
+
+    // 3. Fetch current assignments for this project
+    const { data: assignments } = await supabase
         .from('project_assignees')
-        .select(`
-            user_id,
-            profiles:user_id (
-                id,
-                email,
-                full_name,
-                role,
-                avatar_url,
-                tags
-            )
-        `)
+        .select('user_id')
         .eq('project_id', id);
 
-    // Extract profiles from the join result
-    const users = assignedUsers?.map((a: any) => a.profiles).filter(Boolean) || [];
+    const assignedUserIds = new Set(assignments?.map(a => a.user_id) || []);
 
-    // 3. Fetch All Progress for this project's courses for the assigned users
-    // Only if there are users, otherwise skip
+    // 4. Fetch All Progress for this project's courses
+    // Optimization: only fetch if there are courses
     let progress: any[] = [];
-    if (requiredCourseIds.length > 0 && users.length > 0) {
+    if (requiredCourseIds.length > 0 && allProfiles && allProfiles.length > 0) {
         const { data: p } = await supabase
             .from('user_course_progress')
             .select('*')
             .in('course_id', requiredCourseIds)
-            .in('user_id', users.map((u: any) => u.id));
+            .in('user_id', allProfiles.map(u => u.id));
         progress = p || [];
     }
 
-    // 4. Determine Qualification Status
-    const team = users.map((u: any) => {
+    // 5. Merge data
+    const team = (allProfiles || []).map((u: any) => {
         const userProgress = progress.filter(p => p.user_id === u.id);
         const completedCourses = userProgress.filter(p => p.status === 'completed').length || 0;
         const totalCourses = requiredCourseIds.length;
         const isQualified = totalCourses === 0 || completedCourses === totalCourses;
+        const isAssigned = assignedUserIds.has(u.id);
 
         return {
             ...u,
             completedCourses,
             totalCourses,
-            isQualified
+            isQualified,
+            isAssigned
         };
     });
 
