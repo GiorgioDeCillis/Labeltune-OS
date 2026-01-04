@@ -33,7 +33,14 @@ export default async function DashboardPage() {
 }
 
 // Sub-components for different roles
-function PMDashboard({ user, profile }: { user: any, profile: any }) {
+async function PMDashboard({ user, profile }: { user: any, profile: any }) {
+    const supabase = await createClient();
+    const { data: recentProjects } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
     return (
         <div className="space-y-6">
             <div>
@@ -41,7 +48,7 @@ function PMDashboard({ user, profile }: { user: any, profile: any }) {
                 <p className="text-white/60">Project Manager Dashboard</p>
             </div>
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title="Total Projects" value="12" icon={BarChart3} />
+                <StatCard title="Total Projects" value={recentProjects?.length.toString() || "0"} icon={BarChart3} />
                 <StatCard title="Active Tasks" value="1,234" icon={Clock} />
                 <StatCard title="Completed" value="89%" icon={CheckCircle} />
                 <StatCard title="Team Velocity" value="24/hr" icon={BarChart3} />
@@ -55,16 +62,23 @@ function PMDashboard({ user, profile }: { user: any, profile: any }) {
                             <Plus className="w-4 h-4" /> New Project
                         </Link>
                     </div>
-                    {/* Placeholder checks */}
                     <div className="space-y-2">
-                        <div className="p-3 bg-white/5 rounded-lg flex justify-between items-center">
-                            <span>Sentiment Analysis v3</span>
-                            <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full">Active</span>
-                        </div>
-                        <div className="p-3 bg-white/5 rounded-lg flex justify-between items-center">
-                            <span>Image Bounding Box Car</span>
-                            <span className="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-full">Paused</span>
-                        </div>
+                        {recentProjects?.map(project => (
+                            <Link key={project.id} href={`/dashboard/projects/${project.id}`} className="block">
+                                <div className="p-3 bg-white/5 rounded-lg flex justify-between items-center hover:bg-white/10 transition-colors">
+                                    <span>{project.name}</span>
+                                    <span className={`text-xs px-2 py-1 rounded-full ${project.status === 'active'
+                                            ? 'bg-green-500/20 text-green-400'
+                                            : 'bg-yellow-500/20 text-yellow-400'
+                                        }`}>
+                                        {project.status}
+                                    </span>
+                                </div>
+                            </Link>
+                        ))}
+                        {(!recentProjects || recentProjects.length === 0) && (
+                            <div className="text-muted-foreground text-sm italic">No projects created yet.</div>
+                        )}
                     </div>
                 </div>
             </div>
