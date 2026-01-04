@@ -8,7 +8,11 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
 export default function ProfilePage() {
-    const { theme, setTheme, wallpaper, setWallpaper, blur, setBlur, transparency, setTransparency } = useTheme();
+    const {
+        theme, setTheme, wallpaper, setWallpaper,
+        blur, setBlur, transparency, setTransparency,
+        avatarUrl, setAvatarUrl
+    } = useTheme();
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -19,261 +23,264 @@ export default function ProfilePage() {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
 
-            if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-                setProfile(profile);
-            }
-        };
-        fetchData();
-    }, []);
-
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || !user) return;
-
-        try {
-            setIsUploading(true);
-            const fileExt = file.name.split('.').pop();
-            const filePath = `${user.id}/avatar.${fileExt}`;
-
-            // Upload to storage
-            const { error: uploadError } = await supabase.storage
-                .from('avatars')
-                .upload(filePath, file, { upsert: true });
-
-            if (uploadError) throw uploadError;
-
-            // Get public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath);
-
-            // Update profile record
-            const { error: updateError } = await supabase
+            const { data: profile } = await supabase
                 .from('profiles')
-                .update({ avatar_url: publicUrl })
-                .eq('id', user.id);
-
-            if (updateError) throw updateError;
-
-            setProfile({ ...profile, avatar_url: publicUrl });
-        } catch (error) {
-            console.error('Error uploading image:', error);
-            alert('Errore durante il caricamento dell\'immagine');
-        } finally {
-            setIsUploading(false);
+                .select('*')
+                .eq('id', user.id)
+                .single();
+            setProfile(profile);
+            if (profile?.avatar_url) {
+                setAvatarUrl(profile.avatar_url);
+            }
         }
     };
+    fetchData();
+}, []);
 
-    const wallpaperOptions = {
-        'osaka-jade': ['1', '2', '3'].map(n => ({
-            url: `/themes/osaka-jade/${n}-osaka-jade-bg.jpg`,
-            id: `${n}-osaka-jade-bg`
-        })),
-        'ayaka': ['b2', 'b8'].map(n => ({
-            url: `/themes/ayaka/${n}.jpg`,
-            id: n
-        })),
-        'purple-moon': ['BG09', 'mythical-dragon-beast-anime-style', 'CC05'].map(n => ({
-            url: `/themes/purple-moon/${n}.jpg`,
-            id: n
-        }))
-    };
+const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
 
-    return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-12">
-            {/* Profile Header */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="glass-panel p-8 rounded-3xl flex flex-col md:flex-row items-center gap-8 relative overflow-hidden"
-            >
-                <div className="relative group">
-                    <div className={`w-32 h-32 rounded-full flex items-center justify-center border-4 ${theme === 'osaka-jade' ? 'border-emerald-500/30 bg-emerald-500/10' : theme === 'purple-moon' ? 'border-[#A949D9]/30 bg-[#A949D9]/10' : 'border-[#DB595C]/30 bg-[#DB595C]/10'
-                        } relative z-10 shadow-2xl overflow-hidden`}>
-                        {profile?.avatar_url ? (
-                            <Image
-                                src={profile.avatar_url}
-                                alt="Avatar"
-                                fill
-                                className="object-cover"
-                            />
+    try {
+        setIsUploading(true);
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${user.id}/avatar.${fileExt}`;
+
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, file, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+
+        // Update profile record
+        const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ avatar_url: publicUrl })
+            .eq('id', user.id);
+
+        if (updateError) throw updateError;
+
+        setProfile({ ...profile, avatar_url: publicUrl });
+        setAvatarUrl(publicUrl);
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        alert('Errore durante il caricamento dell\'immagine');
+    } finally {
+        setIsUploading(false);
+    }
+};
+
+const wallpaperOptions = {
+    'osaka-jade': ['1', '2', '3'].map(n => ({
+        url: `/themes/osaka-jade/${n}-osaka-jade-bg.jpg`,
+        id: `${n}-osaka-jade-bg`
+    })),
+    'ayaka': ['b2', 'b8'].map(n => ({
+        url: `/themes/ayaka/${n}.jpg`,
+        id: n
+    })),
+    'purple-moon': ['BG09', 'mythical-dragon-beast-anime-style', 'CC05'].map(n => ({
+        url: `/themes/purple-moon/${n}.jpg`,
+        id: n
+    }))
+};
+
+return (
+    <div className="max-w-4xl mx-auto space-y-8 pb-12">
+        {/* Profile Header */}
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-panel p-8 rounded-3xl flex flex-col md:flex-row items-center gap-8 relative overflow-hidden"
+        >
+            <div className="relative group">
+                <div className={`w-32 h-32 rounded-full flex items-center justify-center border-4 ${theme === 'osaka-jade' ? 'border-emerald-500/30 bg-emerald-500/10' : theme === 'purple-moon' ? 'border-[#A949D9]/30 bg-[#A949D9]/10' : 'border-[#DB595C]/30 bg-[#DB595C]/10'
+                    } relative z-10 shadow-2xl overflow-hidden`}>
+                    {profile?.avatar_url ? (
+                        <Image
+                            src={profile.avatar_url}
+                            alt="Avatar"
+                            fill
+                            className="object-cover"
+                        />
+                    ) : (
+                        <User className="w-16 h-16 text-primary" />
+                    )}
+
+                    <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-20">
+                        <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={isUploading}
+                        />
+                        {isUploading ? (
+                            <Loader2 className="w-8 h-8 text-white animate-spin" />
                         ) : (
-                            <User className="w-16 h-16 text-primary" />
+                            <Camera className="w-8 h-8 text-white" />
                         )}
-
-                        <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-20">
-                            <input
-                                type="file"
-                                className="hidden"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                disabled={isUploading}
-                            />
-                            {isUploading ? (
-                                <Loader2 className="w-8 h-8 text-white animate-spin" />
-                            ) : (
-                                <Camera className="w-8 h-8 text-white" />
-                            )}
-                        </label>
-                    </div>
+                    </label>
                 </div>
-
-                <div className="flex-1 space-y-2 text-center md:text-left relative z-10">
-                    <h2 className="text-3xl font-black tracking-tight">
-                        {profile?.full_name || user?.user_metadata?.full_name || 'User Profile'}
-                    </h2>
-                    <div className="flex flex-wrap justify-center md:justify-start gap-4 text-muted-foreground">
-                        <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
-                            <Mail className="w-4 h-4" />
-                            <span className="text-sm">{user?.email || 'loading...'}</span>
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 uppercase tracking-wider">
-                            <Shield className="w-4 h-4" />
-                            <span className="text-sm font-bold">{profile?.role || user?.user_metadata?.role || 'Annotator'}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Decorative background element */}
-                <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/10 blur-[100px] rounded-full" />
-            </motion.div>
-
-            <div className="grid md:grid-cols-2 gap-8">
-                {/* Theme Selection */}
-                <motion.section
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="glass-panel p-6 rounded-3xl space-y-6"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <Palette className="text-primary w-5 h-5" />
-                        </div>
-                        <h3 className="text-xl font-bold">Theme Strategy</h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                        <ThemeButton
-                            active={theme === 'osaka-jade'}
-                            onClick={() => setTheme('osaka-jade')}
-                            title="Osaka Jade"
-                            desc="Industrial emerald and deep charcoal"
-                            color="bg-emerald-500"
-                        />
-                        <ThemeButton
-                            active={theme === 'ayaka'}
-                            onClick={() => setTheme('ayaka')}
-                            title="Ayaka"
-                            desc="Elegant coral and misty quartz"
-                            color="bg-[#DB595C]"
-                        />
-                        <ThemeButton
-                            active={theme === 'purple-moon'}
-                            onClick={() => setTheme('purple-moon')}
-                            title="Purple Moon"
-                            desc="Enchanting violet and cosmic dust"
-                            color="bg-[#A949D9]"
-                        />
-                    </div>
-                </motion.section>
-
-                {/* Wallpaper Selection */}
-                <motion.section
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="glass-panel p-6 rounded-3xl space-y-6"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <ImageIcon className="text-primary w-5 h-5" />
-                        </div>
-                        <h3 className="text-xl font-bold">Background</h3>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
-                            <button
-                                key={wp.id}
-                                onClick={() => setWallpaper(wp.url)}
-                                className={`relative h-24 rounded-2xl overflow-hidden border-2 transition-all group ${wallpaper.includes(wp.id) ? 'border-primary ring-4 ring-primary/20 scale-105' : 'border-transparent opacity-60 hover:opacity-100'
-                                    }`}
-                            >
-                                <Image
-                                    src={wp.url}
-                                    alt="Wallpaper"
-                                    fill
-                                    className="object-cover transition-transform group-hover:scale-110"
-                                />
-                                {wallpaper.includes(wp.id) && (
-                                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                                        <Zap className="w-5 h-5 text-primary-foreground fill-primary" />
-                                    </div>
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                </motion.section>
             </div>
 
-            {/* Appearance Settings */}
+            <div className="flex-1 space-y-2 text-center md:text-left relative z-10">
+                <h2 className="text-3xl font-black tracking-tight">
+                    {profile?.full_name || user?.user_metadata?.full_name || 'User Profile'}
+                </h2>
+                <div className="flex flex-wrap justify-center md:justify-start gap-4 text-muted-foreground">
+                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
+                        <Mail className="w-4 h-4" />
+                        <span className="text-sm">{user?.email || 'loading...'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 uppercase tracking-wider">
+                        <Shield className="w-4 h-4" />
+                        <span className="text-sm font-bold">{profile?.role || user?.user_metadata?.role || 'Annotator'}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Decorative background element */}
+            <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/10 blur-[100px] rounded-full" />
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+            {/* Theme Selection */}
             <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="glass-panel p-6 rounded-3xl space-y-8"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="glass-panel p-6 rounded-3xl space-y-6"
             >
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
-                        <Sparkles className="text-primary w-5 h-5" />
+                        <Palette className="text-primary w-5 h-5" />
                     </div>
-                    <h3 className="text-xl font-bold">Advanced Appearance</h3>
+                    <h3 className="text-xl font-bold">Theme Strategy</h3>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-12">
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label className="font-bold text-sm uppercase tracking-wider opacity-60">Background Blur</label>
-                            <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded text-xs">{blur}px</span>
-                        </div>
-                        <input
-                            type="range"
-                            min="0"
-                            max="20"
-                            step="1"
-                            value={blur}
-                            onChange={(e) => setBlur(parseInt(e.target.value))}
-                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-                        />
-                        <p className="text-xs text-muted-foreground">Adjust the depth of field for the desktop wallpaper.</p>
-                    </div>
+                <div className="grid grid-cols-1 gap-3">
+                    <ThemeButton
+                        active={theme === 'osaka-jade'}
+                        onClick={() => setTheme('osaka-jade')}
+                        title="Osaka Jade"
+                        desc="Industrial emerald and deep charcoal"
+                        color="bg-emerald-500"
+                    />
+                    <ThemeButton
+                        active={theme === 'ayaka'}
+                        onClick={() => setTheme('ayaka')}
+                        title="Ayaka"
+                        desc="Elegant coral and misty quartz"
+                        color="bg-[#DB595C]"
+                    />
+                    <ThemeButton
+                        active={theme === 'purple-moon'}
+                        onClick={() => setTheme('purple-moon')}
+                        title="Purple Moon"
+                        desc="Enchanting violet and cosmic dust"
+                        color="bg-[#A949D9]"
+                    />
+                </div>
+            </motion.section>
 
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label className="font-bold text-sm uppercase tracking-wider opacity-60">Glass Transparency</label>
-                            <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded text-xs">{Math.round(transparency * 100)}%</span>
-                        </div>
-                        <input
-                            type="range"
-                            min="0.1"
-                            max="0.95"
-                            step="0.05"
-                            value={transparency}
-                            onChange={(e) => setTransparency(parseFloat(e.target.value))}
-                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-                        />
-                        <p className="text-xs text-muted-foreground">Regulate the opacity of all interface panels.</p>
+            {/* Wallpaper Selection */}
+            <motion.section
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="glass-panel p-6 rounded-3xl space-y-6"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <ImageIcon className="text-primary w-5 h-5" />
                     </div>
+                    <h3 className="text-xl font-bold">Background</h3>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
+                        <button
+                            key={wp.id}
+                            onClick={() => setWallpaper(wp.url)}
+                            className={`relative h-24 rounded-2xl overflow-hidden border-2 transition-all group ${wallpaper.includes(wp.id) ? 'border-primary ring-4 ring-primary/20 scale-105' : 'border-transparent opacity-60 hover:opacity-100'
+                                }`}
+                        >
+                            <Image
+                                src={wp.url}
+                                alt="Wallpaper"
+                                fill
+                                className="object-cover transition-transform group-hover:scale-110"
+                            />
+                            {wallpaper.includes(wp.id) && (
+                                <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                                    <Zap className="w-5 h-5 text-primary-foreground fill-primary" />
+                                </div>
+                            )}
+                        </button>
+                    ))}
                 </div>
             </motion.section>
         </div>
-    );
+
+        {/* Appearance Settings */}
+        <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="glass-panel p-6 rounded-3xl space-y-8"
+        >
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                    <Sparkles className="text-primary w-5 h-5" />
+                </div>
+                <h3 className="text-xl font-bold">Advanced Appearance</h3>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-12">
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <label className="font-bold text-sm uppercase tracking-wider opacity-60">Background Blur</label>
+                        <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded text-xs">{blur}px</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="0"
+                        max="20"
+                        step="1"
+                        value={blur}
+                        onChange={(e) => setBlur(parseInt(e.target.value))}
+                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                    />
+                    <p className="text-xs text-muted-foreground">Adjust the depth of field for the desktop wallpaper.</p>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <label className="font-bold text-sm uppercase tracking-wider opacity-60">Glass Transparency</label>
+                        <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded text-xs">{Math.round(transparency * 100)}%</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="0.1"
+                        max="0.95"
+                        step="0.05"
+                        value={transparency}
+                        onChange={(e) => setTransparency(parseFloat(e.target.value))}
+                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                    />
+                    <p className="text-xs text-muted-foreground">Regulate the opacity of all interface panels.</p>
+                </div>
+            </div>
+        </motion.section>
+    </div>
+);
 }
 
 function ThemeButton({ active, onClick, title, desc, color }: {

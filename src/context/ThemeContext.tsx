@@ -14,10 +14,12 @@ interface ThemeContextType {
   wallpaper: string;
   blur: number;
   transparency: number;
+  avatarUrl: string | null;
   setTheme: (theme: ThemeType) => void;
   setWallpaper: (url: string) => void;
   setBlur: (value: number) => void;
   setTransparency: (value: number) => void;
+  setAvatarUrl: (url: string | null) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -27,6 +29,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [wallpaper, setWallpaperState] = useState<string>('/themes/osaka-jade/2-osaka-jade-bg.jpg');
   const [blur, setBlurState] = useState<number>(2);
   const [transparency, setTransparencyState] = useState<number>(0.75);
+  const [avatarUrl, setAvatarUrlState] = useState<string | null>(null);
 
   useEffect(() => {
     // Load from localStorage if available
@@ -70,8 +73,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('labeltune-transparency', value.toString());
   };
 
+  const setAvatarUrl = (url: string | null) => {
+    setAvatarUrlState(url);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, wallpaper, blur, transparency, setTheme, setWallpaper, setBlur, setTransparency }}>
+    <ThemeContext.Provider value={{ theme, wallpaper, blur, transparency, avatarUrl, setTheme, setWallpaper, setBlur, setTransparency, setAvatarUrl }}>
       <div
         data-theme={theme}
         className="min-h-screen transition-all duration-500 ease-in-out"
