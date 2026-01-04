@@ -288,6 +288,18 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
             },
             {
                 id: nanoid(),
+                type: 'RubricTable',
+                name: 'guideline_checklist',
+                title: 'Completeness of Rubric Criteria',
+                rubricCriteria: [
+                    { id: 'g1', title: 'Language', category: 'Native Fluency', description: 'Response uses native, fluent phrasing throughout, such as "..." [Give the correct example of a failing response]' },
+                    { id: 'g2', title: 'Language', category: 'Verbosity', description: 'Response follows pyramid principle - it leads with the answer...' },
+                    { id: 'g3', title: 'Truthfulness', category: 'Accuracy', description: 'Response states facts correctly. No hallucination.' }
+                ],
+                content: 'As a reminder, here is a simple table to check completeness of rubric criteria.'
+            },
+            {
+                id: nanoid(),
                 type: 'RequirementPanel',
                 name: 'task_requirements',
                 title: 'Task Requirements',

@@ -23,7 +23,8 @@ import {
     SideBySideLayout,
     RubricScorerControl,
     RankingControl,
-    FeedbackControl
+    FeedbackControl,
+    RubricTable
 } from '@/components/builder/Renderers';
 
 export function TaskRenderer({
@@ -97,6 +98,7 @@ export function TaskRenderer({
                     if (component.type === 'InstructionBlock') return <InstructionBlock key={component.id} component={component} data={taskData} />;
                     if (component.type === 'RequirementPanel') return <RequirementPanel key={component.id} component={component} />;
                     if (component.type === 'SideBySide') return <SideBySideLayout key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'RubricTable') return <RubricTable key={component.id} component={component} />;
 
                     // Controls
                     const value = formData[component.name] || formData[component.id];

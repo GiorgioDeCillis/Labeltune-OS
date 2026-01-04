@@ -564,4 +564,39 @@ export function FeedbackControl({ component, value, onChange, readOnly }: {
         </div>
     );
 }
+export function RubricTable({ component }: { component: TaskComponent }) {
+    // Expected structure in rubicCriteria for this table:
+    // [{ title: "Language", category: "Native Fluency", description: "Response uses native, fluent..." }]
+    // For simplicity, we can also just pass HTML content if it's easier to build.
 
+    return (
+        <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+            <div className="p-4 border-b border-white/5 bg-white/5">
+                <h4 className="font-bold text-sm tracking-wider uppercase text-muted-foreground">{component.title || 'Rubric Checklist'}</h4>
+            </div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr className="bg-white/5 text-muted-foreground uppercase tracking-widest font-bold">
+                            <th className="p-3 border-b border-white/5">Topic</th>
+                            <th className="p-3 border-b border-white/5">SubTopic</th>
+                            <th className="p-3 border-b border-white/5">Example / Guideline</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                        {component.rubricCriteria?.map((item, i) => (
+                            <tr key={item.id || i} className="hover:bg-white/5 transition-colors">
+                                <td className="p-3 font-bold text-primary/80">{item.title}</td>
+                                <td className="p-3 text-muted-foreground">{item.category}</td>
+                                <td className="p-3 leading-relaxed">{item.description}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            {component.content && (
+                <div className="p-4 text-xs italic text-muted-foreground border-t border-white/5 bg-white/5" dangerouslySetInnerHTML={{ __html: component.content }} />
+            )}
+        </div>
+    );
+}

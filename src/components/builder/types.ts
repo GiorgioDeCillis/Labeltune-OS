@@ -14,6 +14,12 @@ export type TaskComponentType =
     | 'PolygonLabels'
     // Layout
     | 'View'
+    | 'Header'
+    // Advanced
+    | 'Video'
+    | 'TimeSeries'
+    | 'PDF'
+    | 'MultiMessage'
     // Advanced Pogo Workflow Types
     | 'InstructionBlock'
     | 'RubricTable'
