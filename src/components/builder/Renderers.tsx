@@ -313,3 +313,255 @@ export function ImageLabelsControl({ component, value, onChange, readOnly }: {
         </div>
     );
 }
+
+// --- Pogo Rubrics Workflow Components ---
+
+import { Pin, ChevronDown, ChevronUp, AlertTriangle, GripVertical, Check, X, Minus } from 'lucide-react';
+
+export function InstructionBlock({ component, data }: { component: TaskComponent, data?: any }) {
+    const [isCollapsed, setIsCollapsed] = React.useState(false);
+    const [isPinned, setIsPinned] = React.useState(false);
+
+    return (
+        <div className={`rounded-xl border ${isPinned ? 'border-primary/50 bg-primary/5' : 'border-white/10 bg-white/5'} overflow-hidden transition-all`}>
+            <div className="flex items-center justify-between p-4 border-b border-white/5">
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                    {component.title}
+                </h3>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsPinned(!isPinned)}
+                        className={`p-2 rounded-lg transition-all ${isPinned ? 'bg-primary/20 text-primary' : 'hover:bg-white/10 text-muted-foreground'}`}
+                    >
+                        <Pin className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className="p-2 rounded-lg hover:bg-white/10 text-muted-foreground"
+                    >
+                        {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                    </button>
+                </div>
+            </div>
+            {!isCollapsed && (
+                <div className="p-4 space-y-3 text-sm leading-relaxed">
+                    {component.content && (
+                        <div dangerouslySetInnerHTML={{ __html: component.content.replace(/\n/g, '<br/>') }} />
+                    )}
+                    {component.text && <p>{component.text}</p>}
+                    {component.children?.map((child, i) => (
+                        <div key={child.id || i} className="pl-4 border-l-2 border-yellow-500/50 py-1 text-yellow-200/80 flex items-start gap-2">
+                            <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <span>{child.text}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+export function RequirementPanel({ component }: { component: TaskComponent }) {
+    return (
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+            <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">{component.title || 'Task Requirements'}</h4>
+            {component.text && <p className="text-sm">{component.text}</p>}
+            {component.content && (
+                <div className="text-sm space-y-2" dangerouslySetInnerHTML={{ __html: component.content.replace(/\n/g, '<br/>') }} />
+            )}
+        </div>
+    );
+}
+
+export function SideBySideLayout({ component, children, data }: { component: TaskComponent, children?: React.ReactNode, data?: any }) {
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {component.children?.map((child, i) => (
+                <div key={child.id || i} className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+                    <h4 className="font-bold text-sm border-b border-white/5 pb-2">{child.title || `Response ${String.fromCharCode(65 + i)}`}</h4>
+                    <div className="text-sm leading-relaxed max-h-[400px] overflow-y-auto custom-scrollbar">
+                        {child.text || child.content || 'No content'}
+                    </div>
+                </div>
+            ))}
+            {children}
+        </div>
+    );
+}
+
+export function RubricScorerControl({ component, value, onChange, readOnly }: {
+    component: TaskComponent,
+    value: any,
+    onChange: (val: any) => void,
+    readOnly?: boolean
+}) {
+    const scores = value || {};
+
+    const handleScore = (criterionId: string, score: 'full' | 'partial' | 'none') => {
+        if (readOnly) return;
+        onChange({ ...scores, [criterionId]: score });
+    };
+
+    const getScoreStyle = (score: string | undefined) => {
+        switch (score) {
+            case 'full': return 'bg-green-500/20 text-green-400 border-green-500/50';
+            case 'partial': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
+            case 'none': return 'bg-red-500/20 text-red-400 border-red-500/50';
+            default: return 'bg-white/5 text-muted-foreground border-white/10';
+        }
+    };
+
+    const getScorePoints = (criterion: any, score: string | undefined) => {
+        switch (score) {
+            case 'full': return criterion.points;
+            case 'partial': return Math.floor(criterion.points * 0.6);
+            case 'none': return 0;
+            default: return null;
+        }
+    };
+
+    return (
+        <div className="space-y-3">
+            <h4 className="font-bold text-sm">{component.title}</h4>
+            <div className="space-y-2">
+                {component.rubricCriteria?.map((criterion) => {
+                    const currentScore = scores[criterion.id];
+                    const points = getScorePoints(criterion, currentScore);
+
+                    return (
+                        <div key={criterion.id} className={`rounded-xl border p-4 transition-all ${getScoreStyle(currentScore)}`}>
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                    <p className="font-medium text-sm">{criterion.title}</p>
+                                    {criterion.category && (
+                                        <span className="text-[10px] uppercase tracking-wider opacity-60">{criterion.category}</span>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {points !== null && (
+                                        <span className="text-xs font-bold">+{points}pts</span>
+                                    )}
+                                    <div className="flex gap-1">
+                                        <button
+                                            onClick={() => handleScore(criterion.id, 'full')}
+                                            disabled={readOnly}
+                                            className={`p-1.5 rounded-lg transition-all ${currentScore === 'full' ? 'bg-green-500 text-white' : 'bg-white/10 hover:bg-green-500/30'}`}
+                                        >
+                                            <Check className="w-3 h-3" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleScore(criterion.id, 'partial')}
+                                            disabled={readOnly}
+                                            className={`p-1.5 rounded-lg transition-all ${currentScore === 'partial' ? 'bg-yellow-500 text-white' : 'bg-white/10 hover:bg-yellow-500/30'}`}
+                                        >
+                                            <Minus className="w-3 h-3" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleScore(criterion.id, 'none')}
+                                            disabled={readOnly}
+                                            className={`p-1.5 rounded-lg transition-all ${currentScore === 'none' ? 'bg-red-500 text-white' : 'bg-white/10 hover:bg-red-500/30'}`}
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+export function RankingControl({ component, value, onChange, readOnly }: {
+    component: TaskComponent,
+    value: any,
+    onChange: (val: any) => void,
+    readOnly?: boolean
+}) {
+    const ranking = value || component.options?.map(o => o.value) || [];
+
+    const moveUp = (index: number) => {
+        if (readOnly || index === 0) return;
+        const newRanking = [...ranking];
+        [newRanking[index - 1], newRanking[index]] = [newRanking[index], newRanking[index - 1]];
+        onChange(newRanking);
+    };
+
+    const moveDown = (index: number) => {
+        if (readOnly || index === ranking.length - 1) return;
+        const newRanking = [...ranking];
+        [newRanking[index], newRanking[index + 1]] = [newRanking[index + 1], newRanking[index]];
+        onChange(newRanking);
+    };
+
+    const getRankLabel = (index: number) => {
+        if (index === 0) return 'Best Response';
+        if (index === ranking.length - 1) return 'Worst Response';
+        return `Rank ${index + 1}`;
+    };
+
+    return (
+        <div className="space-y-3">
+            <h4 className="font-bold text-sm">{component.title}</h4>
+            <div className="space-y-2">
+                {ranking.map((item: string, index: number) => {
+                    const option = component.options?.find(o => o.value === item);
+                    return (
+                        <div key={item} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5">
+                            <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
+                            <div className="flex-1">
+                                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{getRankLabel(index)}</span>
+                                <p className="font-medium text-sm">{option?.label || item}</p>
+                            </div>
+                            <div className="flex gap-1">
+                                <button onClick={() => moveUp(index)} disabled={readOnly || index === 0} className="p-1 rounded hover:bg-white/10 disabled:opacity-30">
+                                    <ChevronUp className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => moveDown(index)} disabled={readOnly || index === ranking.length - 1} className="p-1 rounded hover:bg-white/10 disabled:opacity-30">
+                                    <ChevronDown className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+export function FeedbackControl({ component, value, onChange, readOnly }: {
+    component: TaskComponent,
+    value: any,
+    onChange: (val: any) => void,
+    readOnly?: boolean
+}) {
+    const text = value || '';
+    const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+    const minWords = 50; // Default minimum
+
+    return (
+        <div className="space-y-3">
+            <h4 className="font-bold text-sm">{component.title}</h4>
+            {component.description && (
+                <p className="text-xs text-muted-foreground">{component.description}</p>
+            )}
+            <textarea
+                value={text}
+                onChange={(e) => onChange(e.target.value)}
+                disabled={readOnly}
+                rows={5}
+                placeholder={component.placeholder || 'Write your justification here...'}
+                className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 resize-none disabled:opacity-50"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+                <span className={wordCount >= minWords ? 'text-green-400' : 'text-yellow-400'}>
+                    {wordCount} words {wordCount < minWords && `(min: ${minWords})`}
+                </span>
+                {component.required && <span className="text-red-400">* Required</span>}
+            </div>
+        </div>
+    );
+}
+

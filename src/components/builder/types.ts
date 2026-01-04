@@ -14,12 +14,14 @@ export type TaskComponentType =
     | 'PolygonLabels'
     // Layout
     | 'View'
-    | 'Header'
-    // Advanced
-    | 'Video'
-    | 'TimeSeries'
-    | 'PDF'
-    | 'MultiMessage';
+    // Advanced Pogo Workflow Types
+    | 'InstructionBlock'
+    | 'RubricTable'
+    | 'SideBySide'
+    | 'RubricScorer'
+    | 'Ranking'
+    | 'Feedback'
+    | 'RequirementPanel';
 
 export interface TaskComponent {
     id: string;
@@ -33,14 +35,25 @@ export interface TaskComponent {
     value?: string; // e.g. "$image" for Objects
     // Content
     text?: string; // For Text/Header
+    content?: string; // For InstructionBlock
     // Configuration
-    options?: { label: string; value: string }[]; // For Choices
+    options?: { label: string; value: string; hint?: string }[]; // For Choices
     labels?: { value: string; background?: string }[]; // For Labels
     granularity?: string; // For Audio/Video (not yet implemented)
     // UI props
     required?: boolean;
     description?: string;
     placeholder?: string;
+    // Layout
+    children?: TaskComponent[]; // For SideBySide or View
+    // Complex Configs
+    rubricCriteria?: {
+        id: string;
+        title: string;
+        points: number;
+        category?: string;
+        description?: string;
+    }[]; // For RubricScorer
 }
 
 export interface TaskTemplate {

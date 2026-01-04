@@ -267,5 +267,108 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
                 ]
             }
         ]
+    },
+    {
+        id: 'pogo-rubrics-rlhf',
+        name: 'Safe & Helpful RLHF',
+        description: 'Advanced RLHF workflow with dynamic rubrics and response ranking.',
+        type: 'rlhf_pogo',
+        icon: 'Bot',
+        schema: [
+            {
+                id: nanoid(),
+                type: 'InstructionBlock',
+                name: 'welcome_instructions',
+                title: 'Welcome to Pogo Rubrics!',
+                content: 'We are training the next generation of LLMs!\nYou will be creating rubrics for this locale: it_CH\n\nThe task will work like this:\n1. Write a prompt that you would use in everyday life.\n2. Review 3 responses and confirm failing issues.\n3. See the auto-generated rubric.\n4. Rate each response on the criteria.\n5. Confirm the auto-ranking.',
+                children: [
+                    { id: nanoid(), type: 'View', name: 'n1', text: 'Follow the task category and use indicated, and attach reference text.' },
+                    { id: nanoid(), type: 'View', name: 'n2', text: 'You will see a major critical errors table embedded at that step.' }
+                ]
+            },
+            {
+                id: nanoid(),
+                type: 'RequirementPanel',
+                name: 'task_requirements',
+                title: 'Task Requirements',
+                content: '<b>Language:</b> it_CH\n<b>Category:</b> Summarization\n<b>Use Case:</b> Generic User Journey'
+            },
+            {
+                id: nanoid(),
+                type: 'Header',
+                name: 'prompt_header',
+                text: 'Step 1: Write a Prompt',
+                title: 'Header'
+            },
+            {
+                id: nanoid(),
+                type: 'TextArea',
+                name: 'user_prompt',
+                title: 'User Prompt',
+                placeholder: 'Fai un riassunto in punti elenco del testo...',
+                required: true
+            },
+            {
+                id: nanoid(),
+                type: 'Header',
+                name: 'comparison_header',
+                text: 'Step 2: Compare Responses',
+                title: 'Header'
+            },
+            {
+                id: nanoid(),
+                type: 'SideBySide',
+                name: 'responses_comparison',
+                children: [
+                    { id: nanoid(), type: 'View', name: 'ra', title: 'Response A', content: 'Il Trenino Rosso del Bernina collega Tirano a St. Moritz...' },
+                    { id: nanoid(), type: 'View', name: 'rb', title: 'Response B', content: 'Ecco un riassunto del testo fornito: Il Trenino Rosso...' },
+                    { id: nanoid(), type: 'View', name: 'rc', title: 'Response C', content: 'Trenino del Bernina: Collega Tirano in Lombardia...' }
+                ]
+            },
+            {
+                id: nanoid(),
+                type: 'Choices',
+                name: 'critical_failures',
+                title: 'Does at least one of these responses have a critical failure?',
+                options: [
+                    { label: 'Language Fluency', value: 'lang' },
+                    { label: 'Truthfulness', value: 'truth' },
+                    { label: 'Instruction Following', value: 'instr' },
+                    { label: 'No Critical Failure', value: 'none' }
+                ]
+            },
+            {
+                id: nanoid(),
+                type: 'RubricScorer',
+                name: 'rubric_scoring',
+                title: 'Step 3: Rate Responses based on Rubric',
+                rubricCriteria: [
+                    { id: 'c1', title: 'Response must be shorter than provided text', points: 5, category: 'Instruction Following' },
+                    { id: 'c2', title: 'Response must use clear formatting', points: 5, category: 'Instruction Following' },
+                    { id: 'c3', title: 'Response must use third person singular', points: 5, category: 'Instruction Following' },
+                    { id: 'c4', title: 'Response must mention Bernina route details', points: 5, category: 'Truthfulness' }
+                ]
+            },
+            {
+                id: nanoid(),
+                type: 'Ranking',
+                name: 'final_ranking',
+                title: 'Step 4: Rank the model responses',
+                options: [
+                    { label: 'Response A', value: 'a' },
+                    { label: 'Response B', value: 'b' },
+                    { label: 'Response C', value: 'c' }
+                ]
+            },
+            {
+                id: nanoid(),
+                type: 'Feedback',
+                name: 'justification',
+                title: 'Step 5: Write a Justification',
+                description: 'Write a 50+ word justification that explains your model ranking.',
+                required: true,
+                placeholder: 'Response A was top choice because...'
+            }
+        ]
     }
 ];

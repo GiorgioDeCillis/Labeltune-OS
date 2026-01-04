@@ -17,7 +17,13 @@ import {
     VideoObject,
     TimeSeriesObject,
     PDFObject,
-    MultiMessageObject
+    MultiMessageObject,
+    InstructionBlock,
+    RequirementPanel,
+    SideBySideLayout,
+    RubricScorerControl,
+    RankingControl,
+    FeedbackControl
 } from '@/components/builder/Renderers';
 
 export function TaskRenderer({
@@ -87,6 +93,11 @@ export function TaskRenderer({
                     if (component.type === 'PDF') return <PDFObject key={component.id} component={component} data={taskData} />;
                     if (component.type === 'MultiMessage') return <MultiMessageObject key={component.id} component={component} data={taskData} />;
 
+                    // Pogo Workflow Components
+                    if (component.type === 'InstructionBlock') return <InstructionBlock key={component.id} component={component} data={taskData} />;
+                    if (component.type === 'RequirementPanel') return <RequirementPanel key={component.id} component={component} />;
+                    if (component.type === 'SideBySide') return <SideBySideLayout key={component.id} component={component} data={taskData} />;
+
                     // Controls
                     const value = formData[component.name] || formData[component.id];
                     // Note: Label Studio uses 'name' for result keys. We should ideally use component.name.
@@ -98,6 +109,9 @@ export function TaskRenderer({
                     if (component.type === 'Rating') return <RatingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
                     if (component.type === 'TextArea') return <TextAreaControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
                     if (component.type === 'Labels' || component.type === 'RectangleLabels') return <ImageLabelsControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'RubricScorer') return <RubricScorerControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'Ranking') return <RankingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'Feedback') return <FeedbackControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
 
                     return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
                 })}
