@@ -16,6 +16,8 @@ export async function createProject(formData: FormData) {
     const guidelines = formData.get('guidelines') as string;
     const pay_rate = formData.get('pay_rate') as string;
 
+    const template_schema = formData.get('template_schema') as string;
+
     // 1. Check if user has an organization
     const { data: profile } = await supabase
         .from('profiles')
@@ -56,6 +58,7 @@ export async function createProject(formData: FormData) {
             type,
             guidelines,
             pay_rate,
+            template_schema: template_schema ? JSON.parse(template_schema) : [],
             organization_id: orgId,
             status: 'active'
         });
