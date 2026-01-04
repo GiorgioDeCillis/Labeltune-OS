@@ -5,20 +5,6 @@ import { ProjectTemplate, PROJECT_TEMPLATES } from '@/utils/templates';
 import { TaskBuilder } from '@/components/builder/TaskBuilder';
 import { TaskComponent } from '@/components/builder/types';
 import { createProject } from '../actions';
-import { ChevronRight, ChevronLeft, Save, LayoutGrid, Settings2, MessageSquare, Image as ImageIcon, Box, Mic, Bot } from 'lucide-react';
-
-const iconMap = {
-    MessageSquare,
-    Image: ImageIcon,
-    Box,
-    Mic,
-    Bot
-};
-
-import { ProjectTemplate, PROJECT_TEMPLATES } from '@/utils/templates';
-import { TaskBuilder } from '@/components/builder/TaskBuilder';
-import { TaskComponent } from '@/components/builder/types';
-import { createProject } from '../actions';
 import { ChevronRight, ChevronLeft, Save, LayoutGrid, Settings2, MessageSquare, Image as ImageIcon, Box, Mic, Bot, BookOpen, FileText, CheckCircle2 } from 'lucide-react';
 import { InstructionsStep, InstructionSection } from './steps/InstructionsStep';
 import { CoursesStep } from './steps/CoursesStep';
