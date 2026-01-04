@@ -9,10 +9,42 @@ export async function createCourse(projectId: string | null, data: Partial<Cours
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Unauthorized');
 
+    // 1. Check if user has an organization
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user.id)
+        .single();
+
+    let orgId = profile?.organization_id;
+
+    // 2. If not, create one (same logic as createProject)
+    if (!orgId) {
+        const orgName = `${user.user_metadata?.full_name || 'My'} Organization`;
+        const { data: newOrg, error: orgError } = await supabase
+            .from('organizations')
+            .insert({ name: orgName, slug: crypto.randomUUID() })
+            .select()
+            .single();
+
+        if (orgError) {
+            console.error('Error creating org:', orgError);
+            throw new Error('Failed to create organization');
+        }
+
+        orgId = newOrg.id;
+
+        // Update profile
+        await supabase
+            .from('profiles')
+            .upsert({ id: user.id, organization_id: orgId });
+    }
+
     const { data: course, error } = await supabase
         .from('courses')
         .insert({
             project_id: projectId || null,
+            organization_id: orgId,
             title: data.title!,
             description: data.description,
             duration: data.duration
