@@ -22,6 +22,8 @@ export function Sidebar({ userRole }: { userRole: string }) {
     const pathname = usePathname();
     const { theme } = useTheme();
 
+    const normalizedRole = userRole?.toLowerCase() || 'annotator';
+
     const commonLinks = [
         { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
     ];
@@ -46,11 +48,19 @@ export function Sidebar({ userRole }: { userRole: string }) {
         { href: '/dashboard/projects', label: 'Projects', icon: FolderPlus },
     ];
 
+    // Annotators should ONLY see Overview, possibly My Tasks/History, and Profile.
+    // They should NOT see Projects, Dataset Explorer, Courses, Review Queue.
+    const isAnnotator = normalizedRole === 'annotator';
+    const isReviewer = normalizedRole === 'reviewer';
+    const isPM = normalizedRole === 'pm';
+    const isAdmin = normalizedRole === 'admin';
+    const isClient = normalizedRole === 'client';
+
     const links = [
-        ...(userRole === 'client' ? clientLinks : commonLinks),
-        ...(userRole === 'pm' || userRole === 'admin' ? pmLinks : []),
-        ...(userRole === 'pm' || userRole === 'admin' || userRole === 'reviewer' ? reviewLinks : []),
-        ...(userRole === 'annotator' || userRole === 'reviewer' ? workerLinks : []),
+        ...(isClient ? clientLinks : commonLinks),
+        ...((isPM || isAdmin) ? pmLinks : []),
+        ...((isPM || isAdmin || isReviewer) ? reviewLinks : []),
+        ...((isAnnotator || isReviewer) ? workerLinks : []),
         { href: '/dashboard/profile', label: 'Profile', icon: User },
     ];
 
