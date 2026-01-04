@@ -222,50 +222,24 @@
   }
 }
 
-@keyframes border-trail-orbit {
+@property --trail-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-follow {
   0% {
-    transform: rotate(0deg) translateX(50%) rotate(0deg);
-    opacity: 0;
-  }
-
-  10% {
-    opacity: 1;
-  }
-
-  90% {
-    opacity: 1;
+    --trail-angle: 0deg;
   }
 
   100% {
-    transform: rotate(360deg) translateX(50%) rotate(-360deg);
-    opacity: 0;
+    --trail-angle: 360deg;
   }
 }
 
-.animate-border-trail {
-  animation: border-trail-slide 2s linear infinite;
-}
-
-@keyframes border-trail-slide {
-  0% {
-    clip-path: inset(0 100% 0 0);
-  }
-
-  25% {
-    clip-path: inset(0 0 0 0);
-  }
-
-  50% {
-    clip-path: inset(0 0 0 0);
-  }
-
-  75% {
-    clip-path: inset(0 0 0 0);
-  }
-
-  100% {
-    clip-path: inset(0 0 0 100%);
-  }
+.animate-border-follow {
+  animation: border-follow 2s linear infinite;
 }
 
 /* Scrollbar customization */
