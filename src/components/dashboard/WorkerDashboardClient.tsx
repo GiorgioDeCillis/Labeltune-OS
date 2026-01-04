@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronRight, BookOpen, Clock, Wallet, Briefcase, Info } from 'lucide-react';
+import { ChevronRight, BookOpen, Clock, Wallet, Briefcase, Info, CheckCircle, BarChart3, TrendingUp } from 'lucide-react';
 import ProjectQueueModal from '@/components/dashboard/ProjectQueueModal';
 import { createClient } from '@/utils/supabase/client';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Project {
     id: string;
@@ -20,18 +21,24 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
     const [isQueueOpen, setIsQueueOpen] = useState(false);
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+        totalTasks: 0,
+        hoursWorked: 42, // Mocked for design
+        avgRate: 15.50
+    });
     const supabase = createClient();
 
     useEffect(() => {
         if (user?.id) {
-            fetchAssignedProjects();
+            fetchDashboardData();
         }
     }, [user?.id]);
 
-    const fetchAssignedProjects = async () => {
+    const fetchDashboardData = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            // Fetch assigned projects
+            const { data: projectsData, error: projectsError } = await supabase
                 .from('project_assignees')
                 .select(`
                     project_id,
@@ -40,16 +47,24 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                 .eq('user_id', user.id)
                 .eq('status', 'active');
 
-            if (error) {
-                console.error('Error fetching assigned projects:', error);
-            } else if (data) {
-                const assignedProjects = data
-                    .map((item: any) => item.projects)
-                    .filter((p: any) => p !== null);
-                setProjects(assignedProjects);
+            if (projectsError) console.error('Error fetching assigned projects:', projectsError);
+            else if (projectsData) {
+                setProjects(projectsData.map((item: any) => item.projects).filter((p: any) => p !== null));
             }
+
+            // Fetch total tasks completed
+            const { count, error: tasksError } = await supabase
+                .from('tasks')
+                .select('*', { count: 'exact', head: true })
+                .eq('assigned_to', user.id)
+                .eq('status', 'completed');
+
+            if (!tasksError) {
+                setStats(prev => ({ ...prev, totalTasks: count || 0 }));
+            }
+
         } catch (error) {
-            console.error('Error in fetchAssignedProjects:', error);
+            console.error('Error in fetchDashboardData:', error);
         } finally {
             setLoading(false);
         }
@@ -65,22 +80,6 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                 userId={user.id}
             />
 
-            {/* Hero Profile Section */}
-            <div className="flex flex-col items-center justify-center text-center space-y-4 py-8">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent p-[2px]">
-                    <div className="w-full h-full rounded-full bg-black/50 backdrop-blur-sm overflow-hidden flex items-center justify-center">
-                        {profile?.avatar_url ? (
-                            <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                            <span className="text-3xl font-bold">{profile?.full_name?.[0]}</span>
-                        )}
-                    </div>
-                </div>
-                <div>
-                    <h1 className="text-4xl font-bold tracking-tight text-white">{profile?.full_name}</h1>
-                    <p className="text-lg text-white/60">{user.email}</p>
-                </div>
-            </div>
 
             {/* Current Project Card Area */}
             <div className="space-y-4">
@@ -183,10 +182,113 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                 )}
             </div>
 
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <StatCard
+                    title="Total Tasks"
+                    value={stats.totalTasks.toString()}
+                    icon={CheckCircle}
+                    description="Successfully completed"
+                    color="primary"
+                />
+                <StatCard
+                    title="Hours Worked"
+                    value={`${stats.hoursWorked}h`}
+                    icon={Clock}
+                    description="Actual labeling time"
+                    color="accent"
+                />
+                <StatCard
+                    title="Avg. Rate"
+                    value={`$${stats.avgRate.toFixed(2)}`}
+                    icon={TrendingUp}
+                    description="Per hour average"
+                    color="emerald"
+                />
+            </div>
+
+            {/* Earnings Gadget */}
+            <div className="space-y-4">
+                <h2 className="text-lg font-bold text-muted-foreground uppercase tracking-widest">Earnings</h2>
+                <div className="glass-panel p-8 rounded-2xl border border-white/10 relative overflow-hidden group">
+                    <div className="flex flex-col md:flex-row gap-12 items-end">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-primary">
+                                <Wallet className="w-5 h-5" />
+                                <span className="font-bold uppercase tracking-wider text-xs">Total Earnings</span>
+                            </div>
+                            <div className="text-5xl font-bold text-white tracking-tighter">$2,824</div>
+                            <p className="text-white/40 text-sm">Earnings from Aug to Jan 2026</p>
+                        </div>
+
+                        <div className="flex-1 flex items-end justify-between gap-4 h-48 w-full group/chart">
+                            {[
+                                { m: 'Aug', v: 40, color: 'from-orange-500/20 to-orange-500/40' },
+                                { m: 'Sep', v: 100, color: 'from-orange-500 to-rose-500', glow: true },
+                                { m: 'Oct', v: 60, color: 'from-orange-500/30 to-orange-500/50' },
+                                { m: 'Nov', v: 75, color: 'from-orange-500 to-rose-500', glow: true },
+                                { m: 'Dec', v: 50, color: 'from-orange-500/40 to-orange-500/60' },
+                                { m: 'Jan', v: 35, color: 'from-orange-500/20 to-orange-500/40' }
+                            ].map((bar, i) => (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-3 h-full group/bar">
+                                    <div className="flex-1 w-full bg-white/5 rounded-full relative overflow-hidden flex items-end">
+                                        <motion.div
+                                            initial={{ height: 0 }}
+                                            animate={{ height: `${bar.v}%` }}
+                                            transition={{ delay: i * 0.1, duration: 1, ease: "easeOut" }}
+                                            className={`w-full bg-gradient-to-t ${bar.color} rounded-full relative`}
+                                        >
+                                            {bar.glow && (
+                                                <div className="absolute inset-x-0 top-0 h-4 bg-white/40 blur-sm rounded-full animate-pulse"></div>
+                                            )}
+                                        </motion.div>
+                                    </div>
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${bar.glow ? 'text-orange-500' : 'text-white/20'}`}>
+                                        {bar.m}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Skills / Courses Section (Note: User wanted 'Courses' hidden in sidebar, probably here too if sensitive, 
                but request said "un account...non può vedere...Courses", implying specific navigation. 
                The Dashboard widget might be fine, but I'll hide it to be safe as it links to the restricted page.) 
             */}
+        </div>
+    );
+}
+
+function StatCard({ title, value, icon: Icon, description, color }: { title: string, value: string, icon: any, description: string, color: string }) {
+    const colorClasses: Record<string, string> = {
+        primary: "bg-primary/10 text-primary border-primary/20",
+        accent: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+        emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+    };
+
+    const iconColors: Record<string, string> = {
+        primary: "text-primary",
+        accent: "text-purple-400",
+        emerald: "text-emerald-400"
+    };
+
+    return (
+        <div className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all group">
+            <div className="flex items-start justify-between mb-4">
+                <div className={`p-3 rounded-xl ${colorClasses[color]} group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-6 h-6" />
+                </div>
+                <div className="bg-white/5 p-1 px-2 rounded-lg text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                    Live
+                </div>
+            </div>
+            <div className="space-y-1">
+                <h3 className="text-3xl font-bold tracking-tight text-white">{value}</h3>
+                <p className="text-sm font-medium text-white/60">{title}</p>
+                <p className="text-xs text-white/40">{description}</p>
+            </div>
         </div>
     );
 }
