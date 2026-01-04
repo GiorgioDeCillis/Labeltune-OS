@@ -38,8 +38,7 @@ export async function updateCourse(courseId: string, data: Partial<Course>) {
         .update({
             title: data.title,
             description: data.description,
-            duration: data.duration,
-            updated_at: new Date().toISOString()
+            duration: data.duration
         })
         .eq('id', courseId);
 
