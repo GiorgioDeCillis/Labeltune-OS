@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Settings, ListTodo, Wallet, Clock, BookOpen, ChevronRight, CheckCircle2, AlertCircle, Users } from 'lucide-react';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
+import { ProjectHeaderActions } from '@/components/dashboard/ProjectHeaderActions';
 
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -43,26 +44,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                         <h2 className="text-3xl font-bold tracking-tight text-white">{project.name}</h2>
                         <p className="text-white/60">{project.description}</p>
                     </div>
-                    <div className="flex gap-2">
-                        <Link href={`/dashboard/projects/${id}/edit`}>
-                            <button className="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-all">
-                                <Settings className="w-4 h-4" /> Edit Project
-                            </button>
-                        </Link>
-                        <Link href={`/dashboard/projects/${id}/team`}>
-                            <button className="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-all">
-                                <Users className="w-4 h-4" /> Team
-                            </button>
-                        </Link>
-                        <Link href={`/dashboard/projects/${id}/builder`}>
-                            <button className="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-all">
-                                <Settings className="w-4 h-4" /> Open Builder
-                            </button>
-                        </Link>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground font-medium rounded-lg hover:opacity-90 transition-all">
-                            <ListTodo className="w-4 h-4" /> View Tasks
-                        </button>
-                    </div>
+                    <ProjectHeaderActions id={id} guidelines={project.guidelines} />
                 </div>
 
                 <div className="glass-panel p-6 rounded-2xl border-white/10">

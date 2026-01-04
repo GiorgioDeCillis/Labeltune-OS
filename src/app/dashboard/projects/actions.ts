@@ -123,3 +123,32 @@ export async function updateProject(id: string, formData: FormData) {
     revalidatePath(`/dashboard/projects/${id}`);
     redirect(`/dashboard/projects/${id}`);
 }
+
+export async function updateProjectInstructions(projectId: string, guidelines: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Verify role
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    const isPM = profile?.role === 'pm' || profile?.role === 'admin';
+    if (!isPM) throw new Error('Unauthorized');
+
+    const { error } = await supabase
+        .from('projects')
+        .update({ guidelines })
+        .eq('id', projectId);
+
+    if (error) {
+        console.error('Error updating instructions:', error);
+        throw new Error('Failed to update instructions');
+    }
+
+    revalidatePath(`/dashboard/projects/${projectId}`);
+}
