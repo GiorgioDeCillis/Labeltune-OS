@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
-import { LandingPage } from '@/components/landing/LandingPage';
+import LoginView from '@/components/auth/LoginView';
+import { Suspense } from 'react';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -10,5 +11,9 @@ export default async function Home() {
     redirect('/dashboard');
   }
 
-  return <LandingPage />;
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <LoginView />
+    </Suspense>
+  );
 }
