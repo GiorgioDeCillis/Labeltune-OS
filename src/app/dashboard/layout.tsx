@@ -27,7 +27,7 @@ export default async function DashboardLayout({
         .eq('id', user.id)
         .single();
 
-    const userRole = user.user_metadata?.role || profile?.role || 'annotator';
+    const userRole = profile?.role || user.user_metadata?.role || 'annotator';
     const avatarUrl = profile?.avatar_url || null;
 
     return (
