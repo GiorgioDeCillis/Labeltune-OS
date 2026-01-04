@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { Course, Lesson } from '@/types/manual-types';
 
-export async function createCourse(projectId: string, data: Partial<Course>) {
+export async function createCourse(projectId: string | null, data: Partial<Course>) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Unauthorized');
@@ -12,7 +12,7 @@ export async function createCourse(projectId: string, data: Partial<Course>) {
     const { data: course, error } = await supabase
         .from('courses')
         .insert({
-            project_id: projectId,
+            project_id: projectId || null,
             title: data.title!,
             description: data.description,
             duration: data.duration
@@ -21,7 +21,10 @@ export async function createCourse(projectId: string, data: Partial<Course>) {
         .single();
 
     if (error) throw new Error(error.message);
-    revalidatePath(`/dashboard/projects/${projectId}`);
+    if (projectId) {
+        revalidatePath(`/dashboard/projects/${projectId}`);
+    }
+    revalidatePath('/dashboard/courses');
     return course;
 }
 

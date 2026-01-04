@@ -11,13 +11,15 @@ import { GripVertical, Plus, Trash2, Save, X, Video, FileText } from 'lucide-rea
 import { QuizBuilder } from './QuizBuilder';
 
 interface CourseBuilderProps {
-    projectId: string;
+    projectId?: string;
     existingCourse?: Course & { lessons: Lesson[] };
+    projects?: { id: string, name: string }[];
 }
 
-export function CourseBuilder({ projectId, existingCourse }: CourseBuilderProps) {
+export function CourseBuilder({ projectId: initialProjectId, existingCourse, projects }: CourseBuilderProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedProjectId, setSelectedProjectId] = useState(initialProjectId || existingCourse?.project_id || '');
 
     // Course State
     const [courseTitle, setCourseTitle] = useState(existingCourse?.title || '');
@@ -82,7 +84,7 @@ export function CourseBuilder({ projectId, existingCourse }: CourseBuilderProps)
                     duration: courseDuration
                 });
             } else {
-                const newCourse = await createCourse(projectId, {
+                const newCourse = await createCourse(selectedProjectId || null, {
                     title: courseTitle,
                     description: courseDescription,
                     duration: courseDuration
@@ -125,7 +127,11 @@ export function CourseBuilder({ projectId, existingCourse }: CourseBuilderProps)
                 }
             }
 
-            router.push(`/dashboard/projects/${projectId}`);
+            if (selectedProjectId) {
+                router.push(`/dashboard/projects/${selectedProjectId}`);
+            } else {
+                router.push('/dashboard/courses');
+            }
             router.refresh();
 
         } catch (error) {
@@ -142,6 +148,22 @@ export function CourseBuilder({ projectId, existingCourse }: CourseBuilderProps)
             <div className="lg:col-span-1 space-y-6">
                 <div className="glass-panel p-6 rounded-xl space-y-4">
                     <h3 className="font-bold">Course Details</h3>
+
+                    {projects && !initialProjectId && !existingCourse && (
+                        <div className="space-y-2">
+                            <label className="text-xs uppercase text-muted-foreground font-bold">Associated Project</label>
+                            <select
+                                value={selectedProjectId}
+                                onChange={(e) => setSelectedProjectId(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-lg p-2 focus:outline-none focus:border-primary text-sm"
+                            >
+                                <option value="">Global (No Project)</option>
+                                {projects.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                     <div className="space-y-2">
                         <label className="text-xs uppercase text-muted-foreground font-bold">Title</label>
                         <input
