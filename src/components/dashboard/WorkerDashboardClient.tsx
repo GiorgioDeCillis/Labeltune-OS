@@ -188,62 +188,56 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                     title="Total Tasks"
                     value={stats.totalTasks.toString()}
                     icon={CheckCircle}
-                    description="Successfully completed"
-                    color="primary"
                 />
                 <StatCard
                     title="Hours Worked"
                     value={`${stats.hoursWorked}h`}
                     icon={Clock}
-                    description="Actual labeling time"
-                    color="accent"
                 />
                 <StatCard
                     title="Avg. Rate"
                     value={`$${stats.avgRate.toFixed(2)}`}
                     icon={TrendingUp}
-                    description="Per hour average"
-                    color="emerald"
                 />
             </div>
 
             {/* Earnings Gadget */}
             <div className="space-y-4">
                 <h2 className="text-lg font-bold text-muted-foreground uppercase tracking-widest">Earnings</h2>
-                <div className="glass-panel p-8 rounded-2xl border border-white/10 relative overflow-hidden group">
+                <div className="glass-panel p-8 rounded-2xl border border-white/5 relative overflow-hidden group">
                     <div className="flex flex-col md:flex-row gap-12 items-end">
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-primary">
-                                <Wallet className="w-5 h-5" />
-                                <span className="font-bold uppercase tracking-wider text-xs">Total Earnings</span>
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 text-primary/80">
+                                <Wallet className="w-4 h-4" />
+                                <span className="font-bold uppercase tracking-wider text-[10px]">Total Earnings</span>
                             </div>
                             <div className="text-5xl font-bold text-white tracking-tighter">$2,824</div>
-                            <p className="text-white/40 text-sm">Earnings from Aug to Jan 2026</p>
+                            <p className="text-white/40 text-[10px] font-medium uppercase tracking-wide">Earnings (Aug 2025 - Jan 2026)</p>
                         </div>
 
-                        <div className="flex-1 flex items-end justify-between gap-4 h-48 w-full group/chart">
+                        <div className="flex-1 flex items-end justify-between gap-3 h-40 w-full group/chart">
                             {[
-                                { m: 'Aug', v: 40, color: 'from-orange-500/20 to-orange-500/40' },
-                                { m: 'Sep', v: 100, color: 'from-orange-500 to-rose-500', glow: true },
-                                { m: 'Oct', v: 60, color: 'from-orange-500/30 to-orange-500/50' },
-                                { m: 'Nov', v: 75, color: 'from-orange-500 to-rose-500', glow: true },
-                                { m: 'Dec', v: 50, color: 'from-orange-500/40 to-orange-500/60' },
-                                { m: 'Jan', v: 35, color: 'from-orange-500/20 to-orange-500/40' }
+                                { m: 'Aug', v: 40, color: 'from-primary/10 to-primary/30' },
+                                { m: 'Sep', v: 100, color: 'from-primary/60 to-primary', glow: true },
+                                { m: 'Oct', v: 60, color: 'from-primary/20 to-primary/40' },
+                                { m: 'Nov', v: 75, color: 'from-primary/50 to-primary/80', glow: true },
+                                { m: 'Dec', v: 50, color: 'from-primary/30 to-primary/50' },
+                                { m: 'Jan', v: 35, color: 'from-primary/10 to-primary/20' }
                             ].map((bar, i) => (
-                                <div key={i} className="flex-1 flex flex-col items-center gap-3 h-full group/bar">
+                                <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full group/bar">
                                     <div className="flex-1 w-full bg-white/5 rounded-full relative overflow-hidden flex items-end">
                                         <motion.div
                                             initial={{ height: 0 }}
                                             animate={{ height: `${bar.v}%` }}
                                             transition={{ delay: i * 0.1, duration: 1, ease: "easeOut" }}
-                                            className={`w-full bg-gradient-to-t ${bar.color} rounded-full relative`}
+                                            className={`w-full bg-gradient-to-t ${bar.color} rounded-full relative transition-all duration-500 group-hover/bar:brightness-125`}
                                         >
                                             {bar.glow && (
-                                                <div className="absolute inset-x-0 top-0 h-4 bg-white/40 blur-sm rounded-full animate-pulse"></div>
+                                                <div className="absolute inset-0 bg-primary/20 blur-md rounded-full animate-pulse"></div>
                                             )}
                                         </motion.div>
                                     </div>
-                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${bar.glow ? 'text-orange-500' : 'text-white/20'}`}>
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${bar.glow ? 'text-primary' : 'text-white/20'}`}>
                                         {bar.m}
                                     </span>
                                 </div>
@@ -261,34 +255,14 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
     );
 }
 
-function StatCard({ title, value, icon: Icon, description, color }: { title: string, value: string, icon: any, description: string, color: string }) {
-    const colorClasses: Record<string, string> = {
-        primary: "bg-primary/10 text-primary border-primary/20",
-        accent: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-        emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-    };
-
-    const iconColors: Record<string, string> = {
-        primary: "text-primary",
-        accent: "text-purple-400",
-        emerald: "text-emerald-400"
-    };
-
+function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: any }) {
     return (
-        <div className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all group">
-            <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 rounded-xl ${colorClasses[color]} group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-6 h-6" />
-                </div>
-                <div className="bg-white/5 p-1 px-2 rounded-lg text-[10px] font-bold text-white/40 uppercase tracking-widest">
-                    Live
-                </div>
+        <div className="glass-panel p-6 rounded-xl space-y-2 border border-white/5 hover:border-white/10 transition-all group">
+            <div className="flex items-center justify-between text-white/40 group-hover:text-primary/60 transition-colors">
+                <span className="text-[10px] font-bold uppercase tracking-widest">{title}</span>
+                <Icon className="w-4 h-4 transition-transform group-hover:scale-110" />
             </div>
-            <div className="space-y-1">
-                <h3 className="text-3xl font-bold tracking-tight text-white">{value}</h3>
-                <p className="text-sm font-medium text-white/60">{title}</p>
-                <p className="text-xs text-white/40">{description}</p>
-            </div>
+            <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
         </div>
     );
 }
