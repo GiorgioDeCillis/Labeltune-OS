@@ -3,6 +3,27 @@ import { notFound, redirect } from 'next/navigation';
 import { updateProject } from '@/app/dashboard/projects/actions';
 import { Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import CustomSelect from '@/components/CustomSelect';
+
+const PROJECT_TYPE_OPTIONS = [
+    { code: 'text_classification', name: 'Text Classification' },
+    { code: 'image_classification', name: 'Image Classification' },
+    { code: 'image_bounding_box', name: 'Object Detection' },
+    { code: 'sentiment_analysis', name: 'Sentiment Analysis' },
+    { code: 'generation', name: 'Chatbot Evaluation (RLHF)' },
+    { code: 'audio_transcription', name: 'Audio Transcription' },
+    { code: 'video_tracking', name: 'Video Object Tracking' },
+    { code: 'time_series', name: 'Time Series Anomaly' },
+    { code: 'pdf_extraction', name: 'PDF Data Extraction' },
+    { code: 'rlhf_pogo', name: 'Safe & Helpful RLHF' },
+];
+
+const STATUS_OPTIONS = [
+    { code: 'active', name: 'Active' },
+    { code: 'paused', name: 'Paused' },
+    { code: 'completed', name: 'Completed' },
+    { code: 'archived', name: 'Archived' },
+];
 
 export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -64,19 +85,16 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
                     />
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-6 !overflow-visible">
+                    <div className="space-y-2 !overflow-visible">
                         <label className="text-sm font-bold uppercase text-muted-foreground">Project Type</label>
-                        <select
+                        <CustomSelect
                             name="type"
+                            label="Project Type"
+                            placeholder="Select a type"
+                            options={PROJECT_TYPE_OPTIONS}
                             defaultValue={project.type}
-                            className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary"
-                        >
-                            <option value="text_classification">Text Classification</option>
-                            <option value="image_bounding_box">Image Bounding Box</option>
-                            <option value="sentiment_analysis">Sentiment Analysis</option>
-                            <option value="generation">Generation (RLHF)</option>
-                        </select>
+                        />
                     </div>
 
                     <div className="space-y-2">
@@ -113,18 +131,15 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
                     </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 !overflow-visible">
                     <label className="text-sm font-bold uppercase text-muted-foreground">Status</label>
-                    <select
+                    <CustomSelect
                         name="status"
+                        label="Status"
+                        placeholder="Select status"
+                        options={STATUS_OPTIONS}
                         defaultValue={project.status}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary"
-                    >
-                        <option value="active">Active</option>
-                        <option value="paused">Paused</option>
-                        <option value="completed">Completed</option>
-                        <option value="archived">Archived</option>
-                    </select>
+                    />
                 </div>
 
                 <div className="space-y-2">

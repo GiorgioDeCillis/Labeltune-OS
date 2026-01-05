@@ -9,6 +9,20 @@ import { ChevronRight, ChevronLeft, Save, LayoutGrid, Settings2, MessageSquare, 
 import { InstructionsStep, InstructionSection } from './steps/InstructionsStep';
 import { CoursesStep } from './steps/CoursesStep';
 import { Course } from '@/types/manual-types';
+import CustomSelect from '@/components/CustomSelect';
+
+const PROJECT_TYPE_OPTIONS = [
+    { code: 'text_classification', name: 'Text Classification' },
+    { code: 'image_classification', name: 'Image Classification' },
+    { code: 'image_bounding_box', name: 'Object Detection' },
+    { code: 'sentiment_analysis', name: 'Sentiment Analysis' },
+    { code: 'generation', name: 'Chatbot Evaluation (RLHF)' },
+    { code: 'audio_transcription', name: 'Audio Transcription' },
+    { code: 'video_tracking', name: 'Video Object Tracking' },
+    { code: 'time_series', name: 'Time Series Anomaly' },
+    { code: 'pdf_extraction', name: 'PDF Data Extraction' },
+    { code: 'rlhf_pogo', name: 'Safe & Helpful RLHF' },
+];
 
 const iconMap = {
     MessageSquare,
@@ -241,20 +255,16 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-6 !overflow-visible">
+                            <div className="space-y-2 !overflow-visible">
                                 <label className="text-sm font-bold uppercase text-muted-foreground">Project Type</label>
-                                <select
+                                <CustomSelect
                                     name="type"
+                                    label="Project Type"
+                                    placeholder="Select a type"
+                                    options={PROJECT_TYPE_OPTIONS}
                                     defaultValue={selectedTemplate?.type || 'text_classification'}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary appearance-none"
-                                >
-                                    <option value="text_classification">Text Classification</option>
-                                    <option value="image_bounding_box">Image Bounding Box</option>
-                                    <option value="sentiment_analysis">Sentiment Analysis</option>
-                                    <option value="generation">Generation (RLHF)</option>
-                                    <option value="audio_transcription">Audio Transcription</option>
-                                </select>
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-bold uppercase text-muted-foreground">Pay Rate</label>

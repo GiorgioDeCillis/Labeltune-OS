@@ -14,6 +14,8 @@ interface CustomSelectProps {
     label: string;
     options: Option[];
     placeholder: string;
+    defaultValue?: string;
+    value?: string;
     required?: boolean;
     error?: string;
     onChange?: (value: string) => void;
@@ -23,15 +25,30 @@ export default function CustomSelect({
     name,
     options,
     placeholder,
+    defaultValue = '',
+    value,
     required,
     error,
     onChange
 }: CustomSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState('');
+    const [internalValue, setInternalValue] = useState(value ?? defaultValue);
     const containerRef = useRef<HTMLDivElement>(null);
 
+    const selectedValue = value ?? internalValue;
     const selectedOption = options.find(opt => opt.code === selectedValue);
+
+    useEffect(() => {
+        if (value !== undefined) {
+            setInternalValue(value);
+        }
+    }, [value]);
+
+    useEffect(() => {
+        if (defaultValue !== undefined && value === undefined) {
+            setInternalValue(defaultValue);
+        }
+    }, [defaultValue, value]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -45,7 +62,7 @@ export default function CustomSelect({
     }, []);
 
     const handleSelect = (value: string) => {
-        setSelectedValue(value);
+        setInternalValue(value);
         setIsOpen(false);
         if (onChange) onChange(value);
     };
