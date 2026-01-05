@@ -29,7 +29,7 @@ export const CursorBorderEffect: React.FC = () => {
             const target = currentTargetRef.current;
             if (!target) return;
             const rect = target.getBoundingClientRect();
-            updatePosition(rect.left - 2, rect.top - 2, rect.width + 4, rect.height + 4);
+            updatePosition(rect.left - 1, rect.top - 1, rect.width + 2, rect.height + 2);
         };
 
         const setTarget = (newTarget: HTMLElement | null) => {
