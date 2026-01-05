@@ -10,6 +10,7 @@ import {
 import { submitOnboarding } from './actions';
 import { useTheme } from '@/context/ThemeContext';
 import CustomSelect from '@/components/CustomSelect';
+import CustomDateInput from '@/components/CustomDateInput';
 
 const COUNTRIES = [
     { code: 'IT', name: 'Italia' },
@@ -184,17 +185,11 @@ export default function OnboardingPage() {
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase tracking-wider opacity-60">Data di Nascita</label>
-                                    <input
+                                    <CustomDateInput
                                         name="birthDate"
-                                        type="date"
                                         required
-                                        className={`w-full bg-white/5 border ${fieldErrors.birthDate ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all [color-scheme:dark]`}
+                                        error={fieldErrors.birthDate}
                                     />
-                                    {fieldErrors.birthDate && (
-                                        <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
-                                            {fieldErrors.birthDate}
-                                        </span>
-                                    )}
                                 </div>
 
                                 <div className="space-y-2">
