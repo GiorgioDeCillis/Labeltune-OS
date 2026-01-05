@@ -7,6 +7,8 @@ import ProjectQueueModal from '@/components/dashboard/ProjectQueueModal';
 import { createClient } from '@/utils/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { startTasking } from '@/app/dashboard/projects/actions';
+import { useSearchParams } from 'next/navigation';
+import { useToast } from '@/components/Toast';
 
 interface Project {
     id: string;
@@ -29,6 +31,17 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
     });
     const [hoveredBar, setHoveredBar] = useState<number | null>(null);
     const supabase = createClient();
+    const searchParams = useSearchParams();
+    const { showToast } = useToast();
+
+    useEffect(() => {
+        const error = searchParams.get('error');
+        if (error) {
+            showToast(error, 'error');
+            // Clean up URL
+            window.history.replaceState(null, '', window.location.pathname);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         if (user?.id) {
