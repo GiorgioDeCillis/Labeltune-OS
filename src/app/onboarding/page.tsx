@@ -142,7 +142,7 @@ export default function OnboardingPage() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.1 }}
-                                className="glass-panel p-6 md:p-8 rounded-3xl space-y-6"
+                                className="glass-panel !overflow-visible p-6 md:p-8 rounded-3xl space-y-6"
                             >
                                 <h3 className="text-xl font-bold flex items-center gap-3">
                                     <div className="p-2 bg-primary/10 rounded-lg">
@@ -222,7 +222,7 @@ export default function OnboardingPage() {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.2 }}
-                                className="glass-panel p-6 md:p-8 rounded-3xl space-y-6"
+                                className="glass-panel !overflow-visible p-6 md:p-8 rounded-3xl space-y-6"
                             >
                                 <h3 className="text-xl font-bold flex items-center gap-3">
                                     <div className="p-2 bg-primary/10 rounded-lg">
@@ -287,7 +287,7 @@ export default function OnboardingPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 }}
-                                className="glass-panel p-6 md:p-8 rounded-3xl space-y-6"
+                                className="glass-panel !overflow-visible p-6 md:p-8 rounded-3xl space-y-6"
                             >
                                 <h3 className="text-xl font-bold flex items-center gap-3">
                                     <div className="p-2 bg-primary/10 rounded-lg">
@@ -365,7 +365,7 @@ export default function OnboardingPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 }}
-                                className="glass-panel p-6 md:p-8 rounded-3xl space-y-6"
+                                className="glass-panel !overflow-visible p-6 md:p-8 rounded-3xl space-y-6"
                             >
                                 <h3 className="text-xl font-bold flex items-center gap-3">
                                     <div className="p-2 bg-primary/10 rounded-lg">
