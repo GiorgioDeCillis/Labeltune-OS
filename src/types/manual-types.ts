@@ -11,6 +11,8 @@ export interface Task {
     projects?: {
         name: string;
         type: string;
+        pay_rate?: string;
+        template_schema?: any;
     };
     reviewed_by?: string | null;
     review_rating?: number | null;

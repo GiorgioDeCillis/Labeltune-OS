@@ -19,7 +19,8 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
         .eq('id', taskId)
         .single();
 
-    const payRate = parseFloat(task?.projects?.pay_rate || '0');
+    const projectsData = task?.projects as any;
+    const payRate = parseFloat((Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0');
     // Reviewer earnings - might be different but let's assume same for now or a fraction.
     // User said "guadagno del reviewer sulla base del tempo trascorso sulla task e paga oraria del progetto".
     const earnings = (timeSpent / 3600) * payRate;

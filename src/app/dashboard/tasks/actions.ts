@@ -41,7 +41,8 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
         .eq('id', taskId)
         .single();
 
-    const payRate = parseFloat(task?.projects?.pay_rate || '0');
+    const projectsData = task?.projects as any;
+    const payRate = parseFloat((Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0');
     // timeSpent is in seconds. payRate is usually per hour.
     // earnings = (timeSpent / 3600) * payRate
     const earnings = (timeSpent / 3600) * payRate;
