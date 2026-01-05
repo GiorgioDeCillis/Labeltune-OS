@@ -39,6 +39,7 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
     const [selectedStatus, setSelectedStatus] = useState('');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+    const [showAddView, setShowAddView] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; member: TeamMember | null; isBulk: boolean }>({
         isOpen: false,
         member: null,
