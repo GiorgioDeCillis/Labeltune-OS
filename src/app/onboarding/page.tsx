@@ -50,31 +50,26 @@ export default function OnboardingPage() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center p-4 py-12 relative">
-            {/* Background elements */}
-            <div className="fixed inset-0 pointer-events-none">
+        <div className="h-screen overflow-hidden flex flex-col relative bg-background">
+            {/* Background elements - fixed to viewport */}
+            <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/10 blur-[120px] rounded-full" />
                 <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary/10 blur-[120px] rounded-full" />
             </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-4xl relative z-10"
-            >
-                <div
-                    className="relative overflow-hidden p-8 md:p-12 rounded-[2.5rem] border border-white/10 shadow-2xl"
-                    style={{
-                        background: 'rgba(15, 15, 25, 0.7)',
-                        backdropFilter: 'blur(20px) saturate(160%)',
-                    }}
-                >
-                    <div className="text-center mb-10">
-                        <h1 className="text-4xl font-black tracking-tight mb-4">Benvenuto su Labeltune!</h1>
-                        <p className="text-muted-foreground max-w-lg mx-auto">
+            {/* Scrollable container */}
+            <main className="flex-1 overflow-y-auto relative z-10">
+                <div className="max-w-4xl mx-auto p-4 py-12 md:py-20 space-y-12">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-center"
+                    >
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">Benvenuto su Labeltune!</h1>
+                        <p className="text-muted-foreground max-w-lg mx-auto text-lg">
                             Completa il tuo profilo per iniziare a lavorare come Annotator sulla nostra piattaforma.
                         </p>
-                    </div>
+                    </motion.div>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         {error && (
@@ -88,11 +83,18 @@ export default function OnboardingPage() {
                             </motion.div>
                         )}
 
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid md:grid-cols-2 gap-8">
                             {/* Personal Info */}
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-bold flex items-center gap-2">
-                                    <User className="w-5 h-5 text-primary" />
+                            <motion.section
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="glass-panel p-6 md:p-8 rounded-3xl space-y-6"
+                            >
+                                <h3 className="text-xl font-bold flex items-center gap-3">
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <User className="w-5 h-5 text-primary" />
+                                    </div>
                                     Informazioni Personali
                                 </h3>
 
@@ -140,12 +142,19 @@ export default function OnboardingPage() {
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </motion.section>
 
                             {/* Location & Language */}
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-bold flex items-center gap-2">
-                                    <Globe className="w-5 h-5 text-primary" />
+                            <motion.section
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="glass-panel p-6 md:p-8 rounded-3xl space-y-6"
+                            >
+                                <h3 className="text-xl font-bold flex items-center gap-3">
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <Globe className="w-5 h-5 text-primary" />
+                                    </div>
                                     Nazionalità e Lingua
                                 </h3>
 
@@ -195,16 +204,21 @@ export default function OnboardingPage() {
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </motion.section>
                         </div>
 
-                        <hr className="border-white/5" />
-
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid md:grid-cols-2 gap-8">
                             {/* Professional info */}
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-bold flex items-center gap-2">
-                                    <FileText className="w-5 h-5 text-primary" />
+                            <motion.section
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className="glass-panel p-6 md:p-8 rounded-3xl space-y-6"
+                            >
+                                <h3 className="text-xl font-bold flex items-center gap-3">
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <FileText className="w-5 h-5 text-primary" />
+                                    </div>
                                     Profilo Professionale
                                 </h3>
 
@@ -216,10 +230,15 @@ export default function OnboardingPage() {
                                             type="file"
                                             accept=".pdf"
                                             required
-                                            onChange={(e) => setCvFile(e.target.files?.[0] || null)}
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0] || null;
+                                                console.log("File selected:", file?.name);
+                                                setCvFile(file);
+                                            }}
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                         />
-                                        <div className="w-full bg-white/5 border-2 border-dashed border-white/10 group-hover/file:border-primary/50 group-hover/file:bg-primary/5 rounded-2xl p-8 transition-all text-center">
+                                        <div className={`w-full border-2 border-dashed rounded-2xl p-8 transition-all text-center ${cvFile ? 'bg-primary/5 border-primary/50' : 'bg-white/5 border-white/10 group-hover/file:border-primary/50 group-hover/file:bg-primary/5'
+                                            }`}>
                                             <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 group-hover/file:scale-110 transition-transform">
                                                 {cvFile ? (
                                                     <CheckCircle2 className="w-6 h-6 text-primary" />
@@ -227,7 +246,7 @@ export default function OnboardingPage() {
                                                     <FileText className="w-6 h-6 opacity-40 group-hover/file:text-primary group-hover/file:opacity-100" />
                                                 )}
                                             </div>
-                                            <span className="text-sm font-bold opacity-60">
+                                            <span className="text-sm font-bold block truncate max-w-xs mx-auto">
                                                 {cvFile ? cvFile.name : "Clicca o trascina il tuo CV"}
                                             </span>
                                             <p className="text-[10px] uppercase tracking-widest opacity-40 mt-1">
@@ -263,12 +282,19 @@ export default function OnboardingPage() {
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </motion.section>
 
                             {/* Payment info */}
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-bold flex items-center gap-2">
-                                    <CreditCard className="w-5 h-5 text-primary" />
+                            <motion.section
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                                className="glass-panel p-6 md:p-8 rounded-3xl space-y-6"
+                            >
+                                <h3 className="text-xl font-bold flex items-center gap-3">
+                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                        <CreditCard className="w-5 h-5 text-primary" />
+                                    </div>
                                     Pagamenti & Consensi
                                 </h3>
 
@@ -297,24 +323,29 @@ export default function OnboardingPage() {
                                                     className="peer sr-only"
                                                 />
                                                 <div className="w-6 h-6 border-2 border-white/10 rounded-lg group-hover:border-primary/50 transition-all peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center">
-                                                    <CheckCircle2 className="w-4 h-4 text-white scale-0 peer-checked:scale-100 transition-transform" />
+                                                    <CheckCircle2 className="w-4 h-4 text-black scale-0 peer-checked:scale-100 transition-transform" />
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
                                                 <span className="text-sm font-bold opacity-80 group-hover:opacity-100 transition-opacity">Ricevi offerte da partner</span>
-                                                <p className="text-xs opacity-40">Acconsento a ricevere offerte di lavoro anche da aziende partner di Labeltune.</p>
+                                                <p className="text-xs opacity-40 leading-relaxed">Acconsento a ricevere offerte di lavoro anche da aziende partner di Labeltune.</p>
                                             </div>
                                         </label>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.section>
                         </div>
 
-                        <div className="pt-6">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="pt-8"
+                        >
                             <button
                                 type="submit"
                                 disabled={isPending}
-                                className="w-full bg-primary hover:bg-primary/90 text-black font-black py-4 rounded-2xl shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
+                                className="w-full bg-primary hover:bg-primary/90 text-black font-black py-5 rounded-2xl shadow-2xl shadow-primary/20 transition-all flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group text-lg"
                             >
                                 {isPending ? (
                                     <Loader2 className="w-6 h-6 animate-spin" />
@@ -330,10 +361,10 @@ export default function OnboardingPage() {
                                     </>
                                 )}
                             </button>
-                        </div>
+                        </motion.div>
                     </form>
                 </div>
-            </motion.div>
+            </main>
         </div>
     );
 }
