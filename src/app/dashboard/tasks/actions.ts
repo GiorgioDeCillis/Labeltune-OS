@@ -87,3 +87,23 @@ export async function archiveTask(projectId: string, taskId: string) {
     revalidatePath(`/dashboard/projects/${projectId}/tasks`);
     return { success: true };
 }
+
+export async function updateTaskTimer(taskId: string, timeSpent: number) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'Unauthorized' };
+
+    const { error } = await supabase
+        .from('tasks')
+        .update({ annotator_time_spent: timeSpent })
+        .eq('id', taskId)
+        .eq('assigned_to', user.id); // Only allow update if assigned to user
+
+    if (error) {
+        console.error('Error updating task timer:', error);
+        return { error: 'Failed to update timer' };
+    }
+
+    return { success: true };
+}

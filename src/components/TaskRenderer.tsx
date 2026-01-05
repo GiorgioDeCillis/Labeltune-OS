@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Loader2, Timer } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { submitTask } from '@/app/dashboard/tasks/actions';
+import { submitTask, updateTaskTimer } from '@/app/dashboard/tasks/actions';
 import {
     ImageObject,
     TextObject,
@@ -34,17 +34,19 @@ export function TaskRenderer({
     taskId,
     initialData,
     isReadOnly = false,
-    maxTime
+    maxTime,
+    initialTimeSpent = 0
 }: {
     schema: TaskComponent[],
     taskId: string,
     initialData?: any,
     isReadOnly?: boolean,
-    maxTime?: number | null
+    maxTime?: number | null,
+    initialTimeSpent?: number
 }) {
     const [formData, setFormData] = useState<any>(initialData || {});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [seconds, setSeconds] = useState(0);
+    const [seconds, setSeconds] = useState(initialTimeSpent);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const router = useRouter();
     const supabase = createClient();
@@ -59,6 +61,27 @@ export function TaskRenderer({
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, [isReadOnly]);
+
+    // Autosave timer every 5 seconds
+    // Keep track of latest seconds in a ref to use inside interval without resetting it
+    const secondsRef = useRef(seconds);
+    useEffect(() => {
+        secondsRef.current = seconds;
+    }, [seconds]);
+
+    // Autosave timer every 5 seconds
+    useEffect(() => {
+        if (isReadOnly) return;
+
+        const saveInterval = setInterval(() => {
+            // Use the ref value to get current time
+            if (secondsRef.current > initialTimeSpent) {
+                updateTaskTimer(taskId, secondsRef.current);
+            }
+        }, 5000);
+
+        return () => clearInterval(saveInterval);
+    }, [isReadOnly, taskId, initialTimeSpent]);
 
     const formatTime = (totalSeconds: number) => {
         const h = Math.floor(totalSeconds / 3600);
