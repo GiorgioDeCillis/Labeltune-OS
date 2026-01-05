@@ -159,7 +159,8 @@ export function TaskRenderer({
     const taskData = initialData || {};
 
     return (
-        <div className="flex flex-col h-full relative">
+    return (
+        <div className="relative">
             {/* Blocking Expiration Modal */}
             {isExpired && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
@@ -239,29 +240,7 @@ export function TaskRenderer({
                 </div>
             )}
 
-            <div className={`flex items-center justify-between mb-4 bg-white/5 p-3 rounded-lg border border-white/10 transition-colors ${seconds > (maxTime || Infinity) ? 'border-yellow-500/30 bg-yellow-500/5' : ''}`}>
-                <div className="flex items-center gap-2 text-primary font-mono text-sm">
-                    {seconds > (maxTime || Infinity) ? (
-                        <AlertTriangle className="w-4 h-4 text-yellow-500" />
-                    ) : (
-                        <Timer className="w-4 h-4" />
-                    )}
-                    <span className={seconds > (maxTime || Infinity) ? 'text-yellow-500' : ''}>
-                        Time spent: {formatTime(seconds)}
-                    </span>
-                    {maxTime && (
-                        <span className="opacity-50">
-                            / {formatTime(maxTime)}
-                        </span>
-                    )}
-                </div>
-                {seconds > (maxTime || Infinity) && (
-                    <div className="text-xs font-bold text-yellow-500 px-2 py-0.5 bg-yellow-500/10 rounded border border-yellow-500/20 animate-pulse">
-                        OVERTIME (UNPAID)
-                    </div>
-                )}
-            </div>
-            <div className="flex-1 space-y-8 overflow-y-auto pr-2 custom-scrollbar p-1">
+            <div className="space-y-8 pr-2">
                 {schema.map((component) => {
                     // Objects
                     if (component.type === 'Image') return <ImageObject key={component.id} component={component} data={taskData} />;

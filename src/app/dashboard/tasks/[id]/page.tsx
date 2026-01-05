@@ -7,6 +7,7 @@ import { TaskRenderer } from '@/components/TaskRenderer';
 import { CopyableTaskId } from '@/components/CopyableTaskId';
 import { TaskComponent } from '@/components/builder/types';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
+import { TaskTimerHeader } from '@/components/TaskTimerHeader';
 
 export default async function TaskLabelingPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -46,6 +47,11 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
                             <CopyableTaskId taskId={task.id} />
                             <span className="text-white/20">|</span>
                             <ProjectGuidelinesLink guidelines={task.projects?.guidelines} label="Read Guidelines" />
+                            <TaskTimerHeader
+                                initialTimeSpent={task.annotator_time_spent || 0}
+                                maxTime={task.projects?.max_task_time}
+                                isReadOnly={!isAssignedToMe}
+                            />
                         </div>
                     </div>
                 </div>
