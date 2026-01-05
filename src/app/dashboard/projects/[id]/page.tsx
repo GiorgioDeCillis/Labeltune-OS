@@ -148,7 +148,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             <div className="space-y-4">
                 <Link
                     href="/dashboard"
-                    className="inline-flex items-center text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                    className="inline-flex items-center text-sm text-[var(--primary)] hover:opacity-80 transition-opacity font-medium"
                 >
                     <ChevronLeft className="w-4 h-4 mr-1" />
                     Back
@@ -237,14 +237,14 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
                 {/* Bottom Actions Row */}
                 <div className="bg-white/5 px-8 py-4 flex items-center gap-6 border-t border-white/5">
-                    <Link href="#" className="text-primary hover:text-primary/80 text-sm font-bold flex items-center gap-1 transition-colors">
+                    <Link href="#" className="text-[var(--primary)] hover:opacity-80 text-sm font-bold flex items-center gap-1 transition-opacity">
                         View Pay Terms <ChevronRight className="w-4 h-4" />
                     </Link>
 
-                    <ProjectGuidelinesLink guidelines={project.guidelines} className="text-primary hover:text-primary/80 text-sm font-bold flex items-center gap-1 transition-colors" />
+                    <ProjectGuidelinesLink guidelines={project.guidelines} className="text-[var(--primary)] hover:opacity-80 text-sm font-bold flex items-center gap-1 transition-opacity" />
 
                     <form action={startTasking.bind(null, project.id)} className="ml-auto">
-                        <button className="text-primary hover:text-primary/80 text-sm font-bold flex items-center gap-1">
+                        <button className="text-[var(--primary)] hover:opacity-80 text-sm font-bold flex items-center gap-1">
                             Start Tasking <ChevronRight className="w-4 h-4" />
                         </button>
                     </form>
