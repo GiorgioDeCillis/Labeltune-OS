@@ -4,7 +4,9 @@ import React, { useState } from 'react';
 import { TaskComponent } from '@/components/builder/types';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Timer } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { submitTask } from '@/app/dashboard/tasks/actions';
 import {
     ImageObject,
     TextObject,
@@ -40,8 +42,28 @@ export function TaskRenderer({
 }) {
     const [formData, setFormData] = useState<any>(initialData || {});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [seconds, setSeconds] = useState(0);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
     const router = useRouter();
     const supabase = createClient();
+
+    useEffect(() => {
+        if (!isReadOnly) {
+            timerRef.current = setInterval(() => {
+                setSeconds(prev => prev + 1);
+            }, 1000);
+        }
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [isReadOnly]);
+
+    const formatTime = (totalSeconds: number) => {
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+        return `${h > 0 ? `${h}h ` : ''}${m > 0 ? `${m}m ` : ''}${s}s`;
+    };
 
     // In a real Label Studio implementation, Objects are rendered once and controls might attach to them.
     // For this simplified version, we just render everything in order.
@@ -55,23 +77,15 @@ export function TaskRenderer({
     const handleSubmit = async () => {
         setIsSubmitting(true);
 
-        // Update task with labels and mark as completed (or pending review)
-        const { error } = await supabase
-            .from('tasks')
-            .update({
-                labels: formData,
-                status: 'completed' // Simple flow for now
-            })
-            .eq('id', taskId);
-
-        setIsSubmitting(false);
-
-        if (error) {
+        try {
+            await submitTask(taskId, formData, seconds);
+            router.push('/dashboard/tasks');
+            router.refresh();
+        } catch (error) {
             console.error('Error submitting task:', error);
             alert('Failed to submit task. Please try again.');
-        } else {
-            router.push('/dashboard/tasks');
-            router.refresh(); // Refresh to update lists
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -82,6 +96,12 @@ export function TaskRenderer({
 
     return (
         <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between mb-4 bg-white/5 p-3 rounded-lg border border-white/10">
+                <div className="flex items-center gap-2 text-primary font-mono text-sm">
+                    <Timer className="w-4 h-4" />
+                    <span>Time spent: {formatTime(seconds)}</span>
+                </div>
+            </div>
             <div className="flex-1 space-y-8 overflow-y-auto pr-2 custom-scrollbar p-1">
                 {schema.map((component) => {
                     // Objects

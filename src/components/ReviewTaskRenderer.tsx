@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { TaskComponent } from '@/components/builder/types';
 import { useRouter } from 'next/navigation';
-import { Loader2, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Loader2, ThumbsUp, ThumbsDown, Timer, Star } from 'lucide-react';
 import { approveTask, rejectTask } from '@/app/dashboard/review/actions';
+import { useEffect, useRef } from 'react';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
     ImageObject,
@@ -39,10 +40,29 @@ export function ReviewTaskRenderer({
 }) {
     const [formData, setFormData] = useState<any>(initialData || {});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [rating, setRating] = useState(5);
+    const [seconds, setSeconds] = useState(0);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
     const [confirmAction, setConfirmAction] = useState<{
         isOpen: boolean;
         type: 'approve' | 'reject' | null;
     }>({ isOpen: false, type: null });
+
+    useEffect(() => {
+        timerRef.current = setInterval(() => {
+            setSeconds(prev => prev + 1);
+        }, 1000);
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, []);
+
+    const formatTime = (totalSeconds: number) => {
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+        return `${h > 0 ? `${h}h ` : ''}${m > 0 ? `${m}m ` : ''}${s}s`;
+    };
 
     // Hack: if initialData has '$image' keys etc, use them.
     const taskData = initialData || {};
@@ -59,7 +79,7 @@ export function ReviewTaskRenderer({
         setConfirmAction({ isOpen: false, type: null });
         setIsSubmitting(true);
         try {
-            await approveTask(taskId, formData);
+            await approveTask(taskId, formData, rating, seconds);
         } catch (e) {
             console.error(e);
             alert('Failed to approve task'); // Keeping alert for errors for now as it's not a confirm
@@ -119,23 +139,44 @@ export function ReviewTaskRenderer({
                 })}
             </div>
 
-            <div className="pt-6 border-t border-white/5 grid grid-cols-2 gap-4 mt-4">
-                <button
-                    onClick={handleReject}
-                    disabled={isSubmitting}
-                    className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2 border border-red-500/20"
-                >
-                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsDown className="w-4 h-4" />}
-                    Reject & Re-Queue
-                </button>
-                <button
-                    onClick={handleApprove}
-                    disabled={isSubmitting}
-                    className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
-                >
-                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
-                    Approve & Validate
-                </button>
+            <div className="pt-6 border-t border-white/5 space-y-4 mt-4">
+                <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-2 text-primary font-mono text-sm">
+                        <Timer className="w-4 h-4" />
+                        <span>Review Time: {formatTime(seconds)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground mr-2 font-bold uppercase tracking-widest">Quality Rating:</span>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                                key={star}
+                                onClick={() => setRating(star)}
+                                className={`p-1 transition-all ${rating >= star ? 'text-yellow-500 scale-110' : 'text-white/10 hover:text-white/20'}`}
+                            >
+                                <Star className={`w-5 h-5 ${rating >= star ? 'fill-current' : ''}`} />
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <button
+                        onClick={handleReject}
+                        disabled={isSubmitting}
+                        className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2 border border-red-500/20"
+                    >
+                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsDown className="w-4 h-4" />}
+                        Reject & Re-Queue
+                    </button>
+                    <button
+                        onClick={handleApprove}
+                        disabled={isSubmitting}
+                        className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                    >
+                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
+                        Approve & Validate
+                    </button>
+                </div>
             </div>
 
             <ConfirmDialog

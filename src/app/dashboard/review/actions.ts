@@ -4,19 +4,35 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-export async function approveTask(taskId: string, finalLabels: any) {
+export async function approveTask(taskId: string, finalLabels: any, rating: number, timeSpent: number) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) redirect('/login');
 
-    // Perform the update
-    // Update status to 'approved' and save any modifications to labels
+    // Get project pay rate (reviewer pay rate?)
+    // For now using the same project pay rate or a separate reviewer rate if it existed.
+    // The requirement just says "paga oraria del progetto".
+    const { data: task } = await supabase
+        .from('tasks')
+        .select('project_id, projects(pay_rate)')
+        .eq('id', taskId)
+        .single();
+
+    const payRate = parseFloat(task?.projects?.pay_rate || '0');
+    // Reviewer earnings - might be different but let's assume same for now or a fraction.
+    // User said "guadagno del reviewer sulla base del tempo trascorso sulla task e paga oraria del progetto".
+    const earnings = (timeSpent / 3600) * payRate;
+
     const { error } = await supabase
         .from('tasks')
         .update({
             status: 'approved',
             labels: finalLabels,
+            reviewed_by: user.id,
+            review_rating: rating,
+            reviewer_time_spent: timeSpent,
+            reviewer_earnings: earnings
         })
         .eq('id', taskId);
 
@@ -26,6 +42,7 @@ export async function approveTask(taskId: string, finalLabels: any) {
     }
 
     revalidatePath('/dashboard/review');
+    revalidatePath(`/dashboard/projects/${task?.project_id}/tasks`);
     redirect('/dashboard/review');
 }
 

@@ -12,6 +12,13 @@ export interface Task {
         name: string;
         type: string;
     };
+    reviewed_by?: string | null;
+    review_rating?: number | null;
+    is_archived: boolean;
+    annotator_time_spent?: number;
+    reviewer_time_spent?: number;
+    annotator_earnings?: number;
+    reviewer_earnings?: number;
 }
 
 export interface Project {

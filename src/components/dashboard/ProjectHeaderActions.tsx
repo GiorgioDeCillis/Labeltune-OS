@@ -38,9 +38,11 @@ export function ProjectHeaderActions({ id, guidelines }: ProjectHeaderActionsPro
                         <Settings className="w-4 h-4" /> Open Builder
                     </button>
                 </Link>
-                <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground font-medium rounded-lg hover:opacity-90 transition-all">
-                    <ListTodo className="w-4 h-4" /> View Tasks
-                </button>
+                <Link href={`/dashboard/projects/${id}/tasks`}>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground font-medium rounded-lg hover:opacity-90 transition-all">
+                        <ListTodo className="w-4 h-4" /> View Tasks
+                    </button>
+                </Link>
             </div>
 
             <EditInstructionsModal
