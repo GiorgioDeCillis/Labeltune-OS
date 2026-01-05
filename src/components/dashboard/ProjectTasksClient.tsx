@@ -88,7 +88,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate }: Project
     return (
         <div className="space-y-4">
             {/* Filters & Actions */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-panel !overflow-visible p-4 rounded-xl">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-panel !overflow-visible p-4 rounded-xl relative z-20">
                 <div className="flex flex-1 gap-4 w-full md:w-auto">
                     <div className="relative flex-1 max-w-sm">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

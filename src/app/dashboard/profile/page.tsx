@@ -96,7 +96,7 @@ export default function ProfilePage() {
             url: `/themes/osaka-jade/${n}-osaka-jade-bg.jpg`,
             id: `${n}-osaka-jade-bg`
         })),
-        'ayaka': ['b2', 'b8'].map(n => ({
+        'ayaka': ['b2', 'b6', 'b8'].map(n => ({
             url: `/themes/ayaka/${n}.jpg`,
             id: n
         })),
