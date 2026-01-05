@@ -205,7 +205,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
             {/* Earnings Gadget */}
             <div className="space-y-4">
                 <h2 className="text-lg font-bold text-muted-foreground uppercase tracking-widest">Earnings</h2>
-                <div className="glass-panel p-8 rounded-2xl border border-white/5 relative group">
+                <div className="glass-panel p-8 rounded-2xl border border-white/5 relative group !overflow-visible">
                     <div className="flex flex-col md:flex-row gap-12 items-end">
                         <div className="space-y-3">
                             <div className="flex items-center gap-2 text-primary/80">
@@ -299,7 +299,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
 
                                             {/* Dynamic Value centered in fill */}
                                             <span
-                                                className="text-[10px] font-black tracking-tighter text-black/60 relative z-10 whitespace-nowrap px-1"
+                                                className="text-[10px] font-black tracking-tighter text-white/90 relative z-10 whitespace-nowrap px-1"
                                                 style={{ opacity: bar.v > 15 ? 1 : 0 }}
                                             >
                                                 ${bar.amount}
