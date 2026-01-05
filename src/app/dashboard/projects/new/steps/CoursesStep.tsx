@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, CheckCircle2, Circle, Plus, Search, GraduationCap, X } from 'lucide-react';
 import { Course } from '@/types/manual-types';
 import { CourseBuilder } from '@/components/education/CourseBuilder';
 import { createPortal } from 'react-dom';
-import { useEffect, useState } from 'react';
 
 interface CoursesStepProps {
     availableCourses: Course[];
