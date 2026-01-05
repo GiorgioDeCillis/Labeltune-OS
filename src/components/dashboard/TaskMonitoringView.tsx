@@ -12,7 +12,9 @@ import {
     AlertCircle,
     Eye,
     MessageSquare,
-    Activity
+    Activity,
+    Copy,
+    Check
 } from 'lucide-react';
 import Link from 'next/link';
 import { TaskComponent } from '@/components/builder/types';
@@ -47,7 +49,14 @@ interface TaskMonitoringViewProps {
 
 export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskMonitoringViewProps) {
     const [activeVersion, setActiveVersion] = useState<'annotator' | 'reviewer'>(task.status === 'approved' ? 'reviewer' : 'annotator');
+    const [copied, setCopied] = useState(false);
     const schema = project.template_schema as TaskComponent[];
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(task.id);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const formatTime = (totalSeconds: number) => {
         if (!totalSeconds) return '0s';
@@ -72,9 +81,20 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
                             <h2 className="text-2xl font-bold tracking-tight">Task Monitoring</h2>
                             <StatusBadge status={task.status} />
                         </div>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                            Task #{task.id} • {project.name}
-                        </p>
+                        <div className="flex items-center gap-2 mt-0.5 group/id">
+                            <p className="text-sm text-muted-foreground font-mono">
+                                Task #{task.id}
+                            </p>
+                            <button
+                                onClick={handleCopy}
+                                className="p-1 hover:bg-white/10 rounded transition-all opacity-0 group-hover/id:opacity-100"
+                                title="Copy Task ID"
+                            >
+                                {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3 text-muted-foreground" />}
+                            </button>
+                            <span className="text-xs text-muted-foreground/40">•</span>
+                            <span className="text-sm text-muted-foreground">{project.name}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -179,7 +199,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
                     <div className="flex bg-white/5 p-1 rounded-lg border border-white/10">
                         <button
                             onClick={() => setActiveVersion('annotator')}
-                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${activeVersion === 'annotator' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}
+                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${activeVersion === 'annotator' ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'text-muted-foreground hover:text-foreground'}`}
                         >
                             Attempter
                         </button>
