@@ -33,13 +33,52 @@ export default function OnboardingPage() {
     const [cvFile, setCvFile] = useState<File | null>(null);
     const [isPending, setIsPending] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    const validateForm = (formData: FormData) => {
+        const errors: Record<string, string> = {};
+        const requiredFields = [
+            { id: 'firstName', label: 'Nome' },
+            { id: 'lastName', label: 'Cognome' },
+            { id: 'birthDate', label: 'Data di Nascita' },
+            { id: 'phoneNumber', label: 'Numero di Telefono' },
+            { id: 'nationality', label: 'Nazionalità' },
+            { id: 'primaryLanguage', label: 'Lingua Principale' },
+            { id: 'address', label: 'Indirizzo' },
+            { id: 'paypalEmail', label: 'Email PayPal' },
+        ];
+
+        requiredFields.forEach(field => {
+            const value = formData.get(field.id);
+            if (!value || (typeof value === 'string' && value.trim() === '')) {
+                errors[field.id] = `Il campo ${field.label} è obbligatorio`;
+            }
+        });
+
+        if (!cvFile) {
+            errors.cv = 'Il caricamento del CV è obbligatorio';
+        }
+
+        const paypalEmail = formData.get('paypalEmail') as string;
+        if (paypalEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paypalEmail)) {
+            errors.paypalEmail = 'Inserisci un indirizzo email valido';
+        }
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        setIsPending(true);
         setError(null);
 
         const formData = new FormData(e.currentTarget);
+
+        if (!validateForm(formData)) {
+            return;
+        }
+
+        setIsPending(true);
 
         try {
             await submitOnboarding(formData);
@@ -84,7 +123,7 @@ export default function OnboardingPage() {
                         </p>
                     </motion.div>
 
-                    <form onSubmit={handleSubmit} className="space-y-8">
+                    <form onSubmit={handleSubmit} noValidate className="space-y-8">
                         {error && (
                             <motion.div
                                 initial={{ opacity: 0, height: 0 }}
@@ -117,18 +156,28 @@ export default function OnboardingPage() {
                                         <input
                                             name="firstName"
                                             required
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                                            className={`w-full bg-white/5 border ${fieldErrors.firstName ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all`}
                                             placeholder="Mario"
                                         />
+                                        {fieldErrors.firstName && (
+                                            <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
+                                                {fieldErrors.firstName}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold uppercase tracking-wider opacity-60">Cognome</label>
                                         <input
                                             name="lastName"
                                             required
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                                            className={`w-full bg-white/5 border ${fieldErrors.lastName ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all`}
                                             placeholder="Rossi"
                                         />
+                                        {fieldErrors.lastName && (
+                                            <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
+                                                {fieldErrors.lastName}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 
@@ -138,8 +187,13 @@ export default function OnboardingPage() {
                                         name="birthDate"
                                         type="date"
                                         required
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all [color-scheme:dark]"
+                                        className={`w-full bg-white/5 border ${fieldErrors.birthDate ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all [color-scheme:dark]`}
                                     />
+                                    {fieldErrors.birthDate && (
+                                        <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
+                                            {fieldErrors.birthDate}
+                                        </span>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -150,10 +204,15 @@ export default function OnboardingPage() {
                                             name="phoneNumber"
                                             type="tel"
                                             required
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                                            className={`w-full bg-white/5 border ${fieldErrors.phoneNumber ? 'border-red-500/50' : 'border-white/10'} rounded-xl pl-11 pr-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all`}
                                             placeholder="+39 333 1234567"
                                         />
                                     </div>
+                                    {fieldErrors.phoneNumber && (
+                                        <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
+                                            {fieldErrors.phoneNumber}
+                                        </span>
+                                    )}
                                 </div>
                             </motion.section>
 
@@ -176,13 +235,18 @@ export default function OnboardingPage() {
                                     <select
                                         name="nationality"
                                         required
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
+                                        className={`w-full bg-white/5 border ${fieldErrors.nationality ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer`}
                                     >
                                         <option value="" disabled selected>Seleziona nazionalità</option>
                                         {COUNTRIES.map(c => (
                                             <option key={c.code} value={c.code} className="bg-[#1a1c1e]">{c.name}</option>
                                         ))}
                                     </select>
+                                    {fieldErrors.nationality && (
+                                        <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
+                                            {fieldErrors.nationality}
+                                        </span>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -190,13 +254,18 @@ export default function OnboardingPage() {
                                     <select
                                         name="primaryLanguage"
                                         required
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
+                                        className={`w-full bg-white/5 border ${fieldErrors.primaryLanguage ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer`}
                                     >
                                         <option value="" disabled selected>Seleziona lingua</option>
                                         {LANGUAGES.map(l => (
                                             <option key={l.code} value={l.code} className="bg-[#1a1c1e]">{l.name}</option>
                                         ))}
                                     </select>
+                                    {fieldErrors.primaryLanguage && (
+                                        <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
+                                            {fieldErrors.primaryLanguage}
+                                        </span>
+                                    )}
                                     <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 flex gap-3">
                                         <Info className="w-5 h-5 text-primary flex-shrink-0" />
                                         <p className="text-[11px] leading-relaxed">
@@ -212,10 +281,15 @@ export default function OnboardingPage() {
                                         <input
                                             name="address"
                                             required
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                                            className={`w-full bg-white/5 border ${fieldErrors.address ? 'border-red-500/50' : 'border-white/10'} rounded-xl pl-11 pr-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all`}
                                             placeholder="Via Roma 1, Milano"
                                         />
                                     </div>
+                                    {fieldErrors.address && (
+                                        <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
+                                            {fieldErrors.address}
+                                        </span>
+                                    )}
                                 </div>
                             </motion.section>
                         </div>
@@ -250,17 +324,19 @@ export default function OnboardingPage() {
                                             }}
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                         />
-                                        <div className={`w-full border-2 border-dashed rounded-2xl p-8 transition-all text-center ${cvFile ? 'bg-primary/5 border-primary/50' : 'bg-white/5 border-white/10 group-hover/file:border-primary/50 group-hover/file:bg-primary/5'
+                                        <div className={`w-full border-2 border-dashed rounded-2xl p-8 transition-all text-center ${cvFile ? 'bg-primary/5 border-primary/50' : fieldErrors.cv ? 'bg-red-500/5 border-red-500/30' : 'bg-white/5 border-white/10 group-hover/file:border-primary/50 group-hover/file:bg-primary/5'
                                             }`}>
                                             <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 group-hover/file:scale-110 transition-transform">
                                                 {cvFile ? (
                                                     <CheckCircle2 className="w-6 h-6 text-primary" />
+                                                ) : fieldErrors.cv ? (
+                                                    <AlertCircle className="w-6 h-6 text-red-500" />
                                                 ) : (
                                                     <FileText className="w-6 h-6 opacity-40 group-hover/file:text-primary group-hover/file:opacity-100" />
                                                 )}
                                             </div>
-                                            <span className="text-sm font-bold block truncate max-w-xs mx-auto">
-                                                {cvFile ? cvFile.name : "Clicca o trascina il tuo CV"}
+                                            <span className={`text-sm font-bold block truncate max-w-xs mx-auto ${fieldErrors.cv ? 'text-red-500' : ''}`}>
+                                                {cvFile ? cvFile.name : fieldErrors.cv ? fieldErrors.cv : "Clicca o trascina il tuo CV"}
                                             </span>
                                             <p className="text-[10px] uppercase tracking-widest opacity-40 mt-1">
                                                 {cvFile ? `${(cvFile.size / 1024 / 1024).toFixed(2)} MB` : "Solo formati PDF"}
@@ -320,10 +396,15 @@ export default function OnboardingPage() {
                                                 name="paypalEmail"
                                                 type="email"
                                                 required
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                                                className={`w-full bg-white/5 border ${fieldErrors.paypalEmail ? 'border-red-500/50' : 'border-white/10'} rounded-xl pl-11 pr-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all`}
                                                 placeholder="mario.rossi@example.com"
                                             />
                                         </div>
+                                        {fieldErrors.paypalEmail && (
+                                            <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
+                                                {fieldErrors.paypalEmail}
+                                            </span>
+                                        )}
                                         <p className="text-[10px] opacity-40">Necessaria per ricevere i compensi.</p>
                                     </div>
 
