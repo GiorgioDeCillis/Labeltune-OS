@@ -3,9 +3,9 @@
 import React, { useState, useTransition } from 'react';
 import { ChevronLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { CoursesStep } from '../../../new/steps/CoursesStep';
+import { CoursesStep } from '@/app/dashboard/projects/new/steps/CoursesStep';
 import { Course } from '@/types/manual-types';
-import { updateProjectCourses } from '../../actions';
+import { updateProjectCourses } from '@/app/dashboard/projects/actions';
 
 interface ManageCoursesClientProps {
     projectId: string;
