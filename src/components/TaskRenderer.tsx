@@ -1,3 +1,5 @@
+'use client';
+
 // ... imports
 import { Loader2, Timer, AlertTriangle, Clock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react'; // Consolidated imports
