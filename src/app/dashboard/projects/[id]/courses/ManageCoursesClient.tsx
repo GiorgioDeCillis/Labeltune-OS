@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { CoursesStep } from '@/app/dashboard/projects/new/steps/CoursesStep';
 import { Course } from '@/types/manual-types';
 import { updateProjectCourses } from '@/app/dashboard/projects/actions';
+import { useToast } from '@/components/Toast';
+import { useRouter } from 'next/navigation';
 
 interface ManageCoursesClientProps {
     projectId: string;
@@ -23,6 +25,8 @@ export function ManageCoursesClient({
     const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>(initialSelectedCourseIds);
     const [courses, setCourses] = useState<Course[]>(availableCourses);
     const [isPending, startTransition] = useTransition();
+    const { showToast } = useToast();
+    const router = useRouter();
 
     const handleToggleCourse = (id: string) => {
         setSelectedCourseIds(prev =>
@@ -54,10 +58,15 @@ export function ManageCoursesClient({
     const handleSave = () => {
         startTransition(async () => {
             try {
-                await updateProjectCourses(projectId, selectedCourseIds);
+                const result = await updateProjectCourses(projectId, selectedCourseIds);
+                if (result?.success) {
+                    showToast('Project courses updated successfully', 'success');
+                    router.push(`/dashboard/projects/${projectId}`);
+                    router.refresh();
+                }
             } catch (error) {
                 console.error('Error updating courses:', error);
-                alert('Failed to update project courses. Please try again.');
+                showToast('Failed to update project courses. Please try again.', 'error');
             }
         });
     };

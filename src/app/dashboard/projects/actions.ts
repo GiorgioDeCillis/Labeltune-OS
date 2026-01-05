@@ -304,7 +304,7 @@ export async function updateProjectCourses(projectId: string, courseIds: string[
     }
 
     revalidatePath(`/dashboard/projects/${projectId}`);
-    redirect(`/dashboard/projects/${projectId}`);
+    return { success: true };
 }
 
 export async function assignUsersToProject(projectId: string, userIds: string[]) {
