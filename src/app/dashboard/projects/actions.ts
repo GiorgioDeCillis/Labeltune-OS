@@ -485,37 +485,7 @@ export async function startTasking(projectId: string) {
         redirect(`/dashboard/tasks/${assignedPendingTask.id}`);
     }
 
-    // 4. Find an unassigned task (Pooling)
-    // Locking strategy: simplified for this implementation, ideally requires row-level locking or RPC
-    const { data: nextTask } = await supabase
-        .from('tasks')
-        .select('id')
-        .eq('project_id', projectId)
-        .is('assigned_to', null)
-        .eq('status', 'pending')
-        .limit(1)
-        .maybeSingle();
 
-    if (nextTask) {
-        // Claim it
-        const { error: claimError } = await supabase
-            .from('tasks')
-            .update({
-                assigned_to: user.id,
-                status: 'in_progress'
-            })
-            .eq('id', nextTask.id)
-            .is('assigned_to', null); // Optimistic concurrency check
-
-        if (!claimError) {
-            redirect(`/dashboard/tasks/${nextTask.id}`);
-        } else {
-            // Failed to claim (race condition), retry logic or user prompt would go here.
-            // For now, redirect with error
-            redirect(`/dashboard/projects/${projectId}?error=Could not claim task, please try again`);
-        }
-    }
-
-    // No tasks available
-    redirect(`/dashboard/projects/${projectId}?error=No tasks available`);
+    // No tasks available or assigned
+    redirect(`/dashboard/projects/${projectId}?error=No tasks assigned to you`);
 }

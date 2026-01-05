@@ -1,6 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
-import { claimTask } from '../actions';
 import { ChevronLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { TaskRenderer } from '@/components/TaskRenderer';
@@ -25,7 +24,6 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
     if (!task) notFound();
 
     const isAssignedToMe = task.assigned_to === user.id;
-    const canClaim = !task.assigned_to;
     const templateSchema = (task.projects?.template_schema as TaskComponent[]) || [];
 
     return (
@@ -55,24 +53,8 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
                         </div>
                     </div>
                 </div>
-
-                {!isAssignedToMe && canClaim && (
-                    <form action={claimTask.bind(null, task.id)}>
-                        <button className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 transition-all shadow-[0_0_15px_rgba(var(--primary),0.3)] animate-pulse">
-                            Claim Task
-                        </button>
-                    </form>
-                )}
-
-                {!isAssignedToMe && !canClaim && (
-                    <div className="flex items-center gap-2 text-yellow-500 bg-yellow-500/10 px-4 py-2 rounded-lg border border-yellow-500/20">
-                        <AlertCircle className="w-4 h-4" />
-                        <span>View Only (Assigned to another user)</span>
-                    </div>
-                )}
             </div>
 
-            {/* Workspace */}
             {/* Workspace */}
             <div className="flex justify-center min-h-[500px]">
                 {/* Tool Panel - Centered */}
