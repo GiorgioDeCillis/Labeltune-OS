@@ -64,7 +64,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                 <div className="glass-panel p-6 rounded-2xl border-white/10">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold">Linked Courses (Training)</h3>
-                        <Link href={`/dashboard/projects/${id}/courses/new`}>
+                        <Link href={`/dashboard/projects/${id}/courses`}>
                             <button className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
                                 <Settings className="w-3 h-3" /> Manage Courses
                             </button>

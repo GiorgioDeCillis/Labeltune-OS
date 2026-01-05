@@ -272,3 +272,37 @@ export async function updateAssigneeStatus(projectId: string, userId: string, st
 
     revalidatePath(`/dashboard/projects/${projectId}/team`);
 }
+
+export async function updateProjectCourses(projectId: string, courseIds: string[]) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Verify role
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    const isPM = profile?.role === 'pm' || profile?.role === 'admin';
+    if (!isPM) throw new Error('Unauthorized');
+
+    // 1. Unlink all courses currently linked to this project
+    await supabase
+        .from('courses')
+        .update({ project_id: null })
+        .eq('project_id', projectId);
+
+    // 2. Link newly selected courses
+    if (courseIds.length > 0) {
+        await supabase
+            .from('courses')
+            .update({ project_id: projectId })
+            .in('id', courseIds);
+    }
+
+    revalidatePath(`/dashboard/projects/${projectId}`);
+    redirect(`/dashboard/projects/${projectId}`);
+}
