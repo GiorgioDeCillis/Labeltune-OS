@@ -92,6 +92,25 @@ export async function createProject(formData: FormData) {
         }
     }
 
+    // 5. Create task records if total_tasks is specified
+    if (total_tasks && total_tasks > 0 && newProject) {
+        const tasksToInsert = Array.from({ length: total_tasks }, (_, i) => ({
+            project_id: newProject.id,
+            status: 'pending',
+            data: {},  // Placeholder - actual data will be uploaded separately
+            assigned_to: null
+        }));
+
+        const { error: tasksError } = await supabase
+            .from('tasks')
+            .insert(tasksToInsert);
+
+        if (tasksError) {
+            console.error('Error creating tasks:', tasksError);
+            // Non-blocking: project is created, tasks failed
+        }
+    }
+
     revalidatePath('/dashboard/projects');
     redirect('/dashboard/projects');
 }
