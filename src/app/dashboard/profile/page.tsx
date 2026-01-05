@@ -17,6 +17,7 @@ export default function ProfilePage() {
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [avatarError, setAvatarError] = useState(false);
     const [copied, setCopied] = useState(false);
     const supabase = createClient();
 
@@ -112,12 +113,13 @@ export default function ProfilePage() {
                 <div className="relative group">
                     <div className={`w-32 h-32 rounded-full flex items-center justify-center border-4 ${theme === 'osaka-jade' ? 'border-emerald-500/30 bg-emerald-500/10' : theme === 'purple-moon' ? 'border-[#A949D9]/30 bg-[#A949D9]/10' : 'border-[#DB595C]/30 bg-[#DB595C]/10'
                         } relative z-10 shadow-2xl overflow-hidden`}>
-                        {profile?.avatar_url ? (
+                        {profile?.avatar_url && !avatarError ? (
                             <Image
                                 src={profile.avatar_url}
                                 alt="Avatar"
                                 fill
                                 className="object-cover"
+                                onError={() => setAvatarError(true)}
                             />
                         ) : (
                             <Image

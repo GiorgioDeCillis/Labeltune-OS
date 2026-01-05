@@ -9,6 +9,7 @@ import { getDefaultAvatar } from '@/utils/avatar';
 
 export function Navbar({ user, userRole, initialAvatar, fullName }: { user: any, userRole?: string, initialAvatar?: string | null, fullName?: string | null }) {
     const { theme, avatarUrl, setAvatarUrl } = useTheme();
+    const [avatarError, setAvatarError] = React.useState(false);
 
     useEffect(() => {
         if (initialAvatar && !avatarUrl) {
@@ -35,12 +36,13 @@ export function Navbar({ user, userRole, initialAvatar, fullName }: { user: any,
                     </div>
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all relative overflow-hidden ${theme === 'osaka-jade' ? 'border-emerald-500/50 bg-emerald-500/10 group-hover:border-emerald-400' : theme === 'purple-moon' ? 'border-[#A949D9]/50 bg-[#A949D9]/10 group-hover:border-[#A949D9]' : 'border-[#DB595C]/50 bg-[#DB595C]/10 group-hover:border-[#DB595C]'
                         }`}>
-                        {avatarUrl || initialAvatar ? (
+                        {(avatarUrl || initialAvatar) && !avatarError ? (
                             <Image
                                 src={avatarUrl || initialAvatar!}
                                 alt="Profile Avatar"
                                 fill
                                 className="object-cover"
+                                onError={() => setAvatarError(true)}
                             />
                         ) : (
                             <Image
