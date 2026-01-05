@@ -37,16 +37,37 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    if (
-        !user &&
-        !request.nextUrl.pathname.startsWith('/login') &&
-        !request.nextUrl.pathname.startsWith('/auth') &&
-        request.nextUrl.pathname !== '/'
-    ) {
+    const isAuthPath = request.nextUrl.pathname.startsWith('/login') ||
+        request.nextUrl.pathname.startsWith('/auth') ||
+        request.nextUrl.pathname === '/'
+
+    const isOnboardingPath = request.nextUrl.pathname.startsWith('/onboarding')
+
+    if (!user && !isAuthPath) {
         // no user, potentially respond by redirecting the user to the login page
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         return NextResponse.redirect(url)
+    }
+
+    if (user && !isOnboardingPath && !isAuthPath) {
+        // Check onboarding status
+        const isOnboarded = user.app_metadata?.is_onboarded || user.user_metadata?.is_onboarded
+
+        if (!isOnboarded) {
+            // Check profiles table as a fallback or if metadata is not synced yet
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('is_onboarded, role')
+                .eq('id', user.id)
+                .single()
+
+            if (profile && !profile.is_onboarded && profile.role !== 'admin' && profile.role !== 'PM') {
+                const url = request.nextUrl.clone()
+                url.pathname = '/onboarding'
+                return NextResponse.redirect(url)
+            }
+        }
     }
 
     return supabaseResponse
