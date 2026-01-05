@@ -47,6 +47,7 @@ export function TaskRenderer({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [seconds, setSeconds] = useState(initialTimeSpent);
     const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
+    const [isExpired, setIsExpired] = useState(false);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const router = useRouter();
     const supabase = createClient();
