@@ -205,7 +205,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
             {/* Earnings Gadget */}
             <div className="space-y-4">
                 <h2 className="text-lg font-bold text-muted-foreground uppercase tracking-widest">Earnings</h2>
-                <div className="glass-panel p-8 rounded-2xl border border-white/5 relative overflow-hidden group">
+                <div className="glass-panel p-8 rounded-2xl border border-white/5 relative group">
                     <div className="flex flex-col md:flex-row gap-12 items-end">
                         <div className="space-y-3">
                             <div className="flex items-center gap-2 text-primary/80">
@@ -218,12 +218,30 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
 
                         <div className="flex-1 flex items-end justify-between gap-3 h-40 w-full group/chart relative">
                             {[
-                                { m: 'Aug', v: 40, amount: 480, opacity: 0.2 },
-                                { m: 'Sep', v: 100, amount: 1200, opacity: 1, glow: true },
-                                { m: 'Oct', v: 60, amount: 720, opacity: 0.4 },
-                                { m: 'Nov', v: 75, amount: 900, opacity: 0.8, glow: true },
-                                { m: 'Dec', v: 50, amount: 600, opacity: 0.5 },
-                                { m: 'Jan', v: 35, amount: 420, opacity: 0.3 }
+                                {
+                                    m: 'Aug', v: 40, amount: 480, opacity: 0.2,
+                                    projects: [{ n: 'RLHF Safety', a: 300 }, { n: 'Chat Eval', a: 180 }]
+                                },
+                                {
+                                    m: 'Sep', v: 100, amount: 1200, opacity: 1, glow: true,
+                                    projects: [{ n: 'RLHF Safety', a: 800 }, { n: 'Coding Gen', a: 400 }]
+                                },
+                                {
+                                    m: 'Oct', v: 60, amount: 720, opacity: 0.4,
+                                    projects: [{ n: 'RLHF Safety', a: 400 }, { n: 'Image Gen', a: 320 }]
+                                },
+                                {
+                                    m: 'Nov', v: 75, amount: 900, opacity: 0.8, glow: true,
+                                    projects: [{ n: 'Voice Design', a: 500 }, { n: 'RLHF Safety', a: 400 }]
+                                },
+                                {
+                                    m: 'Dec', v: 50, amount: 600, opacity: 0.5,
+                                    projects: [{ n: 'RLHF Safety', a: 350 }, { n: 'Creative', a: 250 }]
+                                },
+                                {
+                                    m: 'Jan', v: 35, amount: 420, opacity: 0.3,
+                                    projects: [{ n: 'RLHF Safety', a: 220 }, { n: 'Audio Lab', a: 200 }]
+                                }
                             ].map((bar, i) => (
                                 <div
                                     key={i}
@@ -238,12 +256,24 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                 initial={{ opacity: 0, y: 10, scale: 0.9 }}
                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                                 exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                                                className="absolute bottom-full mb-4 z-20 pointer-events-none"
+                                                className="absolute bottom-full mb-4 z-50 pointer-events-none"
                                             >
-                                                <div className="bg-black/80 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-2xl flex flex-col items-center min-w-[100px]">
-                                                    <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">{bar.m} Earnings</span>
-                                                    <span className="text-lg font-bold text-white">${bar.amount}</span>
-                                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black/80 rotate-45 border-r border-b border-white/10"></div>
+                                                <div className="bg-[#0A0A0A]/95 backdrop-blur-2xl border border-white/10 p-4 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col min-w-[180px] gap-3">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">{bar.m} Breakdown</span>
+                                                        <span className="text-xl font-bold text-white tracking-tighter">${bar.amount}</span>
+                                                    </div>
+
+                                                    <div className="space-y-2 border-t border-white/5 pt-2">
+                                                        {bar.projects.map((p, pi) => (
+                                                            <div key={pi} className="flex justify-between items-center gap-4">
+                                                                <span className="text-[10px] text-white/60 font-medium">{p.n}</span>
+                                                                <span className="text-[10px] text-primary font-bold">${p.a}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#0A0A0A]/95 rotate-45 border-r border-b border-white/10"></div>
                                                 </div>
                                             </motion.div>
                                         )}
@@ -254,7 +284,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                             initial={{ height: 0 }}
                                             animate={{ height: `${bar.v}%` }}
                                             transition={{ delay: i * 0.1, duration: 1, ease: "easeOut" }}
-                                            className="w-full rounded-full relative transition-all duration-500 group-hover/bar:brightness-125"
+                                            className="w-full rounded-full relative transition-all duration-500 group-hover/bar:brightness-125 flex items-center justify-center overflow-hidden"
                                             style={{
                                                 background: 'var(--primary)',
                                                 opacity: bar.opacity
@@ -266,20 +296,15 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                     style={{ background: 'var(--primary)', opacity: 0.4 }}
                                                 ></div>
                                             )}
-                                        </motion.div>
 
-                                        {/* Value in the middle */}
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            {/* Dynamic Value centered in fill */}
                                             <span
-                                                className="text-[10px] sm:text-xs font-black tracking-tighter"
-                                                style={{
-                                                    color: bar.v > 30 ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.3)',
-                                                    mixBlendMode: bar.v > 30 ? 'normal' : 'overlay'
-                                                }}
+                                                className="text-[10px] font-black tracking-tighter text-black/60 relative z-10 whitespace-nowrap px-1"
+                                                style={{ opacity: bar.v > 15 ? 1 : 0 }}
                                             >
                                                 ${bar.amount}
                                             </span>
-                                        </div>
+                                        </motion.div>
                                     </div>
                                     <span
                                         className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300`}
