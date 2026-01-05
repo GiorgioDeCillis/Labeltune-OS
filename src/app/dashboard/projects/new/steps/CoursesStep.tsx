@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { BookOpen, CheckCircle2, Circle, Plus, Search, GraduationCap, X } from 'lucide-react';
 import { Course } from '@/types/manual-types';
 import { CourseBuilder } from '@/components/education/CourseBuilder';
+import { createPortal } from 'react-dom';
+import { useEffect, useState } from 'react';
 
 interface CoursesStepProps {
     availableCourses: Course[];
@@ -15,6 +17,11 @@ interface CoursesStepProps {
 export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCourse, onCourseCreated }: CoursesStepProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreating, setIsCreating] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const filteredCourses = availableCourses.filter(c =>
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -43,8 +50,8 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
                 </button>
             </div>
 
-            {isCreating && (
-                <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300">
+            {isCreating && mounted && createPortal(
+                <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300">
                     <div className="bg-[#0a0a0c] border border-white/10 w-full max-w-7xl h-[90vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl relative">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
                             <div>
@@ -65,7 +72,8 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
                             />
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             <div className="glass-panel p-4 rounded-xl flex items-center gap-3 border-white/10">

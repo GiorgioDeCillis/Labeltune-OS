@@ -154,9 +154,9 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left: Outline & Form */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-0">
                 <div className="glass-panel p-6 rounded-xl space-y-4">
                     <h3 className="font-bold">Course Details</h3>
 
@@ -220,8 +220,11 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
                 <div className="glass-panel p-6 rounded-xl">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold">Lessons</h3>
-                        <button onClick={handleAddLesson} className="p-1 hover:bg-white/10 rounded">
-                            <Plus className="w-4 h-4" />
+                        <button
+                            onClick={handleAddLesson}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-lg transition-colors border border-primary/20"
+                        >
+                            <Plus className="w-4 h-4" /> Add Lesson
                         </button>
                     </div>
 
@@ -252,9 +255,9 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
             </div>
 
             {/* Right: Lesson Editor */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-8 min-h-[500px]">
                 {activeLessonId ? (
-                    <div className="glass-panel p-8 rounded-xl space-y-6 h-full">
+                    <div className="glass-panel p-8 rounded-xl space-y-6 h-auto">
                         <div className="flex items-center justify-between pb-4 border-b border-white/10">
                             <h3 className="font-bold flex items-center gap-2">
                                 <FileText className="w-4 h-4 text-primary" /> Edit Lesson
