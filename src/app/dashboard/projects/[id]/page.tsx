@@ -141,7 +141,6 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     };
 
     return (
-    return (
         <div className="space-y-8 max-w-5xl mx-auto">
             <ToastQueryHandler />
 
