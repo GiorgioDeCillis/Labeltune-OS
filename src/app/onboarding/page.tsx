@@ -323,7 +323,7 @@ export default function OnboardingPage() {
                                                     className="peer sr-only"
                                                 />
                                                 <div className="w-6 h-6 border-2 border-white/10 rounded-lg group-hover:border-primary/50 transition-all peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center">
-                                                    <CheckCircle2 className="w-4 h-4 text-black scale-0 peer-checked:scale-100 transition-transform" />
+                                                    <CheckCircle2 className="w-4 h-4 text-white scale-0 peer-checked:scale-100 transition-transform" />
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
@@ -345,7 +345,7 @@ export default function OnboardingPage() {
                             <button
                                 type="submit"
                                 disabled={isPending}
-                                className="w-full bg-primary hover:bg-primary/90 text-black font-black py-5 rounded-2xl shadow-2xl shadow-primary/20 transition-all flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group text-lg"
+                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-5 rounded-2xl shadow-2xl shadow-primary/20 transition-all flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group text-lg"
                             >
                                 {isPending ? (
                                     <Loader2 className="w-6 h-6 animate-spin" />
@@ -356,7 +356,7 @@ export default function OnboardingPage() {
                                             animate={{ x: [0, 5, 0] }}
                                             transition={{ repeat: Infinity, duration: 1.5 }}
                                         >
-                                            <CheckCircle2 className="w-6 h-6 text-black" />
+                                            <CheckCircle2 className="w-6 h-6 text-primary-foreground" />
                                         </motion.div>
                                     </>
                                 )}
