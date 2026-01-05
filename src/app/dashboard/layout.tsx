@@ -37,7 +37,7 @@ export default async function DashboardLayout({
                 <Sidebar userRole={userRole} />
 
                 <div className="flex-1 md:ml-64 flex flex-col h-screen transition-all duration-300 w-full overflow-hidden">
-                    <Navbar user={user} initialAvatar={avatarUrl} />
+                    <Navbar user={user} userRole={userRole} initialAvatar={avatarUrl} />
                     <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full max-w-[100vw] overflow-x-hidden relative">
                         {children}
                     </main>
