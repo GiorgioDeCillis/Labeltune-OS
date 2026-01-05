@@ -6,6 +6,7 @@ import { assignUserToProject, removeUserFromProject, updateAssigneeStatus } from
 import { useToast } from '@/components/Toast';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { getDefaultAvatar } from '@/utils/avatar';
+import CustomSelect from '@/components/CustomSelect';
 
 interface TeamMember {
     id: string;
@@ -32,7 +33,9 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
     const [members, setMembers] = useState<TeamMember[]>(initialMembers);
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [filterQuery, setFilterQuery] = useState('');
-    const [tagFilter, setTagFilter] = useState('');
+    const [selectedDomain, setSelectedDomain] = useState('');
+    const [selectedRole, setSelectedRole] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('');
     const [showAddView, setShowAddView] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; member: TeamMember | null }>({
         isOpen: false,
@@ -107,10 +110,23 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
             normalize(m.full_name).includes(normalize(filterQuery)) ||
             normalize(m.email).includes(normalize(filterQuery));
 
-        const matchesTag = !tagFilter || m.tags?.some(tag => normalize(tag).includes(normalize(tagFilter)));
+        const matchesDomain = !selectedDomain || normalize(m.locale_tag) === normalize(selectedDomain);
+        const matchesRole = !selectedRole || normalize(m.role) === normalize(selectedRole);
+        const matchesStatus = !selectedStatus || normalize(m.status) === normalize(selectedStatus);
 
-        return matchesQuery && matchesTag;
+        return matchesQuery && matchesDomain && matchesRole && matchesStatus;
     });
+
+    const domains = Array.from(new Set(members.map(m => m.locale_tag).filter(Boolean)))
+        .map(tag => ({ code: tag!, name: tag!.toUpperCase() }));
+
+    const roles = Array.from(new Set(members.map(m => m.role).filter(Boolean)))
+        .map(role => ({ code: role!, name: role!.charAt(0).toUpperCase() + role!.slice(1) }));
+
+    const statuses = [
+        { code: 'active', name: 'Active' },
+        { code: 'paused', name: 'Paused' }
+    ];
 
     const sortedMembers = [...filteredMembers].sort((a, b) => {
         return (a.full_name || '').localeCompare(b.full_name || '');
@@ -147,26 +163,43 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
 
             <div className="glass-panel rounded-xl overflow-hidden p-4 space-y-4">
                 {/* Filters */}
-                <div className="flex gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
                         <input
                             type="text"
                             placeholder="Search by name or email..."
                             value={filterQuery}
                             onChange={(e) => setFilterQuery(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/50 h-[46px]"
                         />
                     </div>
-                    <div className="relative flex-1 max-w-xs">
-                        <input
-                            type="text"
-                            placeholder="Filter by tag..."
-                            value={tagFilter}
-                            onChange={(e) => setTagFilter(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
+
+                    <CustomSelect
+                        name="domain"
+                        label="Domain"
+                        placeholder="All Domains"
+                        options={[{ code: '', name: 'All Domains' }, ...domains]}
+                        onChange={setSelectedDomain}
+                    />
+
+                    <CustomSelect
+                        name="role"
+                        label="Role"
+                        placeholder="All Roles"
+                        options={[{ code: '', name: 'All Roles' }, ...roles]}
+                        onChange={setSelectedRole}
+                    />
+
+                    {!showAddView && (
+                        <CustomSelect
+                            name="status"
+                            label="Status"
+                            placeholder="All Status"
+                            options={[{ code: '', name: 'All Status' }, ...statuses]}
+                            onChange={setSelectedStatus}
                         />
-                    </div>
+                    )}
                 </div>
 
                 <div className="overflow-x-auto">
