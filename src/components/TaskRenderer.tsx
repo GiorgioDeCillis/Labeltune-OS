@@ -142,12 +142,6 @@ export function TaskRenderer({
         setFormData((prev: any) => ({ ...prev, [id]: value }));
     };
 
-    import { useToast } from '@/components/Toast';
-
-    // ... (in TaskRenderer component)
-    const { showToast } = useToast();
-
-    // ...
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
