@@ -89,7 +89,7 @@ export default function CustomSelect({
                         animate={{ opacity: 1, y: 5, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute left-0 right-0 z-[100] glass-panel border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+                        className="absolute left-0 right-0 z-[100] bg-[#0a0a0f] backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
                         style={{ maxHeight: '250px', overflowY: 'auto' }}
                     >
                         <div className="p-2 space-y-1">
