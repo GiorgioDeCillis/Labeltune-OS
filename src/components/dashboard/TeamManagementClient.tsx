@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { User, CheckCircle, XCircle, Trash2, Plus, Search, Pause, Play, ArrowLeft, Users } from 'lucide-react';
-import { assignUserToProject, removeUserFromProject, updateAssigneeStatus } from '@/app/dashboard/projects/actions';
+import { useState, useMemo } from 'react';
+import { User, CheckCircle, XCircle, Trash2, Plus, Search, Pause, Play, ArrowLeft, Users, Loader2 } from 'lucide-react';
+import { assignUserToProject, removeUserFromProject, updateAssigneeStatus, assignUsersToProject, removeUsersFromProject, updateAssigneesStatus } from '@/app/dashboard/projects/actions';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/Toast';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { getDefaultAvatar } from '@/utils/avatar';
@@ -36,10 +37,12 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
     const [selectedDomain, setSelectedDomain] = useState('');
     const [selectedRole, setSelectedRole] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
-    const [showAddView, setShowAddView] = useState(false);
-    const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; member: TeamMember | null }>({
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; member: TeamMember | null; isBulk: boolean }>({
         isOpen: false,
-        member: null
+        member: null,
+        isBulk: false
     });
 
     const handleAssign = async (member: TeamMember) => {
@@ -58,11 +61,35 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
     };
 
     const handleRemove = async (member: TeamMember) => {
-        setConfirmDelete({ isOpen: true, member });
+        setConfirmDelete({ isOpen: true, member, isBulk: false });
+    };
+
+    const handleBulkRemove = async () => {
+        setConfirmDelete({ isOpen: true, member: null, isBulk: true });
     };
 
     const executeRemove = async () => {
-        if (!confirmDelete.member || processingId) return;
+        if (processingId || isBulkProcessing) return;
+
+        if (confirmDelete.isBulk) {
+            setIsBulkProcessing(true);
+            try {
+                const ids = Array.from(selectedIds);
+                await removeUsersFromProject(projectId, ids);
+                showToast(`${ids.length} members removed from team`, 'success');
+                setMembers(prev => prev.map(m => ids.includes(m.id) ? { ...m, isAssigned: false, status: 'inactive' } : m));
+                setSelectedIds(new Set());
+            } catch (error) {
+                console.error('Failed to remove members:', error);
+                showToast('Failed to remove members', 'error');
+            } finally {
+                setIsBulkProcessing(false);
+                setConfirmDelete({ isOpen: false, member: null, isBulk: false });
+            }
+            return;
+        }
+
+        if (!confirmDelete.member) return;
         const member = confirmDelete.member;
 
         setProcessingId(member.id);
@@ -93,6 +120,57 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
             showToast('Failed to update status', 'error');
         } finally {
             setProcessingId(null);
+        }
+    };
+
+    const handleBulkStatusChange = async (status: 'active' | 'paused') => {
+        if (isBulkProcessing) return;
+        setIsBulkProcessing(true);
+        try {
+            const ids = Array.from(selectedIds);
+            await updateAssigneesStatus(projectId, ids, status);
+            showToast(`${ids.length} members updated to ${status}`, 'success');
+            setMembers(prev => prev.map(m => ids.includes(m.id) ? { ...m, status } : m));
+            setSelectedIds(new Set());
+        } catch (error) {
+            console.error('Failed to update status:', error);
+            showToast('Failed to update status', 'error');
+        } finally {
+            setIsBulkProcessing(false);
+        }
+    };
+
+    const handleBulkAssign = async () => {
+        if (isBulkProcessing) return;
+        setIsBulkProcessing(true);
+        try {
+            const ids = Array.from(selectedIds);
+            await assignUsersToProject(projectId, ids);
+            showToast(`${ids.length} members added to team`, 'success');
+            setMembers(prev => prev.map(m => ids.includes(m.id) ? { ...m, isAssigned: true, status: 'active' } : m));
+            setSelectedIds(new Set());
+        } catch (error) {
+            console.error('Failed to add members:', error);
+            showToast('Failed to add members', 'error');
+        } finally {
+            setIsBulkProcessing(false);
+        }
+    };
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === filteredMembers.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(filteredMembers.map(m => m.id)));
         }
     };
 
@@ -146,7 +224,10 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                     </p>
                 </div>
                 <button
-                    onClick={() => setShowAddView(!showAddView)}
+                    onClick={() => {
+                        setShowAddView(!showAddView);
+                        setSelectedIds(new Set());
+                    }}
                     className="px-4 py-2 bg-primary text-black rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
                 >
                     {showAddView ? (
@@ -206,6 +287,14 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                     <table className="w-full text-left">
                         <thead className="bg-white/5 border-b border-white/10 text-xs uppercase font-bold text-muted-foreground">
                             <tr>
+                                <th className="p-4 w-10">
+                                    <input
+                                        type="checkbox"
+                                        checked={filteredMembers.length > 0 && selectedIds.size === filteredMembers.length}
+                                        onChange={toggleSelectAll}
+                                        className="rounded border-white/10 bg-white/5 text-primary focus:ring-primary/50"
+                                    />
+                                </th>
                                 <th className="p-4">User</th>
                                 <th className="p-4">DOMAIN</th>
                                 <th className="p-4">Role</th>
@@ -215,7 +304,15 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {sortedMembers.map((worker) => (
-                                <tr key={worker.id} className="hover:bg-white/5 transition-colors">
+                                <tr key={worker.id} className={`hover:bg-white/5 transition-colors ${selectedIds.has(worker.id) ? 'bg-primary/5' : ''}`}>
+                                    <td className="p-4">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.has(worker.id)}
+                                            onChange={() => toggleSelect(worker.id)}
+                                            className="rounded border-white/10 bg-white/5 text-primary focus:ring-primary/50"
+                                        />
+                                    </td>
                                     <td className="p-4 font-medium flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary overflow-hidden relative">
                                             <img
@@ -293,7 +390,7 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                             ))}
                             {sortedMembers.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="p-8 text-center text-muted-foreground text-sm">
+                                    <td colSpan={7} className="p-8 text-center text-muted-foreground text-sm">
                                         {showAddView
                                             ? 'No eligible users found to add.'
                                             : 'No workers assigned to this project yet.'}
@@ -305,15 +402,85 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                 </div>
             </div>
 
+            <AnimatePresence>
+                {selectedIds.size > 0 && (
+                    <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50"
+                    >
+                        <div className="bg-[#0a0a0f] border border-white/10 rounded-2xl p-4 shadow-2xl flex items-center gap-6 backdrop-blur-2xl">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-xl border border-primary/20">
+                                <span className="text-primary font-bold">{selectedIds.size}</span>
+                                <span className="text-xs text-primary/80 uppercase font-bold tracking-wider">Selected</span>
+                            </div>
+
+                            <div className="h-8 w-px bg-white/10" />
+
+                            <div className="flex items-center gap-3">
+                                {showAddView ? (
+                                    <button
+                                        onClick={handleBulkAssign}
+                                        disabled={isBulkProcessing}
+                                        className="px-4 py-2 bg-primary text-black rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all disabled:opacity-50"
+                                    >
+                                        {isBulkProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                                        Add to Team
+                                    </button>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={() => handleBulkStatusChange('active')}
+                                            disabled={isBulkProcessing}
+                                            className="px-4 py-2 bg-green-500/10 text-green-500 rounded-xl font-bold flex items-center gap-2 hover:bg-green-500/20 transition-all disabled:opacity-50"
+                                        >
+                                            {isBulkProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                                            Resume
+                                        </button>
+                                        <button
+                                            onClick={() => handleBulkStatusChange('paused')}
+                                            disabled={isBulkProcessing}
+                                            className="px-4 py-2 bg-yellow-500/10 text-yellow-500 rounded-xl font-bold flex items-center gap-2 hover:bg-yellow-500/20 transition-all disabled:opacity-50"
+                                        >
+                                            {isBulkProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pause className="w-4 h-4" />}
+                                            Pause
+                                        </button>
+                                        <button
+                                            onClick={handleBulkRemove}
+                                            disabled={isBulkProcessing}
+                                            className="px-4 py-2 bg-red-500/10 text-red-500 rounded-xl font-bold flex items-center gap-2 hover:bg-red-500/20 transition-all disabled:opacity-50"
+                                        >
+                                            {isBulkProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                            Remove
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={() => setSelectedIds(new Set())}
+                                className="p-2 text-muted-foreground hover:text-white transition-colors"
+                            >
+                                <XCircle className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <ConfirmDialog
                 isOpen={confirmDelete.isOpen}
-                onClose={() => setConfirmDelete({ isOpen: false, member: null })}
+                onClose={() => setConfirmDelete({ isOpen: false, member: null, isBulk: false })}
                 onConfirm={executeRemove}
-                title="Remove Team Member"
-                description={`Are you sure you want to remove ${confirmDelete.member?.full_name || 'this member'} from the project? This action cannot be undone.`}
-                confirmText="Remove Member"
+                title={confirmDelete.isBulk ? 'Remove Selected Members' : 'Remove Team Member'}
+                description={confirmDelete.isBulk
+                    ? `Are you sure you want to remove ${selectedIds.size} selected members from the project? This action cannot be undone.`
+                    : `Are you sure you want to remove ${confirmDelete.member?.full_name || 'this member'} from the project? This action cannot be undone.`
+                }
+                confirmText={confirmDelete.isBulk ? `Remove ${selectedIds.size} Members` : "Remove Member"}
                 type="danger"
-                isProcessing={processingId === confirmDelete.member?.id}
+                isProcessing={processingId === confirmDelete.member?.id || isBulkProcessing}
             />
         </div>
     );

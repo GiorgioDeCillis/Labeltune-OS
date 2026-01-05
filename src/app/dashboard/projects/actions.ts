@@ -306,3 +306,99 @@ export async function updateProjectCourses(projectId: string, courseIds: string[
     revalidatePath(`/dashboard/projects/${projectId}`);
     redirect(`/dashboard/projects/${projectId}`);
 }
+
+export async function assignUsersToProject(projectId: string, userIds: string[]) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Verify admin/pm
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'pm' && profile?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const assignments = userIds.map(userId => ({
+        project_id: projectId,
+        user_id: userId
+    }));
+
+    const { error } = await supabase
+        .from('project_assignees')
+        .insert(assignments);
+
+    if (error) {
+        console.error('Error assigning users:', error);
+        throw new Error('Failed to assign users');
+    }
+
+    revalidatePath(`/dashboard/projects/${projectId}/team`);
+}
+
+export async function removeUsersFromProject(projectId: string, userIds: string[]) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Verify admin/pm
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'pm' && profile?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const { error } = await supabase
+        .from('project_assignees')
+        .delete()
+        .eq('project_id', projectId)
+        .in('user_id', userIds);
+
+    if (error) {
+        console.error('Error removing users:', error);
+        throw new Error('Failed to remove users');
+    }
+
+    revalidatePath(`/dashboard/projects/${projectId}/team`);
+}
+
+export async function updateAssigneesStatus(projectId: string, userIds: string[], status: 'active' | 'paused') {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Verify admin/pm
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'pm' && profile?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const { error } = await supabase
+        .from('project_assignees')
+        .update({ status })
+        .eq('project_id', projectId)
+        .in('user_id', userIds);
+
+    if (error) {
+        console.error('Error updating assignees status:', error);
+        throw new Error('Failed to update status');
+    }
+
+    revalidatePath(`/dashboard/projects/${projectId}/team`);
+}
