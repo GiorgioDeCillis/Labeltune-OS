@@ -5,7 +5,8 @@ import { TaskComponent } from '@/components/builder/types';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Loader2, Timer, AlertTriangle, Clock } from 'lucide-react';
-import { startTasking, submitTask, updateTaskTimer, skipTask, expireTask } from '@/app/dashboard/tasks/actions';
+import { submitTask, updateTaskTimer, skipTask, expireTask } from '@/app/dashboard/tasks/actions';
+import { startTasking } from '@/app/dashboard/projects/actions';
 import { useToast } from '@/components/Toast';
 import { TaskSubmissionSuccess } from '@/components/dashboard/TaskSubmissionSuccess';
 import {
