@@ -5,6 +5,7 @@ import { TaskComponent } from '@/components/builder/types';
 import { useRouter } from 'next/navigation';
 import { Loader2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { approveTask, rejectTask } from '@/app/dashboard/review/actions';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
     ImageObject,
     TextObject,
@@ -38,6 +39,10 @@ export function ReviewTaskRenderer({
 }) {
     const [formData, setFormData] = useState<any>(initialData || {});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [confirmAction, setConfirmAction] = useState<{
+        isOpen: boolean;
+        type: 'approve' | 'reject' | null;
+    }>({ isOpen: false, type: null });
 
     // Hack: if initialData has '$image' keys etc, use them.
     const taskData = initialData || {};
@@ -47,21 +52,27 @@ export function ReviewTaskRenderer({
     };
 
     const handleApprove = async () => {
-        if (!confirm('Are you sure you want to approve this task? It will be sent to the client/delivery.')) return;
+        setConfirmAction({ isOpen: true, type: 'approve' });
+    };
 
+    const executeApprove = async () => {
+        setConfirmAction({ isOpen: false, type: null });
         setIsSubmitting(true);
         try {
             await approveTask(taskId, formData);
         } catch (e) {
             console.error(e);
-            alert('Failed to approve task');
+            alert('Failed to approve task'); // Keeping alert for errors for now as it's not a confirm
             setIsSubmitting(false);
         }
     };
 
     const handleReject = async () => {
-        if (!confirm('Are you sure you want to REJECT this task? It will be sent back to the queue and current progress cleared.')) return;
+        setConfirmAction({ isOpen: true, type: 'reject' });
+    };
 
+    const executeReject = async () => {
+        setConfirmAction({ isOpen: false, type: null });
         setIsSubmitting(true);
         try {
             await rejectTask(taskId);
@@ -126,6 +137,28 @@ export function ReviewTaskRenderer({
                     Approve & Validate
                 </button>
             </div>
+
+            <ConfirmDialog
+                isOpen={confirmAction.isOpen && confirmAction.type === 'approve'}
+                onClose={() => setConfirmAction({ isOpen: false, type: null })}
+                onConfirm={executeApprove}
+                title="Approve Task"
+                description="Are you sure you want to approve this task? It will be sent to the client/delivery."
+                confirmText="Approve Task"
+                type="info"
+                isProcessing={isSubmitting}
+            />
+
+            <ConfirmDialog
+                isOpen={confirmAction.isOpen && confirmAction.type === 'reject'}
+                onClose={() => setConfirmAction({ isOpen: false, type: null })}
+                onConfirm={executeReject}
+                title="Reject Task"
+                description="Are you sure you want to REJECT this task? It will be sent back to the queue and current progress cleared."
+                confirmText="Reject Task"
+                type="danger"
+                isProcessing={isSubmitting}
+            />
         </div>
     );
 }

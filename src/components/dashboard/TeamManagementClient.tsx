@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { User, CheckCircle, XCircle, Trash2, Plus, Search, Pause, Play, ArrowLeft, Users } from 'lucide-react';
 import { assignUserToProject, removeUserFromProject, updateAssigneeStatus } from '@/app/dashboard/projects/actions';
 import { useToast } from '@/components/Toast';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface TeamMember {
     id: string;
@@ -31,6 +32,10 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
     const [filterQuery, setFilterQuery] = useState('');
     const [tagFilter, setTagFilter] = useState('');
     const [showAddView, setShowAddView] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; member: TeamMember | null }>({
+        isOpen: false,
+        member: null
+    });
 
     const handleAssign = async (member: TeamMember) => {
         if (processingId) return;
@@ -48,10 +53,15 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
     };
 
     const handleRemove = async (member: TeamMember) => {
-        if (processingId) return;
-        if (!confirm('Are you sure you want to remove this member from the project?')) return;
+        setConfirmDelete({ isOpen: true, member });
+    };
+
+    const executeRemove = async () => {
+        if (!confirmDelete.member || processingId) return;
+        const member = confirmDelete.member;
 
         setProcessingId(member.id);
+        setConfirmDelete({ isOpen: false, member: null });
         try {
             await removeUserFromProject(projectId, member.id);
             showToast('Member removed from team', 'success');
@@ -228,8 +238,8 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                                                         disabled={processingId === worker.id}
                                                         title={worker.status === 'active' ? 'Pause worker' : 'Resume worker'}
                                                         className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${worker.status === 'active'
-                                                                ? 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20'
-                                                                : 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
+                                                            ? 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20'
+                                                            : 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
                                                             }`}
                                                     >
                                                         {processingId === worker.id ? '...' : (
@@ -263,6 +273,17 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                     </table>
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={confirmDelete.isOpen}
+                onClose={() => setConfirmDelete({ isOpen: false, member: null })}
+                onConfirm={executeRemove}
+                title="Remove Team Member"
+                description={`Are you sure you want to remove ${confirmDelete.member?.full_name || 'this member'} from the project? This action cannot be undone.`}
+                confirmText="Remove Member"
+                type="danger"
+                isProcessing={processingId === confirmDelete.member?.id}
+            />
         </div>
     );
 }
