@@ -3,7 +3,7 @@
 import { useTheme } from '@/context/ThemeContext';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles, Camera, Loader2, Copy, Check } from 'lucide-react';
+import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles, Camera, Loader2, Copy, Check, FileText, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
@@ -175,11 +175,61 @@ export default function ProfilePage() {
             </motion.div>
 
             <div className="grid md:grid-cols-2 gap-8">
-                {/* Theme Selection */}
+                {/* User Info from Onboarding */}
                 <motion.section
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 }}
+                    className="glass-panel p-6 rounded-3xl space-y-6"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                            <User className="text-primary w-5 h-5" />
+                        </div>
+                        <h3 className="text-xl font-bold">Dati Personali</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 text-sm">
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                            <span className="opacity-60">Nome Completo</span>
+                            <span className="font-bold">{profile?.full_name || '-'}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                            <span className="opacity-60">Telefono</span>
+                            <span className="font-bold">{profile?.phone_number || '-'}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                            <span className="opacity-60">Nazionalità</span>
+                            <span className="font-bold uppercase">{profile?.nationality || '-'}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                            <span className="opacity-60">Lingua (Tag)</span>
+                            <span className="font-bold px-2 py-0.5 bg-primary/20 rounded-md text-primary">{profile?.locale_tag || '-'}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                            <span className="opacity-60">Email PayPal</span>
+                            <span className="font-bold">{profile?.paypal_email || '-'}</span>
+                        </div>
+                        {profile?.cv_url && (
+                            <a
+                                href={profile.cv_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 w-full py-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all font-bold mt-2"
+                            >
+                                <FileText className="w-4 h-4 text-primary" />
+                                Visualizza CV
+                                <ExternalLink className="w-3 h-3 opacity-40" />
+                            </a>
+                        )}
+                    </div>
+                </motion.section>
+
+                {/* Theme Selection */}
+                <motion.section
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
                     className="glass-panel p-6 rounded-3xl space-y-6"
                 >
                     <div className="flex items-center gap-3">
@@ -213,12 +263,15 @@ export default function ProfilePage() {
                         />
                     </div>
                 </motion.section>
+            </div>
 
+            {/* Wallpaper Selection & Settings... */}
+            <div className="grid md:grid-cols-1 gap-8">
                 {/* Wallpaper Selection */}
                 <motion.section
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
                     className="glass-panel p-6 rounded-3xl space-y-6"
                 >
                     <div className="flex items-center gap-3">
@@ -228,7 +281,7 @@ export default function ProfilePage() {
                         <h3 className="text-xl font-bold">Background</h3>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                         {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
                             <button
                                 key={wp.id}

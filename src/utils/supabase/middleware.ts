@@ -51,18 +51,20 @@ export async function updateSession(request: NextRequest) {
     }
 
     if (user && !isOnboardingPath && !isAuthPath) {
-        // Check onboarding status
+        // Check onboarding status from metadata first
         const isOnboarded = user.app_metadata?.is_onboarded || user.user_metadata?.is_onboarded
 
         if (!isOnboarded) {
-            // Check profiles table as a fallback or if metadata is not synced yet
-            const { data: profile } = await supabase
+            // Check profiles table
+            const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('is_onboarded, role')
                 .eq('id', user.id)
                 .single()
 
-            if (profile && !profile.is_onboarded && profile.role !== 'admin' && profile.role !== 'PM') {
+            // Redirect if profile doesn't exist (e.g. trigger failed or didn't run yet)
+            // or if it exists and is not onboarded
+            if (profileError || (profile && !profile.is_onboarded && profile.role !== 'admin' && profile.role !== 'PM')) {
                 const url = request.nextUrl.clone()
                 url.pathname = '/onboarding'
                 return NextResponse.redirect(url)

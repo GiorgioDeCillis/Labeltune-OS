@@ -47,3 +47,24 @@ USING (
     WHERE id = auth.uid() AND role IN ('admin', 'PM')
   )
 );
+
+-- 4. Automatically create a profile when a new user signs up (Supports OAuth)
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, avatar_url, role)
+  VALUES (
+    new.id, 
+    new.raw_user_meta_data->>'full_name', 
+    new.raw_user_meta_data->>'avatar_url',
+    COALESCE(new.raw_user_meta_data->>'role', 'Annotator')
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to call the function on new user insertion
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
