@@ -50,7 +50,6 @@ export default function OnboardingPage() {
     }
 
     return (
-    return (
         <div className="h-screen overflow-hidden flex flex-col">
             {/* Background elements - fixed to viewport - Aligned with Login aesthetic */}
             <div className="fixed inset-0 pointer-events-none z-0">
