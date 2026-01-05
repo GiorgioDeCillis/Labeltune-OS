@@ -299,7 +299,14 @@ export function TaskRenderer({
             </div>
 
             {!isReadOnly && (
-                <div className="pt-6 border-t border-white/5 space-y-3 mt-4">
+                <div className="pt-6 border-t border-white/5 grid grid-cols-2 gap-4 mt-4">
+                    <button
+                        onClick={() => handleSkip()}
+                        disabled={isSubmitting}
+                        className="w-full py-3 bg-white/5 hover:bg-white/10 text-foreground font-medium rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                        Skip
+                    </button>
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting}
@@ -307,13 +314,6 @@ export function TaskRenderer({
                     >
                         {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                         Submit & Next
-                    </button>
-                    <button
-                        onClick={() => handleSkip()}
-                        disabled={isSubmitting}
-                        className="w-full py-3 bg-white/5 hover:bg-white/10 text-foreground font-medium rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    >
-                        Skip
                     </button>
                 </div>
             )}

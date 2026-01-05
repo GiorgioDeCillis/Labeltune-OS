@@ -69,7 +69,7 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
             {/* Workspace */}
             <div className="flex-1 flex justify-center min-h-[500px]">
                 {/* Tool Panel - Centered */}
-                <div className="w-full max-w-4xl glass-panel p-6 rounded-2xl flex flex-col h-full">
+                <div className="w-full glass-panel p-6 rounded-2xl flex flex-col h-full">
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Labeling</h3>
 
                     <div className="flex-1 relative">
