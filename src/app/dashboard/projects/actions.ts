@@ -476,6 +476,7 @@ export async function startTasking(projectId: string) {
         .maybeSingle();
 
     if (assignedPendingTask) {
+        console.log('Found assigned pending task:', assignedPendingTask.id);
         // Auto-start it
         await supabase
             .from('tasks')
@@ -485,7 +486,41 @@ export async function startTasking(projectId: string) {
         redirect(`/dashboard/tasks/${assignedPendingTask.id}`);
     }
 
+    console.log('No assigned tasks found. Looking for unassigned tasks in pool...');
 
+    // 4. Find an unassigned task (JIT Assignment provided by "Start Tasking")
+    // This replaces the manual "Claim" system with an automatic one.
+    const { data: nextTask } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('project_id', projectId)
+        .is('assigned_to', null)
+        .eq('status', 'pending')
+        .limit(1)
+        .maybeSingle();
+
+    if (nextTask) {
+        console.log('Found unassigned task, assigning:', nextTask.id);
+        // Cleanly assign it
+        const { error: claimError } = await supabase
+            .from('tasks')
+            .update({
+                assigned_to: user.id,
+                status: 'in_progress'
+            })
+            .eq('id', nextTask.id)
+            .is('assigned_to', null);
+
+        if (!claimError) {
+            redirect(`/dashboard/tasks/${nextTask.id}`);
+        } else {
+            console.error('Failed to auto-assign task (race condition or permission)');
+            // Retry logic could go here, but for now error out
+            redirect(`/dashboard/projects/${projectId}?error=Could not assign task, please try again`);
+        }
+    }
+
+    console.log('No tasks available at all.');
     // No tasks available or assigned
-    redirect(`/dashboard/projects/${projectId}?error=No tasks assigned to you`);
+    redirect(`/dashboard/projects/${projectId}?error=No tasks available to start`);
 }

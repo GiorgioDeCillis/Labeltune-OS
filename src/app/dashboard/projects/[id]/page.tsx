@@ -5,6 +5,7 @@ import { Settings, ListTodo, Wallet, Clock, BookOpen, ChevronRight, CheckCircle2
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
 import { ProjectHeaderActions } from '@/components/dashboard/ProjectHeaderActions';
 import { startTasking } from '../actions';
+import { ToastQueryHandler } from '@/components/dashboard/ToastQueryHandler';
 
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -91,6 +92,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     // Annotator View (Outlier Style)
     return (
         <div className="space-y-8 max-w-5xl mx-auto">
+            <ToastQueryHandler />
             {/* Header / Project Overview */}
             <div className="glass-panel p-8 rounded-2xl border border-white/10 space-y-6">
                 <div className="flex items-start justify-between">
