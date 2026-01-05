@@ -26,11 +26,11 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
         .from('tasks')
         .select(`
             *,
-            annotator:assigned_to (
+            annotator:profiles!assigned_to (
                 full_name,
                 avatar_url
             ),
-            reviewer:reviewed_by (
+            reviewer:profiles!reviewed_by (
                 full_name,
                 avatar_url
             )
@@ -60,6 +60,7 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
                 initialTasks={tasks || []}
                 projectId={id}
                 payRate={parseFloat(project.pay_rate || '0')}
+                error={tasksError}
             />
         </div>
     );
