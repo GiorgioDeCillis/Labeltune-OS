@@ -39,7 +39,6 @@ export function Sidebar({ userRole }: { userRole: string }) {
     ];
 
     const workerLinks = [
-        { href: '/dashboard/tasks', label: 'My Tasks', icon: ListTodo },
         { href: '/dashboard/history', label: 'History', icon: CheckCircle },
     ];
 

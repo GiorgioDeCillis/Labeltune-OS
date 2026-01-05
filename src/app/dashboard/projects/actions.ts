@@ -433,3 +433,89 @@ export async function updateAssigneesStatus(projectId: string, userIds: string[]
 
     revalidatePath(`/dashboard/projects/${projectId}/team`);
 }
+
+export async function startTasking(projectId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) redirect('/login');
+
+    // 1. Check if user is assigned to project (status active)
+    const { data: assignment } = await supabase
+        .from('project_assignees')
+        .select('status')
+        .eq('project_id', projectId)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .single();
+
+    if (!assignment) {
+        throw new Error('Not assigned to this project or inactive');
+    }
+
+    // 2. Check for in_progress task (resume)
+    const { data: inProgressTask } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('assigned_to', user.id)
+        .eq('status', 'in_progress')
+        .maybeSingle();
+
+    if (inProgressTask) {
+        redirect(`/dashboard/tasks/${inProgressTask.id}`);
+    }
+
+    // 3. Check for pending task already assigned
+    const { data: assignedPendingTask } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('assigned_to', user.id)
+        .eq('status', 'pending')
+        .maybeSingle();
+
+    if (assignedPendingTask) {
+        // Auto-start it
+        await supabase
+            .from('tasks')
+            .update({ status: 'in_progress' })
+            .eq('id', assignedPendingTask.id);
+
+        redirect(`/dashboard/tasks/${assignedPendingTask.id}`);
+    }
+
+    // 4. Find an unassigned task (Pooling)
+    // Locking strategy: simplified for this implementation, ideally requires row-level locking or RPC
+    const { data: nextTask } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('project_id', projectId)
+        .is('assigned_to', null)
+        .eq('status', 'pending')
+        .limit(1)
+        .maybeSingle();
+
+    if (nextTask) {
+        // Claim it
+        const { error: claimError } = await supabase
+            .from('tasks')
+            .update({
+                assigned_to: user.id,
+                status: 'in_progress'
+            })
+            .eq('id', nextTask.id)
+            .is('assigned_to', null); // Optimistic concurrency check
+
+        if (!claimError) {
+            redirect(`/dashboard/tasks/${nextTask.id}`);
+        } else {
+            // Failed to claim (race condition), retry logic or user prompt would go here.
+            // For now, redirect with error
+            redirect(`/dashboard/projects/${projectId}?error=Could not claim task, please try again`);
+        }
+    }
+
+    // No tasks available
+    redirect(`/dashboard/projects/${projectId}?error=No tasks available`);
+}

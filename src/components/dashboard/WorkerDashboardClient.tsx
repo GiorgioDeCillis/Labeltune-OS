@@ -6,6 +6,7 @@ import { ChevronRight, BookOpen, Clock, Wallet, Briefcase, Info, CheckCircle, Ba
 import ProjectQueueModal from '@/components/dashboard/ProjectQueueModal';
 import { createClient } from '@/utils/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
+import { startTasking } from '@/app/dashboard/projects/actions';
 
 interface Project {
     id: string;
@@ -145,6 +146,16 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                             <div className="flex items-center gap-2 text-white/40">
                                                 <Clock className="w-4 h-4" />
                                                 <span>Started {new Date(activeProject.created_at).toLocaleDateString()}</span>
+                                                <span className="mx-2 text-white/20">|</span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        startTasking(activeProject.id);
+                                                    }}
+                                                    className="text-primary hover:underline hover:text-primary/80 transition-colors"
+                                                >
+                                                    Start Tasking
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
