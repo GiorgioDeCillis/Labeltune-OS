@@ -20,7 +20,7 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
     if (!project) notFound();
 
     // Fetch tasks with profiles and project info
-    const { data: tasks } = await supabase
+    const { data: tasks, error: tasksError } = await supabase
         .from('tasks')
         .select(`
             *,
@@ -35,6 +35,12 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
         `)
         .eq('project_id', id)
         .order('created_at', { ascending: false });
+
+    if (tasksError) {
+        console.error('Error fetching tasks for project', id, tasksError);
+    } else {
+        console.log('Successfully fetched tasks for project', id, 'Count:', tasks?.length);
+    }
 
     return (
         <div className="space-y-6">
