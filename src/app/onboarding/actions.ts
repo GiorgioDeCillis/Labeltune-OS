@@ -54,18 +54,18 @@ export async function submitOnboarding(formData: FormData) {
     // 2. Generate Locale Tag (e.g., it_IT, us_US)
     const localeTag = `${primaryLanguage.toLowerCase()}_${nationality.toUpperCase()}`
 
-    // 3. Update Profile
+    // 3. Update Profile (using upsert to handle cases where trigger might have failed)
     const { error: updateError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+            id: user.id,
+            email: user.email,
             full_name: `${firstName} ${lastName}`,
             first_name: firstName,
             last_name: lastName,
             birth_date: birthDate,
             phone_number: phoneNumber,
             nationality: nationality,
-            primary_language: primaryLanguage,
-            locale_tag: localeTag,
             address: address,
             cv_url: cvUrl,
             linkedin_url: linkedinUrl,
@@ -73,10 +73,11 @@ export async function submitOnboarding(formData: FormData) {
             website_url: websiteUrl,
             paypal_email: paypalEmail,
             job_offers_consent: jobOffersConsent,
+            primary_language: primaryLanguage,
+            locale_tag: localeTag,
             is_onboarded: true,
-            role: 'Annotator' // Force role to Annotator after onboarding
+            role: 'Annotator'
         })
-        .eq('id', user.id)
 
     if (updateError) {
         console.error('Error updating profile:', updateError)
