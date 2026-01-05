@@ -4,7 +4,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { motion } from 'framer-motion';
 import { login, signup } from '@/app/login/actions';
 import { useState, useEffect } from 'react';
-import { Zap, Lock, Mail, User, ChevronRight } from 'lucide-react';
+import { Zap, Lock, Mail, ChevronRight } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -14,7 +14,6 @@ export default function LoginView() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isLogin, setIsLogin] = useState(true);
-    const [role, setRole] = useState('annotator');
     const supabase = createClient();
 
     const error = searchParams.get('error');
@@ -85,44 +84,7 @@ export default function LoginView() {
                 )}
 
                 <form className="space-y-4">
-                    {!isLogin && (
-                        <>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium ml-1">Full Name</label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                                    <input
-                                        name="name"
-                                        type="text"
-                                        required
-                                        placeholder="John Doe"
-                                        className="w-full bg-background/50 border border-white/10 rounded-xl px-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium ml-1">Role</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {['annotator', 'reviewer'].map((r) => (
-                                        <button
-                                            key={r}
-                                            type="button"
-                                            onClick={() => setRole(r)}
-                                            className={`px-4 py-2 rounded-lg text-sm capitalize border transition-all ${role === r
-                                                ? 'bg-primary/20 border-primary text-primary'
-                                                : 'bg-background/30 border-transparent hover:bg-white/5'
-                                                }`}
-                                        >
-                                            {r}
-                                        </button>
-                                    ))}
-                                </div>
-                                {/* Hidden input for server action */}
-                                <input type="hidden" name="role" value={role} />
-                            </div>
-                        </>
-                    )}
+                    {!isLogin && null}
 
                     <div className="space-y-2">
                         <label className="text-sm font-medium ml-1">Email</label>
