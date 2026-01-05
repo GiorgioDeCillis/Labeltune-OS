@@ -24,7 +24,17 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
     // Fetch tasks with profiles and project info
     const { data: tasks, error: tasksError } = await supabase
         .from('tasks')
-        .select('*')
+        .select(`
+            *,
+            annotator:assigned_to (
+                full_name,
+                avatar_url
+            ),
+            reviewer:reviewed_by (
+                full_name,
+                avatar_url
+            )
+        `)
         .eq('project_id', id)
         .order('created_at', { ascending: false });
 

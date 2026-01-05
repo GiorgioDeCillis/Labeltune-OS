@@ -88,12 +88,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate }: Project
     return (
         <div className="space-y-4">
             {/* Filters & Actions */}
-            <div className="bg-red-500/20 text-red-200 p-2 rounded mb-4 text-xs font-mono border border-red-500/30">
-                DEBUG: Received {initialTasks?.length || 0} tasks from server.
-                Filtered: {filteredTasks.length}.
-                IsArchived count: {tasks.filter(t => t.is_archived).length}
-            </div>
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-panel p-4 rounded-xl">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-panel !overflow-visible p-4 rounded-xl">
                 <div className="flex flex-1 gap-4 w-full md:w-auto">
                     <div className="relative flex-1 max-w-sm">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
