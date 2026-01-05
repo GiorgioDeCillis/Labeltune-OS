@@ -49,7 +49,7 @@ export default function OnboardingPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 py-12 relative overflow-hidden">
+        <div className="min-h-screen flex flex-col items-center p-4 py-12 relative">
             {/* Background elements */}
             <div className="fixed inset-0 pointer-events-none">
                 <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/10 blur-[120px] rounded-full" />
@@ -298,7 +298,7 @@ export default function OnboardingPage() {
                             <button
                                 type="submit"
                                 disabled={isPending}
-                                className="w-full bg-primary hover:bg-primary/90 text-white font-black py-4 rounded-2xl shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
+                                className="w-full bg-primary hover:bg-primary/90 text-black font-black py-4 rounded-2xl shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
                             >
                                 {isPending ? (
                                     <Loader2 className="w-6 h-6 animate-spin" />
@@ -309,7 +309,7 @@ export default function OnboardingPage() {
                                             animate={{ x: [0, 5, 0] }}
                                             transition={{ repeat: Infinity, duration: 1.5 }}
                                         >
-                                            <CheckCircle2 className="w-6 h-6" />
+                                            <CheckCircle2 className="w-6 h-6 text-black" />
                                         </motion.div>
                                     </>
                                 )}
