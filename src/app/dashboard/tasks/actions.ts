@@ -64,7 +64,7 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
 
     if (error) {
         console.error('Error submitting task:', error);
-        throw new Error('Failed to submit task');
+        return { error: error.message };
     }
 
     revalidatePath(`/dashboard/tasks`);

@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Loader2, Timer, AlertTriangle, Clock } from 'lucide-react';
 import { submitTask, updateTaskTimer, skipTask, expireTask } from '@/app/dashboard/tasks/actions';
+import { useToast } from '@/components/Toast';
 import {
     ImageObject,
     TextObject,
@@ -51,6 +52,7 @@ export function TaskRenderer({
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const router = useRouter();
     const supabase = createClient();
+    const { showToast } = useToast();
 
     // Max time logic
     useEffect(() => {
@@ -140,16 +142,30 @@ export function TaskRenderer({
         setFormData((prev: any) => ({ ...prev, [id]: value }));
     };
 
+    import { useToast } from '@/components/Toast';
+
+    // ... (in TaskRenderer component)
+    const { showToast } = useToast();
+
+    // ...
+
     const handleSubmit = async () => {
         setIsSubmitting(true);
 
         try {
-            await submitTask(taskId, formData, seconds);
+            const result = await submitTask(taskId, formData, seconds);
+
+            if (result?.error) {
+                showToast(result.error, 'error');
+                return;
+            }
+
+            showToast('Task submitted successfully', 'success');
             router.push('/dashboard/tasks');
             router.refresh();
         } catch (error) {
             console.error('Error submitting task:', error);
-            alert('Failed to submit task. Please try again.');
+            showToast('Failed to submit task. Please try again.', 'error');
         } finally {
             setIsSubmitting(false);
         }
