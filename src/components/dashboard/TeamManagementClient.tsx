@@ -93,7 +93,7 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
         const member = confirmDelete.member;
 
         setProcessingId(member.id);
-        setConfirmDelete({ isOpen: false, member: null });
+        setConfirmDelete({ isOpen: false, member: null, isBulk: false });
         try {
             await removeUserFromProject(projectId, member.id);
             showToast('Member removed from team', 'success');
