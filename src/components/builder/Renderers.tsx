@@ -1,6 +1,7 @@
 import React from 'react';
 import { TaskComponent } from './types';
 import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot } from 'lucide-react';
+import { getDefaultAvatar } from '@/utils/avatar';
 
 // --- Objects ---
 
@@ -111,8 +112,9 @@ export function MultiMessageObject({ component, data }: { component: TaskCompone
                         {msg.content}
                     </div>
                     {msg.role === 'user' && (
-                        <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-                            <User className="w-5 h-5" />
+                        <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                            {/* In a real task, we'd have the user name here, for now default to general Ghibli */}
+                            <img src={getDefaultAvatar()} alt="User" className="w-full h-full object-cover" />
                         </div>
                     )}
                 </div>

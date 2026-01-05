@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles, Camera, Loader2, Copy, Check, FileText, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { getDefaultAvatar } from '@/utils/avatar';
 
 export default function ProfilePage() {
     const {
@@ -119,7 +120,12 @@ export default function ProfilePage() {
                                 className="object-cover"
                             />
                         ) : (
-                            <User className="w-16 h-16 text-primary" />
+                            <Image
+                                src={getDefaultAvatar(profile?.full_name || user?.user_metadata?.full_name)}
+                                alt="Default Avatar"
+                                fill
+                                className="object-cover"
+                            />
                         )}
 
                         <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-20">

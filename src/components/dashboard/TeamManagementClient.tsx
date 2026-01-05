@@ -5,6 +5,7 @@ import { User, CheckCircle, XCircle, Trash2, Plus, Search, Pause, Play, ArrowLef
 import { assignUserToProject, removeUserFromProject, updateAssigneeStatus } from '@/app/dashboard/projects/actions';
 import { useToast } from '@/components/Toast';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { getDefaultAvatar } from '@/utils/avatar';
 
 interface TeamMember {
     id: string;
@@ -182,12 +183,12 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                             {sortedMembers.map((worker) => (
                                 <tr key={worker.id} className="hover:bg-white/5 transition-colors">
                                     <td className="p-4 font-medium flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary overflow-hidden">
-                                            {worker.avatar_url ? (
-                                                <img src={worker.avatar_url} alt={worker.full_name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <User className="w-4 h-4" />
-                                            )}
+                                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary overflow-hidden relative">
+                                            <img
+                                                src={worker.avatar_url || getDefaultAvatar(worker.full_name)}
+                                                alt={worker.full_name}
+                                                className="w-full h-full object-cover"
+                                            />
                                         </div>
                                         <div>
                                             <div className="text-sm font-bold">{worker.full_name || 'User'}</div>
