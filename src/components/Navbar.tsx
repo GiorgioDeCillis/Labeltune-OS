@@ -1,15 +1,15 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import Link from 'next/link';
 import { Bell, User, Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
 import Image from 'next/image';
 import { getDefaultAvatar } from '@/utils/avatar';
 
 export function Navbar({ user, userRole, initialAvatar, fullName }: { user: any, userRole?: string, initialAvatar?: string | null, fullName?: string | null }) {
     const { theme, avatarUrl, setAvatarUrl } = useTheme();
-    const [avatarError, setAvatarError] = React.useState(false);
+    const [avatarError, setAvatarError] = useState(false);
 
     useEffect(() => {
         if (initialAvatar && !avatarUrl) {
