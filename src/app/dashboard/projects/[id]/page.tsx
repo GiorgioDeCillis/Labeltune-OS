@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Settings, BookOpen, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Settings, BookOpen, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
 import { ProjectHeaderActions } from '@/components/dashboard/ProjectHeaderActions';
 import { startTasking } from '../actions';
@@ -141,61 +141,112 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     };
 
     return (
+    return (
         <div className="space-y-8 max-w-5xl mx-auto">
             <ToastQueryHandler />
-            {/* Header / Project Overview */}
-            <div className="glass-panel p-8 rounded-2xl border border-white/10 space-y-6">
-                <div className="flex items-start justify-between">
+
+            {/* Header / Title Section (Outside Card) */}
+            <div className="space-y-4">
+                <Link
+                    href="/dashboard"
+                    className="inline-flex items-center text-sm text-orange-500 hover:text-orange-400 transition-colors font-medium"
+                >
+                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    Back
+                </Link>
+
+                <div className="space-y-2">
+                    <h1 className="text-4xl font-bold tracking-tight text-white">{project.name}</h1>
+                    <p className="text-white/60 text-lg">{project.description}</p>
+                </div>
+            </div>
+
+            {/* Project Overview Card */}
+            <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
+                <div className="p-8 space-y-8">
+                    {/* Card Header */}
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-white/10 rounded-lg">
-                            <BookOpen className="w-6 h-6" />
+                            <BookOpen className="w-5 h-5" />
+                        </div>
+                        <h2 className="text-xl font-bold tracking-tight text-white">Project Overview</h2>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-3 gap-12">
+                        {/* Deliverable Rate */}
+                        <div>
+                            <div className="flex items-center gap-2 text-3xl font-bold">
+                                {project.pay_rate || '$15.00 / hr'}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                                <p className="text-sm text-white/50">Deliverable rate</p>
+                                <AlertCircle className="w-3 h-3 text-white/30" />
+                            </div>
+                        </div>
+
+                        {/* Assessment Rate - Hidden as per user request, but keeping slot if needed or just 3 cols layout */}
+                        {/* <div>
+                             <div className="flex items-center gap-2 text-3xl font-bold">
+                                $13.65 / task
+                            </div>
+                             <div className="flex items-center gap-2 mt-2">
+                                <p className="text-sm text-white/50">Assessment rate</p>
+                                <AlertCircle className="w-3 h-3 text-white/30" />
+                            </div>
+                        </div> */}
+
+                        {/* Using Assessment Status here instead to match 3-col layout or keep logical */}
+                        <div>
+                            <div className="flex items-center gap-2 text-3xl font-bold">
+                                {formatDuration(project.max_task_time)}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                                <p className="text-sm text-white/50">Est. time per task</p>
+                                <AlertCircle className="w-3 h-3 text-white/30" />
+                            </div>
+                        </div>
+
+                        {/* Empty col or user can put something else. 
+                           The reference image has 3 cols: Pay, Assessment Rate, Time.
+                           We removed Assessment Rate. So we have Pay and Time.
+                           Should we put Assessment Status here? 
+                           Reference image row 2 is Assessment status and Domain.
+                           Let's stick to the content we have but arrange nicely.
+                           Maybe 2 cols for top row?
+                        */}
+                    </div>
+
+                    {/* Separator */}
+                    <div className="h-px bg-white/5 w-full" />
+
+                    {/* Secondary Info Grid */}
+                    <div className="grid grid-cols-2 gap-12">
+                        <div>
+                            <p className="text-sm text-white/50 mb-2">Assessment</p>
+                            <div className={`text-xl font-bold ${assessmentStatus === 'Completed' ? 'text-white' : // Reference image has white "In progress"
+                                assessmentStatus === 'Failed' ? 'text-red-400' :
+                                    'text-white'
+                                }`}>{assessmentStatus}</div>
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-white">Project Overview</h1>
-                            <p className="text-white/60 text-sm">Manage your work and training for this project</p>
+                            <p className="text-sm text-white/50 mb-2">Skills</p>
+                            <div className="text-xl font-bold">{profile?.locale_tag || 'General'}</div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-8 pt-4 border-t border-white/5">
-                    <div>
-                        <div className="flex items-center gap-2 text-2xl font-bold">
-                            {project.pay_rate || '$15.00 / hr'}
-                        </div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Deliverable Rate</p>
-                    </div>
-                    <div>
-                        <div className="flex items-center gap-2 text-2xl font-bold">
-                            {formatDuration(project.max_task_time)}
-                        </div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Est. Time per Task</p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-8 pt-6 border-t border-white/5">
-                    <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Assessment</p>
-                        <div className={`font-bold text-lg ${assessmentStatus === 'Completed' ? 'text-emerald-400' :
-                            assessmentStatus === 'Failed' ? 'text-red-400' :
-                                'text-white'
-                            }`}>{assessmentStatus}</div>
-                    </div>
-                    <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Domain</p>
-                        <div className="font-bold text-lg">{profile?.locale_tag || 'General'}</div>
-                    </div>
-                </div>
-
-                <div className="flex gap-4 pt-6">
-                    <Link href="#" className="text-primary hover:text-primary/80 text-sm font-bold flex items-center gap-1">
+                {/* Bottom Actions Row */}
+                <div className="bg-white/5 px-8 pid-6 py-4 flex items-center gap-6 border-t border-white/5">
+                    <Link href="#" className="text-orange-500 hover:text-orange-400 text-sm font-bold flex items-center gap-1 transition-colors">
                         View Pay Terms <ChevronRight className="w-4 h-4" />
                     </Link>
-                    <div className="h-4 w-px bg-white/10" />
-                    <ProjectGuidelinesLink guidelines={project.guidelines} />
-                    <div className="h-4 w-px bg-white/10" />
-                    <form action={startTasking.bind(null, project.id)}>
+
+                    <ProjectGuidelinesLink guidelines={project.guidelines} className="text-orange-500 hover:text-orange-400 text-sm font-bold flex items-center gap-1 transition-colors" />
+
+                    <form action={startTasking.bind(null, project.id)} className="ml-auto">
                         <button className="text-primary hover:text-primary/80 text-sm font-bold flex items-center gap-1">
-                            Start Tasking
+                            Start Tasking <ChevronRight className="w-4 h-4" />
                         </button>
                     </form>
                 </div>
