@@ -17,6 +17,10 @@ export async function createProject(formData: FormData) {
     const pay_rate = formData.get('pay_rate') as string;
 
     const template_schema = formData.get('template_schema') as string;
+    const max_task_time_min = formData.get('max_task_time') ? Number(formData.get('max_task_time')) : null;
+    const total_tasks = formData.get('total_tasks') ? Number(formData.get('total_tasks')) : null;
+
+    const max_task_time = max_task_time_min ? max_task_time_min * 60 : null;
 
     // 1. Check if user has an organization
     const { data: profile } = await supabase
@@ -60,7 +64,9 @@ export async function createProject(formData: FormData) {
             pay_rate,
             template_schema: template_schema ? JSON.parse(template_schema) : [],
             organization_id: orgId,
-            status: 'active'
+            status: 'active',
+            max_task_time,
+            total_tasks
         })
         .select()
         .single();
@@ -102,6 +108,10 @@ export async function updateProject(id: string, formData: FormData) {
     const guidelines = formData.get('guidelines') as string;
     const pay_rate = formData.get('pay_rate') as string;
     const status = formData.get('status') as string;
+    const max_task_time_min = formData.get('max_task_time') ? Number(formData.get('max_task_time')) : null;
+    const total_tasks = formData.get('total_tasks') ? Number(formData.get('total_tasks')) : null;
+
+    const max_task_time = max_task_time_min ? max_task_time_min * 60 : null;
 
     const { error } = await supabase
         .from('projects')
@@ -111,7 +121,9 @@ export async function updateProject(id: string, formData: FormData) {
             type,
             guidelines,
             pay_rate,
-            status
+            status,
+            max_task_time,
+            total_tasks
         })
         .eq('id', id);
 

@@ -89,6 +89,30 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
                     </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold uppercase text-muted-foreground">Max Task Time (min)</label>
+                        <input
+                            name="max_task_time"
+                            type="number"
+                            defaultValue={project.max_task_time ? Math.round(project.max_task_time / 60) : ''}
+                            placeholder="30"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold uppercase text-muted-foreground">Total Tasks</label>
+                        <input
+                            name="total_tasks"
+                            type="number"
+                            defaultValue={project.total_tasks || ''}
+                            placeholder="1000"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary"
+                        />
+                    </div>
+                </div>
+
                 <div className="space-y-2">
                     <label className="text-sm font-bold uppercase text-muted-foreground">Status</label>
                     <select

@@ -266,6 +266,27 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
                             </div>
                         </div>
 
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold uppercase text-muted-foreground">Max Task Time (min)</label>
+                                <input
+                                    name="max_task_time"
+                                    type="number"
+                                    placeholder="30"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold uppercase text-muted-foreground">Total Tasks</label>
+                                <input
+                                    name="total_tasks"
+                                    type="number"
+                                    placeholder="1000"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
+                                />
+                            </div>
+                        </div>
+
                         <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-2">
                             <div className="flex items-center gap-2 text-sm font-bold text-primary">
                                 <CheckCircle2 className="w-4 h-4" />
