@@ -150,7 +150,7 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 uppercase tracking-wider">
                             <Shield className="w-4 h-4" />
-                            <span className="text-sm font-bold">{profile?.role || user?.user_metadata?.role || 'Annotator'}</span>
+                            <span className="text-sm font-bold">{profile?.role || user?.user_metadata?.role || 'annotator'}</span>
                         </div>
                         <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 group/id transition-all hover:bg-white/10">
                             <span className="text-[10px] font-bold uppercase opacity-40">Labeltune ID</span>

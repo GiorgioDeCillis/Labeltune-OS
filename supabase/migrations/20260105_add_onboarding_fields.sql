@@ -57,7 +57,7 @@ BEGIN
     new.id, 
     new.raw_user_meta_data->>'full_name', 
     new.raw_user_meta_data->>'avatar_url',
-    COALESCE(new.raw_user_meta_data->>'role', 'Annotator')
+    COALESCE(new.raw_user_meta_data->>'role', 'annotator')
   );
   RETURN new;
 END;

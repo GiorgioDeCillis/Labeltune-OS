@@ -76,7 +76,7 @@ export async function submitOnboarding(formData: FormData) {
             primary_language: primaryLanguage,
             locale_tag: localeTag,
             is_onboarded: true,
-            role: 'Annotator'
+            role: 'annotator'
         })
 
     if (updateError) {
@@ -88,7 +88,7 @@ export async function submitOnboarding(formData: FormData) {
     await supabase.auth.updateUser({
         data: {
             is_onboarded: true,
-            role: 'Annotator'
+            role: 'annotator'
         }
     })
 

@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
 
             // Redirect if profile doesn't exist (e.g. trigger failed or didn't run yet)
             // or if it exists and is not onboarded
-            if (profileError || (profile && !profile.is_onboarded && profile.role !== 'admin' && profile.role !== 'PM')) {
+            if (profileError || (profile && !profile.is_onboarded && profile.role !== 'admin' && profile.role !== 'pm')) {
                 const url = request.nextUrl.clone()
                 url.pathname = '/onboarding'
                 return NextResponse.redirect(url)
