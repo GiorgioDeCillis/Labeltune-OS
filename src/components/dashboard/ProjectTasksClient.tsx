@@ -15,11 +15,10 @@ import {
     AlertCircle,
     User
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { Task } from '@/types/manual-types';
 import { archiveTask } from '@/app/dashboard/tasks/actions';
 import Link from 'next/link';
-import { CustomSelect } from '@/components/CustomSelect';
+import CustomSelect from '@/components/CustomSelect';
 
 interface ProjectTasksClientProps {
     initialTasks: any[];
@@ -63,7 +62,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate }: Project
         const headers = ['Task ID', 'Created', 'Status', 'Annotator', 'Annotator Time', 'Annotator Earnings', 'Reviewer', 'Reviewer Time', 'Reviewer Earnings', 'Rating'];
         const csvData = filteredTasks.map(task => [
             task.id,
-            format(new Date(task.created_at), 'yyyy-MM-dd HH:mm'),
+            new Date(task.created_at).toLocaleString(),
             task.status,
             task.annotator?.full_name || 'N/A',
             task.annotator_time_spent || 0,
@@ -103,13 +102,15 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate }: Project
                     </div>
                     <div className="w-48">
                         <CustomSelect
+                            name="status_filter"
                             label=""
+                            placeholder="All Statuses"
                             options={[
-                                { value: 'all', label: 'All Statuses' },
-                                { value: 'pending', label: 'Pending' },
-                                { value: 'in_progress', label: 'In Progress' },
-                                { value: 'completed', label: 'Completed' },
-                                { value: 'approved', label: 'Approved' }
+                                { code: 'all', name: 'All Statuses' },
+                                { code: 'pending', name: 'Pending' },
+                                { code: 'in_progress', name: 'In Progress' },
+                                { code: 'completed', name: 'Completed' },
+                                { code: 'approved', name: 'Approved' }
                             ]}
                             value={statusFilter}
                             onChange={setStatusFilter}
@@ -153,7 +154,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate }: Project
                                                 <span className="font-mono text-sm text-foreground">#{task.id.slice(0, 8)}</span>
                                                 <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-1">
                                                     <Clock className="w-3 h-3" />
-                                                    {format(new Date(task.created_at), 'MMM d, HH:mm')}
+                                                    {new Date(task.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                             </div>
                                         </td>
