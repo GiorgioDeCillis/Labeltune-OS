@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Settings, ListTodo, Wallet, Clock, BookOpen, ChevronRight, CheckCircle2, AlertCircle, Users } from 'lucide-react';
+import { Settings, BookOpen, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
 import { ProjectHeaderActions } from '@/components/dashboard/ProjectHeaderActions';
 import { startTasking } from '../actions';
@@ -25,7 +25,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, locale_tag')
         .eq('id', user.id)
         .single();
 
@@ -51,6 +51,43 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             redirect('/dashboard');
         }
     }
+
+    // Determine Assessment Status for Annotators
+    let assessmentStatus = 'In Progress';
+    if (!isPM && courses && courses.length > 0) {
+        const { data: progress } = await supabase
+            .from('user_course_progress')
+            .select('status, course_id')
+            .eq('user_id', user.id)
+            .in('course_id', courses.map(c => c.id));
+
+        const progressMap = new Map(progress?.map(p => [p.course_id, p.status]));
+
+        let hasFailed = false;
+        let allCompleted = true;
+
+        for (const course of courses) {
+            const status = progressMap.get(course.id);
+            if (status === 'failed') {
+                hasFailed = true;
+                break;
+            }
+            if (status !== 'completed') {
+                allCompleted = false;
+            }
+        }
+
+        if (hasFailed) {
+            assessmentStatus = 'Failed';
+        } else if (allCompleted) {
+            assessmentStatus = 'Completed';
+        } else {
+            assessmentStatus = 'In Progress';
+        }
+    } else if (!isPM && (!courses || courses.length === 0)) {
+        assessmentStatus = 'Completed'; // No courses needed, so assessment is technically done/not required
+    }
+
 
     if (isPM) {
         return (
@@ -90,6 +127,18 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     }
 
     // Annotator View (Outlier Style)
+    // Helper to format duration if stored as number (minutes) or string
+    const formatDuration = (val: number | string | null) => {
+        if (!val) return 'N/A';
+        if (typeof val === 'number') {
+            const hrs = Math.floor(val / 60);
+            const mins = val % 60;
+            if (hrs > 0) return `${hrs}h ${mins}m`;
+            return `${mins}m`;
+        }
+        return val;
+    };
+
     return (
         <div className="space-y-8 max-w-5xl mx-auto">
             <ToastQueryHandler />
@@ -112,23 +161,16 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-8 pt-4 border-t border-white/5">
+                <div className="grid grid-cols-2 gap-8 pt-4 border-t border-white/5">
                     <div>
                         <div className="flex items-center gap-2 text-2xl font-bold">
                             {project.pay_rate || '$15.00 / hr'}
-                            <span className="text-xs font-normal text-muted-foreground bg-white/5 px-2 py-0.5 rounded">USD</span>
                         </div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Deliverable Rate</p>
                     </div>
                     <div>
                         <div className="flex items-center gap-2 text-2xl font-bold">
-                            $13.65 / task
-                        </div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Assessment Rate</p>
-                    </div>
-                    <div>
-                        <div className="flex items-center gap-2 text-2xl font-bold">
-                            3h 30m
+                            {formatDuration(project.max_task_time)}
                         </div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Est. Time per Task</p>
                     </div>
@@ -137,11 +179,14 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                 <div className="grid grid-cols-2 gap-8 pt-6 border-t border-white/5">
                     <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Assessment</p>
-                        <div className="font-bold text-lg">In Progress</div>
+                        <div className={`font-bold text-lg ${assessmentStatus === 'Completed' ? 'text-emerald-400' :
+                                assessmentStatus === 'Failed' ? 'text-red-400' :
+                                    'text-white'
+                            }`}>{assessmentStatus}</div>
                     </div>
                     <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Skills</p>
-                        <div className="font-bold text-lg">{project.type || 'General'}</div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Domain</p>
+                        <div className="font-bold text-lg">{profile?.locale_tag || 'General'}</div>
                     </div>
                 </div>
 
