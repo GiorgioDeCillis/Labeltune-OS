@@ -6,7 +6,7 @@ import { Bell, User, Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import Image from 'next/image';
 
-export function Navbar({ user, userRole, initialAvatar }: { user: any, userRole?: string, initialAvatar?: string | null }) {
+export function Navbar({ user, userRole, initialAvatar, fullName }: { user: any, userRole?: string, initialAvatar?: string | null, fullName?: string | null }) {
     const { theme, avatarUrl, setAvatarUrl } = useTheme();
 
     useEffect(() => {
@@ -29,7 +29,7 @@ export function Navbar({ user, userRole, initialAvatar }: { user: any, userRole?
 
                 <Link href="/dashboard/profile" className="flex items-center gap-3 pl-4 border-l border-white/5 hover:opacity-80 transition-opacity group">
                     <div className="text-right hidden md:block">
-                        <p className="text-sm font-medium leading-none text-white">{user?.user_metadata?.full_name || user?.email}</p>
+                        <p className="text-sm font-medium leading-none text-white">{fullName || user?.user_metadata?.full_name || user?.email}</p>
                         <p className="text-xs text-white/50 mt-1 capitalize">{userRole || user?.user_metadata?.role || 'User'}</p>
                     </div>
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all relative overflow-hidden ${theme === 'osaka-jade' ? 'border-emerald-500/50 bg-emerald-500/10 group-hover:border-emerald-400' : theme === 'purple-moon' ? 'border-[#A949D9]/50 bg-[#A949D9]/10 group-hover:border-[#A949D9]' : 'border-[#DB595C]/50 bg-[#DB595C]/10 group-hover:border-[#DB595C]'

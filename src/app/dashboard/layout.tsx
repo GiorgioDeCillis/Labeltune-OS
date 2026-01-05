@@ -23,7 +23,7 @@ export default async function DashboardLayout({
     // Ideally, we sync this to metadata on login, but let's be safe
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role, avatar_url')
+        .select('role, avatar_url, full_name')
         .eq('id', user.id)
         .single();
 
@@ -37,7 +37,7 @@ export default async function DashboardLayout({
                 <Sidebar userRole={userRole} />
 
                 <div className="flex-1 md:ml-64 flex flex-col h-screen transition-all duration-300 w-full overflow-hidden">
-                    <Navbar user={user} userRole={userRole} initialAvatar={avatarUrl} />
+                    <Navbar user={user} userRole={userRole} initialAvatar={avatarUrl} fullName={profile?.full_name} />
                     <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full max-w-[100vw] overflow-x-hidden relative">
                         {children}
                     </main>

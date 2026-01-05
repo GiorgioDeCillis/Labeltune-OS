@@ -88,7 +88,8 @@ export async function submitOnboarding(formData: FormData) {
     await supabase.auth.updateUser({
         data: {
             is_onboarded: true,
-            role: 'annotator'
+            role: 'annotator',
+            full_name: `${firstName} ${lastName}`
         }
     })
 
