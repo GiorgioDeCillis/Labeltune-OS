@@ -130,13 +130,14 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     // Helper to format duration if stored as number (minutes) or string
     const formatDuration = (val: number | string | null) => {
         if (!val) return 'N/A';
-        if (typeof val === 'number') {
-            const hrs = Math.floor(val / 60);
-            const mins = val % 60;
+        const numVal = Number(val);
+        if (!isNaN(numVal)) {
+            const hrs = Math.floor(numVal / 3600);
+            const mins = Math.floor((numVal % 3600) / 60);
             if (hrs > 0) return `${hrs}h ${mins}m`;
             return `${mins}m`;
         }
-        return val;
+        return val as string;
     };
 
     return (
@@ -180,8 +181,8 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                     <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Assessment</p>
                         <div className={`font-bold text-lg ${assessmentStatus === 'Completed' ? 'text-emerald-400' :
-                                assessmentStatus === 'Failed' ? 'text-red-400' :
-                                    'text-white'
+                            assessmentStatus === 'Failed' ? 'text-red-400' :
+                                'text-white'
                             }`}>{assessmentStatus}</div>
                     </div>
                     <div>
