@@ -40,8 +40,8 @@ export function ConfirmDialog({
     const confirmButtonStyles = {
         danger: 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20',
         warning: 'bg-yellow-500 hover:bg-yellow-600 text-white shadow-lg shadow-yellow-500/20',
-        info: 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20',
-        question: 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20'
+        info: 'bg-primary hover:bg-primary/90 text-black shadow-lg shadow-primary/20',
+        question: 'bg-primary hover:bg-primary/90 text-black shadow-lg shadow-primary/20'
     };
 
     const iconBgStyles = {

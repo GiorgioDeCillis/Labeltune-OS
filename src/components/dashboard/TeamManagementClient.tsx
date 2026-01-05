@@ -129,7 +129,7 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                 </div>
                 <button
                     onClick={() => setShowAddView(!showAddView)}
-                    className="px-4 py-2 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                    className="px-4 py-2 bg-primary text-black rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
                 >
                     {showAddView ? (
                         <>
