@@ -5,8 +5,9 @@ import { TaskComponent } from '@/components/builder/types';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Loader2, Timer, AlertTriangle, Clock } from 'lucide-react';
-import { submitTask, updateTaskTimer, skipTask, expireTask } from '@/app/dashboard/tasks/actions';
+import { startTasking, submitTask, updateTaskTimer, skipTask, expireTask } from '@/app/dashboard/tasks/actions';
 import { useToast } from '@/components/Toast';
+import { TaskSubmissionSuccess } from '@/components/dashboard/TaskSubmissionSuccess';
 import {
     ImageObject,
     TextObject,
@@ -49,6 +50,8 @@ export function TaskRenderer({
     const [seconds, setSeconds] = useState(initialTimeSpent);
     const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
     const [isExpired, setIsExpired] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [submissionResults, setSubmissionResults] = useState<{ earnings: number; timeSpent: number; projectId: string } | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const router = useRouter();
     const supabase = createClient();
@@ -98,7 +101,7 @@ export function TaskRenderer({
     // ... existing timer logic ...
 
     useEffect(() => {
-        if (!isReadOnly) {
+        if (!isReadOnly && !submissionResults) { // Stop timer on success
             timerRef.current = setInterval(() => {
                 setSeconds(prev => prev + 1);
             }, 1000);
@@ -106,7 +109,7 @@ export function TaskRenderer({
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [isReadOnly]);
+    }, [isReadOnly, submissionResults]); // Added submissionResults dependency
 
     // Autosave timer every 5 seconds
     // Keep track of latest seconds in a ref to use inside interval without resetting it
@@ -117,7 +120,7 @@ export function TaskRenderer({
 
     // Autosave timer every 5 seconds
     useEffect(() => {
-        if (isReadOnly) return;
+        if (isReadOnly || submissionResults) return; // Stop autosave on success
 
         const saveInterval = setInterval(() => {
             // Use the ref value to get current time
@@ -127,7 +130,7 @@ export function TaskRenderer({
         }, 5000);
 
         return () => clearInterval(saveInterval);
-    }, [isReadOnly, taskId, initialTimeSpent]);
+    }, [isReadOnly, taskId, initialTimeSpent, submissionResults]);
 
     const formatTime = (totalSeconds: number) => {
         const h = Math.floor(totalSeconds / 3600);
@@ -143,7 +146,12 @@ export function TaskRenderer({
     };
 
 
-    const handleSubmit = async () => {
+    const confirmSubmit = () => {
+        setShowConfirm(true);
+    }
+
+    const handleFinalSubmit = async () => {
+        setShowConfirm(false);
         setIsSubmitting(true);
 
         try {
@@ -151,19 +159,41 @@ export function TaskRenderer({
 
             if (result?.error) {
                 showToast(result.error, 'error');
+                setIsSubmitting(false); // Only re-enable if error, keep disabled on success while transitioning
                 return;
             }
 
-            showToast('Task submitted successfully', 'success');
-            router.push('/dashboard/tasks');
-            router.refresh();
+            if (result?.data) {
+                setSubmissionResults(result.data as any);
+                // Don't route push immediately, show success screen
+            } else {
+                // Fallback if legacy response
+                showToast('Task submitted successfully', 'success');
+                router.push('/dashboard');
+            }
+
         } catch (error) {
             console.error('Error submitting task:', error);
             showToast('Failed to submit task. Please try again.', 'error');
-        } finally {
             setIsSubmitting(false);
         }
     };
+
+    const handleNextTask = async () => {
+        // Ideally invoke startTasking action but it's server side and redirects
+        // We can use a hidden form or router push if we change action to API
+        // For now let's use router.push to a 'start' endpoint or invoke server action via form logic
+        // But since we are inside a client component event handler, router push to an action URL is tricky.
+        // Actually, we can use a server action directly if we wrap it.
+        if (submissionResults?.projectId) {
+            // Using a hack to invoke the server action purely for the redirect logic
+            // But actions used like this might throw errors if they redirect.
+            // Client side 'startTasking' invocation that does redirect on server works fine.
+            await startTasking(submissionResults.projectId);
+        } else {
+            router.push('/dashboard');
+        }
+    }
 
     // Mock data for objects
     const taskData = initialData || {};
@@ -249,6 +279,44 @@ export function TaskRenderer({
                 </div>
             )}
 
+            {/* Confirmation Modal */}
+            {showConfirm && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-[#121212] border border-white/10 p-6 rounded-2xl max-w-sm w-full shadow-2xl relative">
+                        <h3 className="text-xl font-bold text-white mb-2">Submit Task?</h3>
+                        <p className="text-muted-foreground mb-6">
+                            Are you sure you want to submit this task? You won't be able to edit it afterwards.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowConfirm(false)}
+                                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-muted-foreground hover:text-white transition-all font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleFinalSubmit}
+                                className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:opacity-90 transition-all shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Success Screen Overlay */}
+            {submissionResults && (
+                <TaskSubmissionSuccess
+                    earnings={submissionResults.earnings}
+                    timeSpent={submissionResults.timeSpent}
+                    projectId={submissionResults.projectId}
+                    onDashboard={() => router.push('/dashboard')}
+                    onNextTask={handleNextTask}
+                />
+            )}
+
+
             <div className="space-y-8 pr-2">
                 {schema.map((component) => {
                     // Objects
@@ -296,7 +364,7 @@ export function TaskRenderer({
                         Skip
                     </button>
                     <button
-                        onClick={handleSubmit}
+                        onClick={confirmSubmit}
                         disabled={isSubmitting}
                         className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                     >

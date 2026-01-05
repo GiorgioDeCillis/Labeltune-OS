@@ -45,7 +45,15 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
 
     revalidatePath(`/dashboard/tasks`);
     revalidatePath(`/dashboard/projects/${task?.project_id}/tasks`);
-    return { success: true };
+
+    return {
+        success: true,
+        data: {
+            earnings,
+            timeSpent: billableTime,
+            projectId: task?.project_id
+        }
+    };
 }
 
 export async function skipTask(taskId: string) {
