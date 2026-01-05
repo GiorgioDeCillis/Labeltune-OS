@@ -19,7 +19,10 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
         .single();
 
     const projectsData = task?.projects as any;
-    const payRate = parseFloat((Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0');
+    const rawRate = (Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0';
+    // Remove non-numeric chars except dot
+    const cleanRate = rawRate.toString().replace(/[^0-9.]/g, '');
+    const payRate = parseFloat(cleanRate) || 0;
 
     // Cap timeSpent if max_task_time is set
     const maxTime = (Array.isArray(projectsData) ? projectsData[0]?.max_task_time : projectsData?.max_task_time);
