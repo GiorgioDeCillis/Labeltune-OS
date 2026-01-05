@@ -24,10 +24,9 @@ interface ProjectTasksClientProps {
     initialTasks: any[];
     projectId: string;
     payRate: number;
-    error?: any;
 }
 
-export function ProjectTasksClient({ initialTasks, projectId, payRate, error }: ProjectTasksClientProps) {
+export function ProjectTasksClient({ initialTasks, projectId, payRate }: ProjectTasksClientProps) {
     const [tasks, setTasks] = useState(initialTasks);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -88,17 +87,6 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate, error }: 
 
     return (
         <div className="space-y-4">
-            {error && (
-                <div className="bg-red-500/20 text-red-400 p-4 rounded-xl border border-red-500/30 flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 shrink-0" />
-                    <div>
-                        <p className="text-sm font-bold">Query Error</p>
-                        <p className="text-xs opacity-80">{error.message || JSON.stringify(error)}</p>
-                        {error.hint && <p className="text-xs mt-1 italic">Hint: {error.hint}</p>}
-                        {error.details && <p className="text-xs mt-1">Details: {error.details}</p>}
-                    </div>
-                </div>
-            )}
             {/* Filters & Actions */}
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between glass-panel !overflow-visible p-4 rounded-xl">
                 <div className="flex flex-1 gap-4 w-full md:w-auto">

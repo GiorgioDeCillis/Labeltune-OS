@@ -21,22 +21,37 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
 
     if (!project) notFound();
 
-    // Fetch tasks with profiles and project info
-    const { data: tasks, error: tasksError } = await supabase
+    // Fetch tasks
+    const { data: rawTasks, error: tasksError } = await supabase
         .from('tasks')
-        .select(`
-            *,
-            annotator:profiles!assigned_to (
-                full_name,
-                avatar_url
-            ),
-            reviewer:profiles!reviewed_by (
-                full_name,
-                avatar_url
-            )
-        `)
+        .select('*')
         .eq('project_id', id)
         .order('created_at', { ascending: false });
+
+    // Manually fetch profiles since foreign key cache seems broken in Supabase
+    let tasks = rawTasks;
+    if (rawTasks && rawTasks.length > 0) {
+        const userIds = Array.from(new Set([
+            ...rawTasks.map(t => t.assigned_to),
+            ...rawTasks.map(t => t.reviewed_by)
+        ].filter(Boolean)));
+
+        if (userIds.length > 0) {
+            const { data: profiles } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url')
+                .in('id', userIds);
+
+            if (profiles) {
+                const profileMap = Object.fromEntries(profiles.map(p => [p.id, p]));
+                tasks = rawTasks.map(task => ({
+                    ...task,
+                    annotator: task.assigned_to ? profileMap[task.assigned_to] : null,
+                    reviewer: task.reviewed_by ? profileMap[task.reviewed_by] : null
+                }));
+            }
+        }
+    }
 
     if (tasksError) {
         console.error('Error fetching tasks for project', id, tasksError);
@@ -60,7 +75,6 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
                 initialTasks={tasks || []}
                 projectId={id}
                 payRate={parseFloat(project.pay_rate || '0')}
-                error={tasksError}
             />
         </div>
     );

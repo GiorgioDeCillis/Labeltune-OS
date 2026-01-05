@@ -12,13 +12,27 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
 
     if (!user) redirect('/login');
 
-    const { data: task } = await supabase
+    const { data: rawTask } = await supabase
         .from('tasks')
-        .select('*, projects(*), profiles:assigned_to(*)')
+        .select('*, projects(*)')
         .eq('id', id)
         .single();
 
-    if (!task) notFound();
+    if (!rawTask) notFound();
+
+    // Manually fetch annotator profile
+    let task = rawTask;
+    if (rawTask.assigned_to) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', rawTask.assigned_to)
+            .single();
+
+        if (profile) {
+            task = { ...rawTask, profiles: profile };
+        }
+    }
 
     // Ideally check permissions here
 
