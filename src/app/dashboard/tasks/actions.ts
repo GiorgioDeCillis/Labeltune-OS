@@ -51,6 +51,7 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
         .from('tasks')
         .update({
             labels,
+            annotator_labels: labels, // Save original work
             status: 'completed',
             annotator_time_spent: timeSpent,
             annotator_earnings: earnings

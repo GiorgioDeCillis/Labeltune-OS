@@ -151,7 +151,9 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate }: Project
                                     <tr key={task.id} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="font-mono text-sm text-foreground">#{task.id.slice(0, 8)}</span>
+                                                <Link href={`/dashboard/projects/${projectId}/tasks/${task.id}`} className="hover:text-primary transition-colors">
+                                                    <span className="font-mono text-sm">#{task.id.slice(0, 8)}</span>
+                                                </Link>
                                                 <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-1">
                                                     <Clock className="w-3 h-3" />
                                                     {new Date(task.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
