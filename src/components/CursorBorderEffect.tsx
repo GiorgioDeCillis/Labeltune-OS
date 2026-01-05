@@ -60,6 +60,7 @@ export const CursorBorderEffect: React.FC = () => {
         const onScroll = () => {
             const el = document.elementFromPoint(lastMousePos.current.x, lastMousePos.current.y) as HTMLElement;
             if (el) setTarget(findTarget(el));
+            updateFromTarget();
         };
 
         window.addEventListener('mousemove', onMouseMove, { passive: true });

@@ -30,6 +30,7 @@ const LANGUAGES = [
 
 export default function OnboardingPage() {
     const { theme } = useTheme();
+    const [cvFile, setCvFile] = useState<File | null>(null);
     const [isPending, setIsPending] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -61,7 +62,13 @@ export default function OnboardingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-4xl relative z-10"
             >
-                <div className="glass-panel p-8 md:p-12 rounded-[2.5rem] border border-white/10 shadow-2xl">
+                <div
+                    className="relative overflow-hidden p-8 md:p-12 rounded-[2.5rem] border border-white/10 shadow-2xl"
+                    style={{
+                        background: 'rgba(15, 15, 25, 0.7)',
+                        backdropFilter: 'blur(20px) saturate(160%)',
+                    }}
+                >
                     <div className="text-center mb-10">
                         <h1 className="text-4xl font-black tracking-tight mb-4">Benvenuto su Labeltune!</h1>
                         <p className="text-muted-foreground max-w-lg mx-auto">
@@ -209,14 +216,23 @@ export default function OnboardingPage() {
                                             type="file"
                                             accept=".pdf"
                                             required
+                                            onChange={(e) => setCvFile(e.target.files?.[0] || null)}
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                         />
                                         <div className="w-full bg-white/5 border-2 border-dashed border-white/10 group-hover/file:border-primary/50 group-hover/file:bg-primary/5 rounded-2xl p-8 transition-all text-center">
                                             <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 group-hover/file:scale-110 transition-transform">
-                                                <FileText className="w-6 h-6 opacity-40 group-hover/file:text-primary group-hover/file:opacity-100" />
+                                                {cvFile ? (
+                                                    <CheckCircle2 className="w-6 h-6 text-primary" />
+                                                ) : (
+                                                    <FileText className="w-6 h-6 opacity-40 group-hover/file:text-primary group-hover/file:opacity-100" />
+                                                )}
                                             </div>
-                                            <span className="text-sm font-bold opacity-60">Clicca o trascina il tuo CV</span>
-                                            <p className="text-[10px] uppercase tracking-widest opacity-40 mt-1">Solo formati PDF</p>
+                                            <span className="text-sm font-bold opacity-60">
+                                                {cvFile ? cvFile.name : "Clicca o trascina il tuo CV"}
+                                            </span>
+                                            <p className="text-[10px] uppercase tracking-widest opacity-40 mt-1">
+                                                {cvFile ? `${(cvFile.size / 1024 / 1024).toFixed(2)} MB` : "Solo formati PDF"}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
