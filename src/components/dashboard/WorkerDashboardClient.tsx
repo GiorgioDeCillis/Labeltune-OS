@@ -26,6 +26,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
         hoursWorked: 42, // Mocked for design
         avgRate: 15.50
     });
+    const [hoveredBar, setHoveredBar] = useState<number | null>(null);
     const supabase = createClient();
 
     useEffect(() => {
@@ -215,17 +216,40 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                             <p className="text-white/40 text-[10px] font-medium uppercase tracking-wide">Earnings (Aug 2025 - Jan 2026)</p>
                         </div>
 
-                        <div className="flex-1 flex items-end justify-between gap-3 h-40 w-full group/chart">
+                        <div className="flex-1 flex items-end justify-between gap-3 h-40 w-full group/chart relative">
                             {[
-                                { m: 'Aug', v: 40, opacity: 0.2 },
-                                { m: 'Sep', v: 100, opacity: 1, glow: true },
-                                { m: 'Oct', v: 60, opacity: 0.4 },
-                                { m: 'Nov', v: 75, opacity: 0.8, glow: true },
-                                { m: 'Dec', v: 50, opacity: 0.5 },
-                                { m: 'Jan', v: 35, opacity: 0.3 }
+                                { m: 'Aug', v: 40, amount: 480, opacity: 0.2 },
+                                { m: 'Sep', v: 100, amount: 1200, opacity: 1, glow: true },
+                                { m: 'Oct', v: 60, amount: 720, opacity: 0.4 },
+                                { m: 'Nov', v: 75, amount: 900, opacity: 0.8, glow: true },
+                                { m: 'Dec', v: 50, amount: 600, opacity: 0.5 },
+                                { m: 'Jan', v: 35, amount: 420, opacity: 0.3 }
                             ].map((bar, i) => (
-                                <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full group/bar">
-                                    <div className="flex-1 w-full bg-white/5 rounded-full relative overflow-hidden flex items-end">
+                                <div
+                                    key={i}
+                                    className="flex-1 flex flex-col items-center gap-2 h-full group/bar relative"
+                                    onMouseEnter={() => setHoveredBar(i)}
+                                    onMouseLeave={() => setHoveredBar(null)}
+                                >
+                                    {/* Tooltip */}
+                                    <AnimatePresence>
+                                        {hoveredBar === i && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                                                className="absolute bottom-full mb-4 z-20 pointer-events-none"
+                                            >
+                                                <div className="bg-black/80 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-2xl flex flex-col items-center min-w-[100px]">
+                                                    <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">{bar.m} Earnings</span>
+                                                    <span className="text-lg font-bold text-white">${bar.amount}</span>
+                                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black/80 rotate-45 border-r border-b border-white/10"></div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
+                                    <div className="flex-1 w-full bg-white/5 rounded-full relative overflow-hidden flex items-end cursor-pointer">
                                         <motion.div
                                             initial={{ height: 0 }}
                                             animate={{ height: `${bar.v}%` }}
@@ -243,6 +267,19 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                 ></div>
                                             )}
                                         </motion.div>
+
+                                        {/* Value in the middle */}
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <span
+                                                className="text-[10px] sm:text-xs font-black tracking-tighter"
+                                                style={{
+                                                    color: bar.v > 30 ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.3)',
+                                                    mixBlendMode: bar.v > 30 ? 'normal' : 'overlay'
+                                                }}
+                                            >
+                                                ${bar.amount}
+                                            </span>
+                                        </div>
                                     </div>
                                     <span
                                         className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300`}
