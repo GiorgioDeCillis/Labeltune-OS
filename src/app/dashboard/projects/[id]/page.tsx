@@ -144,53 +144,54 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                 </div>
 
                 <div className="flex gap-4 pt-6">
-                    View Pay Terms <ChevronRight className="w-4 h-4" />
-                </Link>
-                <div className="h-4 w-px bg-white/10" />
-                <ProjectGuidelinesLink guidelines={project.guidelines} />
-                <div className="h-4 w-px bg-white/10" />
-                <form action={startTasking.bind(null, project.id)}>
-                    <button className="text-primary hover:text-primary/80 text-sm font-bold flex items-center gap-1">
-                        Start Tasking
-                    </button>
-                </form>
-            </div>
-        </div>
-
-            {/* Courses Section */ }
-    <div className="glass-panel p-8 rounded-2xl border border-white/10">
-        <div className="flex items-center gap-3 mb-6">
-            <BookOpen className="w-5 h-5 text-muted-foreground" />
-            <h2 className="text-xl font-bold">Courses</h2>
-        </div>
-
-        <div className="space-y-1">
-            {courses && courses.length > 0 ? courses.map((course) => (
-                <div key={course.id} className="relative group">
-                    <Link href={`/dashboard/courses/${course.id}`}>
-                        <div className="p-4 -mx-4 rounded-xl hover:bg-white/5 transition-all cursor-pointer flex items-center justify-between">
-                            <div className="space-y-1">
-                                <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{course.title}</h3>
-                                <p className="text-muted-foreground text-sm max-w-2xl">{course.description}</p>
-                                <p className="text-xs text-muted-foreground pt-2">{course.duration || '30m'}</p>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                        </div>
+                    <Link href="#" className="text-primary hover:text-primary/80 text-sm font-bold flex items-center gap-1">
+                        View Pay Terms <ChevronRight className="w-4 h-4" />
                     </Link>
-                    {isPM && (
-                        <Link href={`/dashboard/projects/${id}/courses/${course.id}/edit`} className="absolute top-4 right-12 p-2 hover:bg-white/20 rounded-lg text-muted-foreground hover:text-white transition-colors opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
-                            <Settings className="w-4 h-4" />
-                        </Link>
+                    <div className="h-4 w-px bg-white/10" />
+                    <ProjectGuidelinesLink guidelines={project.guidelines} />
+                    <div className="h-4 w-px bg-white/10" />
+                    <form action={startTasking.bind(null, project.id)}>
+                        <button className="text-primary hover:text-primary/80 text-sm font-bold flex items-center gap-1">
+                            Start Tasking
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {/* Courses Section */}
+            <div className="glass-panel p-8 rounded-2xl border border-white/10">
+                <div className="flex items-center gap-3 mb-6">
+                    <BookOpen className="w-5 h-5 text-muted-foreground" />
+                    <h2 className="text-xl font-bold">Courses</h2>
+                </div>
+
+                <div className="space-y-1">
+                    {courses && courses.length > 0 ? courses.map((course) => (
+                        <div key={course.id} className="relative group">
+                            <Link href={`/dashboard/courses/${course.id}`}>
+                                <div className="p-4 -mx-4 rounded-xl hover:bg-white/5 transition-all cursor-pointer flex items-center justify-between">
+                                    <div className="space-y-1">
+                                        <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{course.title}</h3>
+                                        <p className="text-muted-foreground text-sm max-w-2xl">{course.description}</p>
+                                        <p className="text-xs text-muted-foreground pt-2">{course.duration || '30m'}</p>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                </div>
+                            </Link>
+                            {isPM && (
+                                <Link href={`/dashboard/projects/${id}/courses/${course.id}/edit`} className="absolute top-4 right-12 p-2 hover:bg-white/20 rounded-lg text-muted-foreground hover:text-white transition-colors opacity-0 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                                    <Settings className="w-4 h-4" />
+                                </Link>
+                            )}
+                        </div>
+                    )) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                            <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                            No training courses required for this project.
+                        </div>
                     )}
                 </div>
-            )) : (
-                <div className="text-center py-8 text-muted-foreground">
-                    <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    No training courses required for this project.
-                </div>
-            )}
-        </div>
-    </div>
+            </div>
         </div >
     );
 }
