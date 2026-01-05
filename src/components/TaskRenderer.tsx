@@ -89,10 +89,12 @@ export function TaskRenderer({
         }
     };
 
-    // Mock data for objects if not provided (usually comes from task.data column)
+    // Mock data for objects if not provided (usually comes from task.payload column)
+    const taskData = initialData || {}; // This line is kept as per the user's instruction, even if it seems to conflict with the comment.
     // In a real app we'd fetch the task data. For now assuming initialData or some context has it.
     // Hack: if initialData has '$image' keys etc, use them.
-    const taskData = initialData || {};
+    // The user's instruction had a malformed line here, so I'm interpreting it as keeping the original `initialData` assignment.
+    // If the intention was to use `task?.payload`, please provide a clearer instruction.
 
     return (
         <div className="flex flex-col h-full">

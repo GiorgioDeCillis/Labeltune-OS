@@ -72,7 +72,7 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Data</h3>
                     <div className="flex-1 bg-black/20 rounded-xl p-6 font-serif leading-relaxed text-lg border border-white/5 overflow-y-auto">
                         {/* Placeholder for dynamic content rendering */}
-                        {typeof task.data === 'string' ? task.data : (task.data as any)?.text || JSON.stringify(task.data, null, 2)}
+                        {typeof task.payload === 'string' ? task.payload : (task.payload as any)?.text || JSON.stringify(task.payload, null, 2)}
                     </div>
                 </div>
 
@@ -86,7 +86,7 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
                                 <TaskRenderer
                                     schema={templateSchema}
                                     taskId={task.id}
-                                    initialData={task.labels}
+                                    initialData={{ ...(typeof task.payload === 'string' ? JSON.parse(task.payload) : task.payload || {}), ...(typeof task.labels === 'string' ? JSON.parse(task.labels) : task.labels || {}) }}
                                     isReadOnly={!isAssignedToMe}
                                 />
                             </div>

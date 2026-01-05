@@ -6,7 +6,7 @@ export interface Task {
     project_id: string;
     assigned_to: string | null;
     status: TaskStatus;
-    data: any; // JSONB content to label
+    payload: any; // JSONB content to label
     labels: any | null; // JSONB result
     projects?: {
         name: string;

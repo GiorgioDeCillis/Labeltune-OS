@@ -40,7 +40,7 @@ export async function searchTasks(query: string, projectId?: string) {
     if (query) {
         const lowerQuery = query.toLowerCase();
         return data.filter((task: any) => {
-            const dataString = JSON.stringify(task.data).toLowerCase();
+            const dataString = JSON.stringify(task.payload).toLowerCase();
             const labelsString = JSON.stringify(task.labels).toLowerCase();
             return dataString.includes(lowerQuery) || labelsString.includes(lowerQuery);
         });

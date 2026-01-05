@@ -59,7 +59,7 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
                     </div>
                     <div className="flex-1 bg-black/20 rounded-xl p-6 font-serif leading-relaxed text-lg border border-white/5 overflow-y-auto">
                         {/* Placeholder for dynamic content rendering */}
-                        {typeof task.data === 'string' ? task.data : (task.data as any)?.text || JSON.stringify(task.data, null, 2)}
+                        {typeof task.payload === 'string' ? task.payload : (task.payload as any)?.text || JSON.stringify(task.payload, null, 2)}
                     </div>
                 </div>
 
@@ -75,7 +75,7 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
                                 <ReviewTaskRenderer
                                     schema={templateSchema}
                                     taskId={task.id}
-                                    initialData={task.labels}
+                                    initialData={{ ...(typeof task.payload === 'string' ? JSON.parse(task.payload) : task.payload || {}), ...(typeof task.labels === 'string' ? JSON.parse(task.labels) : task.labels || {}) }}
                                 />
                             </div>
                         ) : (

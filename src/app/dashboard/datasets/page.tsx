@@ -101,7 +101,7 @@ export default function DatasetExplorerPage() {
                                             {task.projects?.name}
                                         </span>
                                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${task.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                                                task.status === 'reviewed' ? 'bg-blue-500/20 text-blue-400' : 'bg-yellow-500/20 text-yellow-500'
+                                            task.status === 'reviewed' ? 'bg-blue-500/20 text-blue-400' : 'bg-yellow-500/20 text-yellow-500'
                                             }`}>
                                             {task.status}
                                         </span>
@@ -116,7 +116,7 @@ export default function DatasetExplorerPage() {
                             <div className="grid md:grid-cols-2 gap-4 text-sm">
                                 <div className="bg-black/40 rounded-lg p-3 font-mono text-xs overflow-x-auto custom-scrollbar">
                                     <div className="text-muted-foreground mb-1 uppercase text-[10px] font-bold">Input Data</div>
-                                    <pre className="text-gray-300">{JSON.stringify(task.data, null, 2)}</pre>
+                                    <pre className="text-gray-300">{JSON.stringify(task.payload, null, 2)}</pre>
                                 </div>
                                 <div className="bg-black/40 rounded-lg p-3 font-mono text-xs overflow-x-auto custom-scrollbar">
                                     <div className="text-muted-foreground mb-1 uppercase text-[10px] font-bold">Labels / Output</div>

@@ -97,7 +97,7 @@ export async function createProject(formData: FormData) {
         const tasksToInsert = Array.from({ length: total_tasks }, (_, i) => ({
             project_id: newProject.id,
             status: 'pending',
-            data: {},  // Placeholder - actual data will be uploaded separately
+            payload: {},  // Placeholder - actual data will be uploaded separately
             assigned_to: null
         }));
 
