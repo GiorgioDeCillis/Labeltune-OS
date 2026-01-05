@@ -33,7 +33,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate }: Project
 
     const filteredTasks = tasks.filter(task => {
         const matchesSearch = task.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            task.annotator?.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+            (task.annotator?.full_name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
         return matchesSearch && matchesStatus && !task.is_archived;
     });
