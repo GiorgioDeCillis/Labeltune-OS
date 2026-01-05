@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { submitOnboarding } from './actions';
 import { useTheme } from '@/context/ThemeContext';
+import CustomSelect from '@/components/CustomSelect';
 
 const COUNTRIES = [
     { code: 'IT', name: 'Italia' },
@@ -232,40 +233,26 @@ export default function OnboardingPage() {
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase tracking-wider opacity-60">Nazionalità</label>
-                                    <select
+                                    <CustomSelect
                                         name="nationality"
+                                        label="Nazionalità"
+                                        placeholder="Seleziona nazionalità"
+                                        options={COUNTRIES}
                                         required
-                                        className={`w-full bg-white/5 border ${fieldErrors.nationality ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer`}
-                                    >
-                                        <option value="" disabled selected>Seleziona nazionalità</option>
-                                        {COUNTRIES.map(c => (
-                                            <option key={c.code} value={c.code} className="bg-[#1a1c1e]">{c.name}</option>
-                                        ))}
-                                    </select>
-                                    {fieldErrors.nationality && (
-                                        <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
-                                            {fieldErrors.nationality}
-                                        </span>
-                                    )}
+                                        error={fieldErrors.nationality}
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase tracking-wider opacity-60">Lingua Principale</label>
-                                    <select
+                                    <CustomSelect
                                         name="primaryLanguage"
+                                        label="Lingua Principale"
+                                        placeholder="Seleziona lingua"
+                                        options={LANGUAGES}
                                         required
-                                        className={`w-full bg-white/5 border ${fieldErrors.primaryLanguage ? 'border-red-500/50' : 'border-white/10'} rounded-xl px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer`}
-                                    >
-                                        <option value="" disabled selected>Seleziona lingua</option>
-                                        {LANGUAGES.map(l => (
-                                            <option key={l.code} value={l.code} className="bg-[#1a1c1e]">{l.name}</option>
-                                        ))}
-                                    </select>
-                                    {fieldErrors.primaryLanguage && (
-                                        <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider pl-1">
-                                            {fieldErrors.primaryLanguage}
-                                        </span>
-                                    )}
+                                        error={fieldErrors.primaryLanguage}
+                                    />
                                     <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 flex gap-3">
                                         <Info className="w-5 h-5 text-primary flex-shrink-0" />
                                         <p className="text-[11px] leading-relaxed">
