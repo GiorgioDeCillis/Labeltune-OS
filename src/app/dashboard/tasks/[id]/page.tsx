@@ -29,7 +29,7 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
     const templateSchema = (task.projects?.template_schema as TaskComponent[]) || [];
 
     return (
-        <div className="w-full mx-auto space-y-6 h-full flex flex-col">
+        <div className="w-full mx-auto space-y-6 flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -73,14 +73,15 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
             </div>
 
             {/* Workspace */}
-            <div className="flex-1 flex justify-center min-h-[500px]">
+            {/* Workspace */}
+            <div className="flex justify-center min-h-[500px]">
                 {/* Tool Panel - Centered */}
-                <div className="w-full flex flex-col h-full">
+                <div className="w-full flex flex-col">
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Labeling</h3>
 
-                    <div className="flex-1 relative">
+                    <div className="relative">
                         {templateSchema.length > 0 ? (
-                            <div className="absolute inset-0">
+                            <div>
                                 <TaskRenderer
                                     schema={templateSchema}
                                     taskId={task.id}
