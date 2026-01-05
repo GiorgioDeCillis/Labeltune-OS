@@ -67,18 +67,9 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
             </div>
 
             {/* Workspace */}
-            <div className="flex-1 grid md:grid-cols-3 gap-6 min-h-[500px]">
-                {/* Data Panel */}
-                <div className="md:col-span-2 glass-panel p-6 rounded-2xl flex flex-col">
-                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Data</h3>
-                    <div className="flex-1 bg-black/20 rounded-xl p-6 font-serif leading-relaxed text-lg border border-white/5 overflow-y-auto">
-                        {/* Placeholder for dynamic content rendering */}
-                        {typeof task.payload === 'string' ? task.payload : (task.payload as any)?.text || JSON.stringify(task.payload, null, 2)}
-                    </div>
-                </div>
-
-                {/* Tool Panel */}
-                <div className="glass-panel p-6 rounded-2xl flex flex-col h-full">
+            <div className="flex-1 flex justify-center min-h-[500px]">
+                {/* Tool Panel - Centered */}
+                <div className="w-full max-w-4xl glass-panel p-6 rounded-2xl flex flex-col h-full">
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">Labeling</h3>
 
                     <div className="flex-1 relative">
