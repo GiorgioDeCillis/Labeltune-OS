@@ -33,12 +33,14 @@ export function TaskRenderer({
     schema,
     taskId,
     initialData,
-    isReadOnly = false
+    isReadOnly = false,
+    maxTime
 }: {
     schema: TaskComponent[],
     taskId: string,
     initialData?: any,
-    isReadOnly?: boolean
+    isReadOnly?: boolean,
+    maxTime?: number | null
 }) {
     const [formData, setFormData] = useState<any>(initialData || {});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,6 +104,11 @@ export function TaskRenderer({
                 <div className="flex items-center gap-2 text-primary font-mono text-sm">
                     <Timer className="w-4 h-4" />
                     <span>Time spent: {formatTime(seconds)}</span>
+                    {maxTime && (
+                        <span className="opacity-50">
+                            / {formatTime(maxTime)}
+                        </span>
+                    )}
                 </div>
             </div>
             <div className="flex-1 space-y-8 overflow-y-auto pr-2 custom-scrollbar p-1">
