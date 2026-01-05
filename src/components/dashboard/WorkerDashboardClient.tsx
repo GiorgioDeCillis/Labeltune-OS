@@ -217,12 +217,12 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
 
                         <div className="flex-1 flex items-end justify-between gap-3 h-40 w-full group/chart">
                             {[
-                                { m: 'Aug', v: 40, color: 'from-primary/10 to-primary/30' },
-                                { m: 'Sep', v: 100, color: 'from-primary/60 to-primary', glow: true },
-                                { m: 'Oct', v: 60, color: 'from-primary/20 to-primary/40' },
-                                { m: 'Nov', v: 75, color: 'from-primary/50 to-primary/80', glow: true },
-                                { m: 'Dec', v: 50, color: 'from-primary/30 to-primary/50' },
-                                { m: 'Jan', v: 35, color: 'from-primary/10 to-primary/20' }
+                                { m: 'Aug', v: 40, opacity: 0.2 },
+                                { m: 'Sep', v: 100, opacity: 1, glow: true },
+                                { m: 'Oct', v: 60, opacity: 0.4 },
+                                { m: 'Nov', v: 75, opacity: 0.8, glow: true },
+                                { m: 'Dec', v: 50, opacity: 0.5 },
+                                { m: 'Jan', v: 35, opacity: 0.3 }
                             ].map((bar, i) => (
                                 <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full group/bar">
                                     <div className="flex-1 w-full bg-white/5 rounded-full relative overflow-hidden flex items-end">
@@ -230,14 +230,24 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                             initial={{ height: 0 }}
                                             animate={{ height: `${bar.v}%` }}
                                             transition={{ delay: i * 0.1, duration: 1, ease: "easeOut" }}
-                                            className={`w-full bg-gradient-to-t ${bar.color} rounded-full relative transition-all duration-500 group-hover/bar:brightness-125`}
+                                            className="w-full rounded-full relative transition-all duration-500 group-hover/bar:brightness-125"
+                                            style={{
+                                                background: 'var(--primary)',
+                                                opacity: bar.opacity
+                                            }}
                                         >
                                             {bar.glow && (
-                                                <div className="absolute inset-0 bg-primary/20 blur-md rounded-full animate-pulse"></div>
+                                                <div
+                                                    className="absolute inset-0 blur-md rounded-full animate-pulse"
+                                                    style={{ background: 'var(--primary)', opacity: 0.4 }}
+                                                ></div>
                                             )}
                                         </motion.div>
                                     </div>
-                                    <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${bar.glow ? 'text-primary' : 'text-white/20'}`}>
+                                    <span
+                                        className={`text-[10px] font-bold uppercase tracking-wider transition-colors duration-300`}
+                                        style={{ color: bar.glow ? 'var(--primary)' : 'rgba(255,255,255,0.2)' }}
+                                    >
                                         {bar.m}
                                     </span>
                                 </div>
@@ -258,9 +268,12 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
 function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: any }) {
     return (
         <div className="glass-panel p-6 rounded-xl space-y-2 border border-white/5 hover:border-white/10 transition-all group">
-            <div className="flex items-center justify-between text-white/40 group-hover:text-primary/60 transition-colors">
+            <div
+                className="flex items-center justify-between transition-colors duration-300"
+                style={{ color: 'rgba(255,255,255,0.4)' }}
+            >
                 <span className="text-[10px] font-bold uppercase tracking-widest">{title}</span>
-                <Icon className="w-4 h-4 transition-transform group-hover:scale-110" />
+                <Icon className="w-4 h-4 transition-transform group-hover:scale-110" style={{ color: 'var(--primary)' }} />
             </div>
             <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
         </div>
