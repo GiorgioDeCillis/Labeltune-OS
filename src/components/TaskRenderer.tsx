@@ -59,25 +59,26 @@ export function TaskRenderer({
                 setShowTimeoutWarning(true);
             }
 
-            // Hard limit: Double time -> Force expire
+            // Hard limit: Double time -> Expire
             if (seconds >= maxTime * 2) {
                 // Clear timer to prevent multiple calls
                 if (timerRef.current) clearInterval(timerRef.current);
 
-                // Force expire
+                // Set Expired State (Show blocking modal)
+                setIsExpired(true);
+
+                // Call expire in background (fire and forget, or handle error)
                 handleExpire();
             }
         }
     }, [seconds, maxTime, isReadOnly]);
 
     const handleExpire = async () => {
-        setIsSubmitting(true); // Block interaction
+        // Just notify server, don't block UI here (modal blocks it)
         try {
             await expireTask(taskId);
         } catch (error) {
             console.error('Failed to expire task:', error);
-            // Even if it fails, redirect user
-            router.push('/dashboard/tasks');
         }
     };
 
@@ -85,6 +86,7 @@ export function TaskRenderer({
         setIsSubmitting(true);
         try {
             await skipTask(taskId);
+            router.push('/dashboard/tasks'); // Or logic to find next task
         } catch (error) {
             console.error('Failed to skip task:', error);
         }
@@ -157,8 +159,42 @@ export function TaskRenderer({
 
     return (
         <div className="flex flex-col h-full relative">
-            {/* Timeout Warning Modal */}
-            {showTimeoutWarning && (
+            {/* Blocking Expiration Modal */}
+            {isExpired && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+                    <div className="bg-[#121212] border border-red-500/20 p-8 rounded-2xl max-w-lg w-full shadow-2xl relative overflow-hidden text-center">
+                        <div className="absolute top-0 inset-x-0 h-1 bg-red-500"></div>
+
+                        <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/20 mx-auto mb-6">
+                            <AlertTriangle className="w-10 h-10 text-red-500" />
+                        </div>
+
+                        <h2 className="text-3xl font-bold mb-2">Task Expired</h2>
+                        <p className="text-muted-foreground mb-8 text-lg">
+                            The time limit for this task has been exceeded significantly.
+                            It is no longer available.
+                        </p>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                onClick={() => router.push('/dashboard')}
+                                className="py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-muted-foreground hover:text-white transition-all font-bold"
+                            >
+                                Dashboard
+                            </button>
+                            <button
+                                onClick={() => router.push('/dashboard/tasks')}
+                                className="py-4 rounded-xl bg-red-500 hover:bg-red-600 text-white transition-all font-bold shadow-lg shadow-red-500/20"
+                            >
+                                Next Task
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Timeout Warning Modal (Soft Limit) - Only show if NOT expired */}
+            {showTimeoutWarning && !isExpired && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
                     <div className="bg-[#121212] border border-white/10 p-6 rounded-2xl max-w-md w-full shadow-2xl relative overflow-hidden">
                         {/* Glow effect */}
@@ -181,7 +217,7 @@ export function TaskRenderer({
 
                             <div className="w-full grid grid-cols-2 gap-3 pt-4">
                                 <button
-                                    onClick={() => handleSkip()}
+                                    onClick={() => handleSkip()} // This handles skip + redirect
                                     className="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-muted-foreground hover:text-white transition-all font-medium"
                                 >
                                     Skip Task

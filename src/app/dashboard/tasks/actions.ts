@@ -76,7 +76,7 @@ export async function skipTask(taskId: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) redirect('/login');
+    if (!user) return { error: 'Unauthorized' };
 
     const { error } = await supabase
         .from('tasks')
@@ -94,7 +94,8 @@ export async function skipTask(taskId: string) {
     }
 
     revalidatePath('/dashboard/tasks');
-    redirect('/dashboard/tasks');
+    // redirect('/dashboard/tasks'); // Client handles redirect
+    return { success: true };
 }
 
 export async function expireTask(taskId: string) {
