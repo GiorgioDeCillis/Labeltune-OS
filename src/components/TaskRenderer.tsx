@@ -1,12 +1,32 @@
 'use client';
 
-// ... imports
+import React, { useState, useEffect, useRef } from 'react';
+import { TaskComponent } from '@/components/builder/types';
+import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
 import { Loader2, Timer, AlertTriangle, Clock } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react'; // Consolidated imports
 import { submitTask, updateTaskTimer, skipTask, expireTask } from '@/app/dashboard/tasks/actions';
-// ... imports
-
-// ... existing code ...
+import {
+    ImageObject,
+    TextObject,
+    AudioObject,
+    HeaderComponent,
+    ChoicesControl,
+    RatingControl,
+    TextAreaControl,
+    ImageLabelsControl,
+    VideoObject,
+    TimeSeriesObject,
+    PDFObject,
+    MultiMessageObject,
+    InstructionBlock,
+    RequirementPanel,
+    SideBySideLayout,
+    RubricScorerControl,
+    RankingControl,
+    FeedbackControl,
+    RubricTable
+} from '@/components/builder/Renderers';
 
 export function TaskRenderer({
     schema,
