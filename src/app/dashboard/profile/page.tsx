@@ -70,8 +70,12 @@ export default function ProfilePage() {
 
             if (updateError) throw updateError;
 
-            setProfile({ ...profile, avatar_url: publicUrl });
-            setAvatarUrl(publicUrl);
+            // Add cache busting timestamp for immediate UI update
+            const publicUrlWithCacheBurst = `${publicUrl}?t=${Date.now()}`;
+
+            setProfile({ ...profile, avatar_url: publicUrlWithCacheBurst });
+            setAvatarUrl(publicUrlWithCacheBurst);
+            setAvatarError(false); // Reset error state on successful upload
         } catch (error) {
             console.error('Error uploading image:', error);
             alert('Errore durante il caricamento dell\'immagine');

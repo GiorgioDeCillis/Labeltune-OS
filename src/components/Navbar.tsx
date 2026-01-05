@@ -42,6 +42,7 @@ export function Navbar({ user, userRole, initialAvatar, fullName }: { user: any,
                                 alt="Profile Avatar"
                                 fill
                                 className="object-cover"
+                                key={avatarUrl || initialAvatar} // Force re-render on URL change
                                 onError={() => setAvatarError(true)}
                             />
                         ) : (

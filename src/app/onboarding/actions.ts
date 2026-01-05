@@ -55,6 +55,13 @@ export async function submitOnboarding(formData: FormData) {
     const localeTag = `${primaryLanguage.toLowerCase()}_${nationality.toUpperCase()}`
 
     // 3. Update Profile (using upsert to handle cases where trigger might have failed)
+    // Fetch existing profile to preserve data not in the onboarding form (like avatar_url)
+    const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .single();
+
     const { error: updateError } = await supabase
         .from('profiles')
         .upsert({
@@ -68,6 +75,7 @@ export async function submitOnboarding(formData: FormData) {
             nationality: nationality,
             address: address,
             cv_url: cvUrl,
+            avatar_url: existingProfile?.avatar_url || user.user_metadata?.avatar_url || null,
             linkedin_url: linkedinUrl,
             github_url: githubUrl,
             website_url: websiteUrl,
