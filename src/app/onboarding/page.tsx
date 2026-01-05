@@ -50,15 +50,16 @@ export default function OnboardingPage() {
     }
 
     return (
-        <div className="h-screen overflow-hidden flex flex-col relative">
+    return (
+        <div className="h-screen overflow-hidden flex flex-col">
             {/* Background elements - fixed to viewport - Aligned with Login aesthetic */}
             <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-primary/20 blur-[150px] rounded-full opacity-50" />
-                <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-primary/20 blur-[150px] rounded-full opacity-50" />
+                <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-primary/20 blur-[150px] rounded-full opacity-30" />
+                <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-primary/20 blur-[150px] rounded-full opacity-30" />
             </div>
 
-            {/* Header with Sign Out */}
-            <header className="relative z-20 p-6 flex justify-end max-w-7xl mx-auto w-full">
+            {/* Header with Sign Out - Standardized like Navbar */}
+            <header className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-md flex items-center justify-end px-8 relative z-20">
                 <form action="/auth/signout" method="post">
                     <button
                         type="submit"
@@ -70,9 +71,9 @@ export default function OnboardingPage() {
                 </form>
             </header>
 
-            {/* Scrollable container */}
-            <main className="flex-1 overflow-y-auto relative z-10">
-                <div className="max-w-4xl mx-auto p-4 py-12 md:py-20 space-y-12">
+            {/* Scrollable container - Matching Dashboard EXACTLY */}
+            <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full max-w-[100vw] overflow-x-hidden relative z-10">
+                <div className="max-w-4xl mx-auto py-12 md:py-20 space-y-12">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
