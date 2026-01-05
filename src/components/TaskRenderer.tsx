@@ -277,7 +277,7 @@ export function TaskRenderer({
             </div>
 
             {!isReadOnly && (
-                <div className="pt-6 border-t border-white/5 grid grid-cols-2 gap-4 mt-4">
+                <div className="pt-6 border-t border-white/5 grid grid-cols-2 gap-4 mt-4 mb-20">
                     <button
                         onClick={() => handleSkip()}
                         disabled={isSubmitting}
