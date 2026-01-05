@@ -159,7 +159,6 @@ export function TaskRenderer({
     const taskData = initialData || {};
 
     return (
-    return (
         <div className="relative">
             {/* Blocking Expiration Modal */}
             {isExpired && (
