@@ -14,6 +14,7 @@ interface TeamMember {
     role?: string;
     avatar_url?: string;
     tags?: string[];
+    locale_tag?: string;
     completedCourses: number;
     totalCourses: number;
     isQualified: boolean;
@@ -173,7 +174,7 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                         <thead className="bg-white/5 border-b border-white/10 text-xs uppercase font-bold text-muted-foreground">
                             <tr>
                                 <th className="p-4">User</th>
-                                <th className="p-4">Tags</th>
+                                <th className="p-4">DOMAIN</th>
                                 <th className="p-4">Role</th>
                                 {!showAddView && <th className="p-4">Status</th>}
                                 <th className="p-4 text-right">Actions</th>
@@ -196,13 +197,9 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                                         </div>
                                     </td>
                                     <td className="p-4">
-                                        <div className="flex gap-1 flex-wrap max-w-[200px]">
-                                            {worker.tags?.map(tag => (
-                                                <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-white/10 rounded text-muted-foreground">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
+                                        <span className="text-xs font-medium text-muted-foreground uppercase opacity-70">
+                                            {worker.locale_tag || '—'}
+                                        </span>
                                     </td>
                                     <td className="p-4">
                                         <span className="capitalize px-2 py-1 rounded bg-white/10 text-xs font-bold text-muted-foreground">

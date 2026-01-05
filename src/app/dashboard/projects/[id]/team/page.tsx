@@ -32,7 +32,7 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
     // We want admins, pms, annotators, reviewers.
     const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, full_name, role, avatar_url, tags')
+        .select('id, email, full_name, role, avatar_url, tags, locale_tag')
         .neq('role', 'enterprise_client')
         .order('full_name');
 
