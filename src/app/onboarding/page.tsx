@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     User, Mail, Phone, Globe, MapPin, FileText,
-    Linkedin, Github, ExternalLink, CreditCard,
-    CheckCircle2, AlertCircle, Loader2, Info
+    CheckCircle2, AlertCircle, Loader2, Info, LogOut,
+    Linkedin, Github, ExternalLink, CreditCard
 } from 'lucide-react';
 import { submitOnboarding } from './actions';
 import { useTheme } from '@/context/ThemeContext';
@@ -50,12 +50,25 @@ export default function OnboardingPage() {
     }
 
     return (
-        <div className="h-screen overflow-hidden flex flex-col relative bg-background">
-            {/* Background elements - fixed to viewport */}
+        <div className="h-screen overflow-hidden flex flex-col relative">
+            {/* Background elements - fixed to viewport - Aligned with Login aesthetic */}
             <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/10 blur-[120px] rounded-full" />
-                <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary/10 blur-[120px] rounded-full" />
+                <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-primary/20 blur-[150px] rounded-full opacity-50" />
+                <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-primary/20 blur-[150px] rounded-full opacity-50" />
             </div>
+
+            {/* Header with Sign Out */}
+            <header className="relative z-20 p-6 flex justify-end max-w-7xl mx-auto w-full">
+                <form action="/auth/signout" method="post">
+                    <button
+                        type="submit"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-sm font-medium"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                    </button>
+                </form>
+            </header>
 
             {/* Scrollable container */}
             <main className="flex-1 overflow-y-auto relative z-10">
