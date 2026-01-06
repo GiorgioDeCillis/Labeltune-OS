@@ -248,7 +248,7 @@ export default function ProfilePage() {
                         <div className="p-2 bg-primary/10 rounded-lg">
                             <Palette className="text-primary w-5 h-5" />
                         </div>
-                        <h3 className="text-xl font-bold">Theme Strategy</h3>
+                        <h3 className="text-xl font-bold">Theme</h3>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3">
