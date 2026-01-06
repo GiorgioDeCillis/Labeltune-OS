@@ -4,6 +4,9 @@ import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { ReviewTaskRenderer } from '@/components/ReviewTaskRenderer';
 import { TaskComponent } from '@/components/builder/types';
+import { TaskTimerHeader } from '@/components/TaskTimerHeader';
+import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
+import { CopyableTaskId } from '@/components/CopyableTaskId';
 
 export default async function ReviewTaskPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -47,15 +50,29 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
                         <ChevronLeft className="w-5 h-5" />
                     </Link>
                     <div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 font-bold">
-                                REVIEW MODE
-                            </span>
-                            <h2 className="text-xl font-bold tracking-tight">{task.projects?.name}</h2>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 font-bold">
+                                    REVIEW MODE
+                                </span>
+                                <h2 className="text-xl font-bold tracking-tight">{task.projects?.name}</h2>
+                            </div>
+                            <div className="flex items-center gap-4 mt-1">
+                                <CopyableTaskId taskId={task.id} />
+                                <span className="text-white/20">|</span>
+                                {/* Annotator Info Display */}
+                                <span className="text-xs text-muted-foreground font-mono">
+                                    Annotated by {task.profiles?.full_name || 'Unknown'}
+                                </span>
+                                <span className="text-white/20">|</span>
+                                <ProjectGuidelinesLink guidelines={task.projects?.guidelines} label="Read Guidelines" />
+                                <TaskTimerHeader
+                                    initialTimeSpent={task.reviewer_time_spent || 0}
+                                    maxTime={task.projects?.max_task_time}
+                                    isReadOnly={false}
+                                />
+                            </div>
                         </div>
-                        <p className="text-xs text-muted-foreground font-mono mt-1">
-                            Task ID: {task.id} • Annotated by {task.profiles?.full_name || 'Unknown'}
-                        </p>
                     </div>
                 </div>
             </div>

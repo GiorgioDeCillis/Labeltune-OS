@@ -141,10 +141,6 @@ export function ReviewTaskRenderer({
 
             <div className="pt-6 border-t border-white/5 space-y-4 mt-8 mb-20">
                 <div className="flex items-center justify-between px-2">
-                    <div className="flex items-center gap-2 text-primary font-mono text-sm">
-                        <Timer className="w-4 h-4" />
-                        <span>Review Time: {formatTime(seconds)}</span>
-                    </div>
                     <div className="flex items-center gap-1">
                         <span className="text-xs text-muted-foreground mr-2 font-bold uppercase tracking-widest">Quality Rating:</span>
                         {[1, 2, 3, 4, 5].map((star) => (
