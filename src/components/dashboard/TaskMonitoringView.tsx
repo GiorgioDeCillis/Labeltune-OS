@@ -222,16 +222,6 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                             </div>
                         </div>
                     </div>
-                    <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-1 gap-4">
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Feedback given by Admin/PM</p>
-                            {task.reviewer_feedback ? (
-                                <p className="text-xs text-foreground/80 italic font-medium">"{task.reviewer_feedback}"</p>
-                            ) : (
-                                <p className="text-xs text-muted-foreground/50 italic">No feedback given yet</p>
-                            )}
-                        </div>
-                    </div>
                     <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Started At</p>
@@ -281,14 +271,26 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                     </div>
                 </div>
 
-                {/* Feedback Section (Optional) */}
-                {task.review_feedback && (
+                {/* Feedback Section (Context-Aware) */}
+                {activeVersion === 'annotator' && task.review_feedback && (
                     <div className="px-6 py-4 border-t border-white/5 bg-yellow-500/5">
                         <div className="flex items-start gap-3">
                             <MessageSquare className="w-4 h-4 text-yellow-500 mt-1" />
                             <div>
                                 <p className="text-[10px] text-yellow-500/70 font-bold uppercase tracking-wider">Reviewer Feedback to Attempter</p>
                                 <p className="text-sm text-foreground/80 mt-1 italic">"{task.review_feedback}"</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {activeVersion === 'reviewer' && task.reviewer_feedback && (
+                    <div className="px-6 py-4 border-t border-white/10 bg-primary/10">
+                        <div className="flex items-start gap-3">
+                            <MessageSquare className="w-4 h-4 text-primary mt-1" />
+                            <div>
+                                <p className="text-[10px] text-primary font-bold uppercase tracking-wider">Admin/PM Feedback to Reviewer</p>
+                                <p className="text-sm text-foreground/80 mt-1 italic">"{task.reviewer_feedback}"</p>
                             </div>
                         </div>
                     </div>
