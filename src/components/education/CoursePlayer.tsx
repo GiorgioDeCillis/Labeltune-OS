@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import { Course, Lesson } from '@/types/manual-types';
-import { PlayCircle, CheckCircle, ChevronLeft, ChevronRight, Menu, FileText, Pencil } from 'lucide-react';
+import { PlayCircle, CheckCircle, ChevronLeft, ChevronRight, Menu, FileText, Pencil, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { QuizPlayer } from './QuizPlayer';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { completeLesson, getNextCourseId } from '@/app/dashboard/courses/actions';
+import { useToast } from '@/components/Toast';
 
 interface CoursePlayerProps {
     course: Course & { lessons: Lesson[] };
@@ -17,9 +18,11 @@ interface CoursePlayerProps {
 
 export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false }: CoursePlayerProps) {
     const router = useRouter();
+    const { showToast } = useToast();
     const [activeLessonId, setActiveLessonId] = useState<string>(course.lessons?.[0]?.id || '');
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [localCompletedLessons, setLocalCompletedLessons] = useState<string[]>(completedLessonIds);
+    const [isSaving, setIsSaving] = useState(false);
 
     const activeLesson = course.lessons.find(l => l.id === activeLessonId) || course.lessons[0];
     const activeIndex = course.lessons.findIndex(l => l.id === activeLessonId);
@@ -38,11 +41,17 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
             setActiveLessonId(course.lessons[activeIndex + 1].id);
         }
 
+        setIsSaving(true);
         try {
             await completeLesson(course.id, lessonToComplete);
-        } catch (error) {
+            showToast('Lesson saved!', 'success');
+        } catch (error: any) {
             console.error("Failed to complete lesson", error);
-            // Optionally show toast error
+            showToast(`Error saving: ${error?.message || 'Unknown error'}`, 'error');
+            // Revert optimistic update
+            setLocalCompletedLessons(prev => prev.filter(id => id !== lessonToComplete));
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -56,6 +65,7 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
     const [nextCourseId, setNextCourseId] = useState<string | null>(null);
 
     const handleCompleteCourse = async () => {
+        setIsSaving(true);
         try {
             // Mark last lesson as completed locally
             setLocalCompletedLessons(prev => prev.includes(activeLessonId) ? prev : [...prev, activeLessonId]);
@@ -65,8 +75,12 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
             const nextId = await getNextCourseId(course.id);
             setNextCourseId(nextId);
             setShowCompletionModal(true);
-        } catch (error) {
+            showToast('Course completed!', 'success');
+        } catch (error: any) {
             console.error("Failed to complete course", error);
+            showToast(`Error: ${error?.message || 'Failed to complete course'}`, 'error');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -182,7 +196,7 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
                 <div className="h-20 border-t border-white/5 bg-black/20 flex items-center justify-between px-8">
                     <button
                         onClick={handlePrev}
-                        disabled={!hasPrev}
+                        disabled={!hasPrev || isSaving}
                         className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-muted-foreground hover:text-white disabled:opacity-30 disabled:hover:text-muted-foreground transition-colors"
                     >
                         <ChevronLeft className="w-4 h-4" /> Previous Lesson
@@ -191,19 +205,24 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
                     {hasNext ? (
                         <button
                             onClick={handleNext}
-                            className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all bg-primary text-primary-foreground hover:opacity-90 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                            disabled={isSaving}
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all bg-primary text-primary-foreground hover:opacity-90 shadow-[0_0_15px_rgba(var(--primary),0.3)] disabled:opacity-50"
                         >
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                             Next Lesson <ChevronRight className="w-4 h-4" />
                         </button>
                     ) : (
                         <button
                             onClick={handleCompleteCourse}
-                            className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all bg-green-500 text-white hover:bg-green-600 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                            disabled={isSaving}
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all bg-green-500 text-white hover:bg-green-600 shadow-[0_0_15px_rgba(34,197,94,0.3)] disabled:opacity-50"
                         >
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                             Complete Course <CheckCircle className="w-4 h-4" />
                         </button>
                     )}
                 </div>
+
             </div>
 
             {/* Completion Modal */}
