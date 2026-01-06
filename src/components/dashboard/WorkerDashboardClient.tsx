@@ -6,7 +6,7 @@ import { ChevronRight, BookOpen, Clock, Wallet, Briefcase, Info, CheckCircle, Ba
 import ProjectQueueModal from '@/components/dashboard/ProjectQueueModal';
 import { createClient } from '@/utils/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { startTasking } from '@/app/dashboard/projects/actions';
+import { startTasking, startReviewing } from '@/app/dashboard/projects/actions';
 import { useSearchParams } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 
@@ -38,6 +38,13 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
         firstIncompleteCourseId: null,
         onboardingStarted: false
     });
+    const [reviewerInfo, setReviewerInfo] = useState<{
+        isReviewer: boolean;
+        hasTasksToReview: boolean;
+    }>({
+        isReviewer: false,
+        hasTasksToReview: false
+    });
     const [hoveredBar, setHoveredBar] = useState<number | null>(null);
     const supabase = createClient();
     const searchParams = useSearchParams();
@@ -61,11 +68,12 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
     const fetchDashboardData = async () => {
         setLoading(true);
         try {
-            // Fetch assigned projects
+            // Fetch assigned projects with is_reviewer status
             const { data: projectsData, error: projectsError } = await supabase
                 .from('project_assignees')
                 .select(`
                     project_id,
+                    is_reviewer,
                     projects:projects (*)
                 `)
                 .eq('user_id', user.id)
@@ -74,10 +82,31 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
             if (projectsError) console.error('Error fetching assigned projects:', projectsError);
             else if (projectsData) {
                 const fetchedProjects = projectsData.map((item: any) => item.projects).filter((p: any) => p !== null);
+                // Also extract is_reviewer from the first assignment
+                const firstAssignment = projectsData[0];
+                const isReviewer = (firstAssignment as any)?.is_reviewer || false;
+
                 setProjects(fetchedProjects);
 
                 if (fetchedProjects.length > 0) {
                     const activeProjectId = fetchedProjects[0].id;
+
+                    // Check if reviewer and if there are tasks to review
+                    if (isReviewer) {
+                        const { count } = await supabase
+                            .from('tasks')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('project_id', activeProjectId)
+                            .eq('status', 'submitted')
+                            .neq('assigned_to', user.id);
+
+                        setReviewerInfo({
+                            isReviewer: true,
+                            hasTasksToReview: (count || 0) > 0
+                        });
+                    } else {
+                        setReviewerInfo({ isReviewer: false, hasTasksToReview: false });
+                    }
 
                     // Fetch courses for this project
                     const { data: courses } = await supabase
@@ -223,15 +252,27 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                 <span>Started {new Date(activeProject.created_at).toLocaleDateString()}</span>
                                                 <span className="mx-2 text-white/20">|</span>
                                                 {onboardingInfo.assessmentStatus === 'Completed' ? (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            startTasking(activeProject.id);
-                                                        }}
-                                                        className="text-primary hover:underline hover:text-primary/80 transition-colors"
-                                                    >
-                                                        Start Tasking
-                                                    </button>
+                                                    reviewerInfo.isReviewer && reviewerInfo.hasTasksToReview ? (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                startReviewing(activeProject.id);
+                                                            }}
+                                                            className="text-primary hover:underline hover:text-primary/80 transition-colors"
+                                                        >
+                                                            Start Reviewing
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                startTasking(activeProject.id);
+                                                            }}
+                                                            className="text-primary hover:underline hover:text-primary/80 transition-colors"
+                                                        >
+                                                            Start Tasking
+                                                        </button>
+                                                    )
                                                 ) : onboardingInfo.assessmentStatus === 'Failed' ? (
                                                     <span className="text-red-400 font-bold">Assessment Failed</span>
                                                 ) : (

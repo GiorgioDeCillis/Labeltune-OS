@@ -40,13 +40,24 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
     if (profilesError) console.error('ProjectTeamPage: profilesError:', profilesError);
 
 
-    // 3. Fetch current assignments for this project (including is_reviewer)
-    const { data: assignments } = await supabase
+    // 3. Fetch current assignments for this project (including is_reviewer if it exists)
+    const { data: assignments, error: assignmentsError } = await supabase
         .from('project_assignees')
         .select('user_id, status, is_reviewer')
         .eq('project_id', id);
 
-    const assignmentMap = new Map((assignments || []).map(a => [a.user_id, { status: a.status || 'active', is_reviewer: a.is_reviewer || false }]));
+    // Handle case where is_reviewer column might not exist yet
+    if (assignmentsError) {
+        console.error('ProjectTeamPage: assignmentsError:', assignmentsError);
+    }
+
+    const assignmentMap = new Map((assignments || []).map(a => [
+        a.user_id,
+        {
+            status: a.status || 'active',
+            is_reviewer: (a as any).is_reviewer ?? false
+        }
+    ]));
     const assignedUserIds = new Set(assignmentMap.keys());
 
     // 4. Fetch All Progress for this project's courses
