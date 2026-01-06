@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { TaskComponent } from '@/components/builder/types';
 import { useRouter } from 'next/navigation';
-import { Loader2, ThumbsUp, ThumbsDown, Timer, Star } from 'lucide-react';
+import { Loader2, ThumbsUp, ThumbsDown, Timer, Star, MessageSquare } from 'lucide-react';
 import { approveTask, rejectTask, updateReviewTimer } from '@/app/dashboard/review/actions';
 import { useEffect, useRef } from 'react';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -55,6 +55,7 @@ export function ReviewTaskRenderer({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [rating, setRating] = useState(5);
     const [seconds, setSeconds] = useState(initialTimeSpent);
+    const [feedback, setFeedback] = useState('');
 
     // Initialize submission results if task is already approved
     const [submissionResults, setSubmissionResults] = useState<{ earnings: number; timeSpent: number; projectId: string } | null>(
@@ -133,7 +134,7 @@ export function ReviewTaskRenderer({
         setConfirmAction({ isOpen: false, type: null });
         setIsSubmitting(true);
         try {
-            const result = await approveTask(taskId, formData, rating, seconds);
+            const result = await approveTask(taskId, formData, rating, seconds, feedback);
             if (result.success && result.data) {
                 setSubmissionResults(result.data as any);
                 showToast('Task approved successfully', 'success');
@@ -158,7 +159,7 @@ export function ReviewTaskRenderer({
         setConfirmAction({ isOpen: false, type: null });
         setIsSubmitting(true);
         try {
-            await rejectTask(taskId);
+            await rejectTask(taskId, feedback);
             showToast('Task rejected', 'info');
             router.refresh();
             router.push('/dashboard/review');
@@ -230,6 +231,20 @@ export function ReviewTaskRenderer({
                             </button>
                         ))}
                     </div>
+                </div>
+
+                {/* Reviewer Feedback Section */}
+                <div className="space-y-3 px-2">
+                    <div className="flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-primary" />
+                        <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Feedback for Attempter:</span>
+                    </div>
+                    <textarea
+                        value={feedback}
+                        onChange={(e) => setFeedback(e.target.value)}
+                        placeholder="Write constructive feedback for the attempter... (optional)"
+                        className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all resize-none placeholder:text-white/20"
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

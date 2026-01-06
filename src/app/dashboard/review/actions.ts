@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-export async function approveTask(taskId: string, finalLabels: any, rating: number, timeSpent: number) {
+export async function approveTask(taskId: string, finalLabels: any, rating: number, timeSpent: number, feedback?: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -37,6 +37,7 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
             labels: finalLabels,
             reviewed_by: user.id,
             review_rating: rating,
+            review_feedback: feedback,
             reviewer_time_spent: timeSpent,
             reviewer_earnings: earnings
         })
@@ -60,7 +61,7 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
     };
 }
 
-export async function rejectTask(taskId: string) {
+export async function rejectTask(taskId: string, feedback?: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -81,6 +82,7 @@ export async function rejectTask(taskId: string) {
         .update({
             status: 'pending',
             assigned_to: null,
+            review_feedback: feedback,
             labels: null // Clear previous work? Or keep it as reference? User said "start over". Clearing is safer to force rework.
         })
         .eq('id', taskId);
