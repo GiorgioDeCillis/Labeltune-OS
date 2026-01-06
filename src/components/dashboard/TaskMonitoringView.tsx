@@ -66,7 +66,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
         return `${h > 0 ? `${h}h ` : ''}${m > 0 ? `${m}m ` : ''}${s}s`;
     };
 
-    const currentLabels = activeVersion === 'annotator' ? task.labels : task.labels;
+    const currentLabels = activeVersion === 'annotator' ? (task.annotator_labels || task.labels) : task.labels;
 
     return (
         <div className="space-y-6">

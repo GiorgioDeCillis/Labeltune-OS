@@ -36,6 +36,7 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
         .from('tasks')
         .update({
             labels,
+            annotator_labels: labels,
             status: 'completed',
             annotator_time_spent: timeSpent, // Keep tracking real time spent
             annotator_earnings: earnings
