@@ -20,15 +20,16 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
 
     const projectsData = task?.projects as any;
     const rawRate = (Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0';
-    // Remove non-numeric chars except dot
-    const cleanRate = rawRate.toString().replace(/[^0-9.]/g, '');
+
+    // Robust parsing: extract numbers and handle decimal points
+    const matches = rawRate.toString().match(/(\d+(?:[.,]\d+)?)/);
+    const cleanRate = matches ? matches[0].replace(',', '.') : '0';
     const payRate = parseFloat(cleanRate) || 0;
 
     // Cap timeSpent if max_task_time is set
     const maxTime = (Array.isArray(projectsData) ? projectsData[0]?.max_task_time : projectsData?.max_task_time);
     const billableTime = maxTime ? Math.min(timeSpent, maxTime) : timeSpent;
 
-    // earnings = (billableTime / 3600) * payRate
     const earnings = (billableTime / 3600) * payRate;
 
     const { error } = await supabase
@@ -116,11 +117,34 @@ export async function updateTaskTimer(taskId: string, timeSpent: number) {
 
     if (!user) return { error: 'Unauthorized' };
 
+    // Get project pay rate for real-time earnings update
+    const { data: task } = await supabase
+        .from('tasks')
+        .select('project_id, projects(pay_rate, max_task_time)')
+        .eq('id', taskId)
+        .single();
+
+    let earnings = 0;
+    if (task?.projects) {
+        const projectsData = task.projects as any;
+        const rawRate = (Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0';
+        const matches = rawRate.toString().match(/(\d+(?:[.,]\d+)?)/);
+        const cleanRate = matches ? matches[0].replace(',', '.') : '0';
+        const payRate = parseFloat(cleanRate) || 0;
+
+        const maxTime = (Array.isArray(projectsData) ? projectsData[0]?.max_task_time : projectsData?.max_task_time);
+        const billableTime = maxTime ? Math.min(timeSpent, maxTime) : timeSpent;
+        earnings = (billableTime / 3600) * payRate;
+    }
+
     const { error } = await supabase
         .from('tasks')
-        .update({ annotator_time_spent: timeSpent })
+        .update({
+            annotator_time_spent: timeSpent,
+            annotator_earnings: earnings
+        })
         .eq('id', taskId)
-        .eq('assigned_to', user.id); // Only allow update if assigned to user
+        .eq('assigned_to', user.id);
 
     if (error) {
         console.error('Error updating task timer:', error);

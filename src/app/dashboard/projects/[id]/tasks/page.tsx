@@ -71,11 +71,29 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
                 </div>
             </div>
 
-            <ProjectTasksClient
-                initialTasks={tasks || []}
-                projectId={id}
-                payRate={parseFloat(project.pay_rate || '0')}
-            />
-        </div>
-    );
+    // Robust parsing for pay_rate to pass as number
+            const rawRate = project.pay_rate || '0';
+            const matches = rawRate.toString().match(/(\d+(?:[.,]\d+)?)/);
+            const cleanRate = matches ? matches[0].replace(',', '.') : '0';
+            const payRate = parseFloat(cleanRate) || 0;
+
+            return (
+            <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                    <Link href={`/dashboard/projects/${id}`} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+                        <ChevronLeft className="w-5 h-5" />
+                    </Link>
+                    <div>
+                        <h2 className="text-3xl font-bold tracking-tight">Task Monitoring</h2>
+                        <p className="text-muted-foreground">{project.name} • {tasks?.length || 0} Tasks</p>
+                    </div>
+                </div>
+
+                <ProjectTasksClient
+                    initialTasks={tasks || []}
+                    projectId={id}
+                    payRate={payRate}
+                />
+            </div>
+            );
 }
