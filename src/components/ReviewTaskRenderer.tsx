@@ -29,6 +29,8 @@ import {
     RubricTable
 } from '@/components/builder/Renderers';
 
+import { useToast } from '@/components/Toast';
+
 export function ReviewTaskRenderer({
     schema,
     taskId,
@@ -45,6 +47,8 @@ export function ReviewTaskRenderer({
     const [rating, setRating] = useState(5);
     const [seconds, setSeconds] = useState(initialTimeSpent);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const { showToast } = useToast();
+    const router = useRouter();
     const [confirmAction, setConfirmAction] = useState<{
         isOpen: boolean;
         type: 'approve' | 'reject' | null;
@@ -101,9 +105,12 @@ export function ReviewTaskRenderer({
         setIsSubmitting(true);
         try {
             await approveTask(taskId, formData, rating, seconds);
+            showToast('Task approved successfully', 'success');
+            router.refresh();
+            router.push('/dashboard/review');
         } catch (e) {
             console.error(e);
-            alert('Failed to approve task'); // Keeping alert for errors for now as it's not a confirm
+            showToast('Failed to approve task', 'error');
             setIsSubmitting(false);
         }
     };
@@ -117,9 +124,12 @@ export function ReviewTaskRenderer({
         setIsSubmitting(true);
         try {
             await rejectTask(taskId);
+            showToast('Task rejected', 'info');
+            router.refresh();
+            router.push('/dashboard/review');
         } catch (e) {
             console.error(e);
-            alert('Failed to reject task');
+            showToast('Failed to reject task', 'error');
             setIsSubmitting(false);
         }
     };

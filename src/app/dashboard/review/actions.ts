@@ -44,7 +44,8 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
 
     revalidatePath('/dashboard/review');
     revalidatePath(`/dashboard/projects/${task?.project_id}/tasks`);
-    redirect('/dashboard/review');
+
+    return { success: true };
 }
 
 export async function rejectTask(taskId: string) {
@@ -78,7 +79,7 @@ export async function rejectTask(taskId: string) {
     }
 
     revalidatePath('/dashboard/review');
-    redirect('/dashboard/review');
+    return { success: true };
 }
 
 export async function updateReviewTimer(taskId: string, timeSpent: number) {
