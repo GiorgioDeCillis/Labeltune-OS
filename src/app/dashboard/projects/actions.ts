@@ -583,6 +583,62 @@ export async function startTasking(projectId: string) {
     redirect(`/dashboard/projects/${projectId}?error=No tasks available to start`);
 }
 
+/**
+ * Allows Admin/PM to start a specific PENDING task as if they were an attempter.
+ * Bypasses normal assignment/course checks since Admin/PM have full access.
+ */
+export async function startSpecificTask(taskId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) redirect('/login');
+
+    // Verify user is admin or PM
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'pm' && profile?.role !== 'admin') {
+        throw new Error('Only Admin/PM can use this feature');
+    }
+
+    // Get the task
+    const { data: task, error: taskError } = await supabase
+        .from('tasks')
+        .select('id, project_id, status, assigned_to')
+        .eq('id', taskId)
+        .single();
+
+    if (taskError || !task) {
+        throw new Error('Task not found');
+    }
+
+    if (task.status !== 'pending') {
+        throw new Error('Can only start pending tasks');
+    }
+
+    // Start the task: assign to current user and set status to in_progress
+    const now = new Date().toISOString();
+    const { error: updateError } = await supabase
+        .from('tasks')
+        .update({
+            assigned_to: user.id,
+            status: 'in_progress',
+            started_at: now,
+            attempter_started_at: now
+        })
+        .eq('id', taskId);
+
+    if (updateError) {
+        console.error('Error starting task:', updateError);
+        throw new Error('Failed to start task');
+    }
+
+    redirect(`/dashboard/tasks/${taskId}`);
+}
+
 export async function startReviewing(projectId: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
