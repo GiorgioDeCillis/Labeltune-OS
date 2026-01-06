@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { QuizPlayer } from './QuizPlayer';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
-{/* Navigation Footer Removed */ }
+import { completeLesson, getNextCourseId } from '@/app/dashboard/courses/actions';
 
 interface CoursePlayerProps {
     course: Course & { lessons: Lesson[] };
