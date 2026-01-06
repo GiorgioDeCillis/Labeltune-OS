@@ -181,7 +181,7 @@ export function ReviewTaskRenderer({
                     earnings={submissionResults.earnings}
                     timeSpent={submissionResults.timeSpent}
                     projectId={submissionResults.projectId}
-                    onDashboard={() => router.push('/dashboard/review')}
+                    onDashboard={() => router.push('/dashboard')}
                     onNextTask={handleNextTask}
                 />
             )}
