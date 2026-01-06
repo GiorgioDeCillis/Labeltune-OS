@@ -148,7 +148,7 @@ export async function completeLesson(courseId: string, lessonId: string) {
                 completed_lessons: newCompletedLessons,
                 status: isCourseCompleted ? 'completed' : 'in_progress',
                 updated_at: new Date().toISOString()
-            });
+            }, { onConflict: 'user_id,course_id' });
 
         if (upsertError) {
             console.error('Error updating progress:', upsertError);
