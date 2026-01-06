@@ -24,9 +24,10 @@ interface ProjectTasksClientProps {
     initialTasks: any[];
     projectId: string;
     payRate: number;
+    userRole: string;
 }
 
-export function ProjectTasksClient({ initialTasks, projectId, payRate }: ProjectTasksClientProps) {
+export function ProjectTasksClient({ initialTasks, projectId, payRate, userRole }: ProjectTasksClientProps) {
     const [tasks, setTasks] = useState(initialTasks);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -233,7 +234,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate }: Project
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                {task.status === 'completed' && (
+                                                {(task.status === 'submitted' || task.status === 'completed' || userRole === 'admin' || userRole === 'pm') && (
                                                     <Link href={`/dashboard/review/${task.id}`}>
                                                         <button className="p-2 bg-yellow-500/10 text-yellow-500 rounded-lg hover:bg-yellow-500/20 transition-all" title="Review Task">
                                                             <ExternalLink className="w-4 h-4" />

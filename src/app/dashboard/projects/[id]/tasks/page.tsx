@@ -89,6 +89,13 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
     const cleanRate = matches ? matches[0].replace(',', '.') : '0';
     const payRate = parseFloat(cleanRate) || 0;
 
+    // Fetch user profile for role
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
@@ -105,6 +112,7 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
                 initialTasks={tasks || []}
                 projectId={id}
                 payRate={payRate}
+                userRole={profile?.role || 'worker'}
             />
         </div>
     );
