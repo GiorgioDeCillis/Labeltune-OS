@@ -56,10 +56,12 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
 
         // Apply logical status sorting
         const statusPriority: Record<string, number> = {
-            'approved': 1,
+            'submitted': 1,
             'completed': 2,
             'in_progress': 3,
-            'pending': 4
+            'pending': 4,
+            'approved': 5,
+            'rejected': 6
         };
 
         tasks = [...enrichedTasks].sort((a, b) => {
