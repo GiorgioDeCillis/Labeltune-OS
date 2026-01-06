@@ -110,8 +110,11 @@ export async function completeLesson(courseId: string, lessonId: string) {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
+        console.error('completeLesson: No user found');
         throw new Error('Unauthorized');
     }
+
+    console.log('completeLesson called:', { courseId, lessonId, userId: user.id });
 
     // Check if progress record exists
     const { data: progress, error: fetchError } = await supabase
@@ -119,12 +122,14 @@ export async function completeLesson(courseId: string, lessonId: string) {
         .select('*')
         .eq('user_id', user.id)
         .eq('course_id', courseId)
-        .single();
+        .maybeSingle();
 
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found"
+    if (fetchError) {
         console.error('Error fetching progress:', fetchError);
         throw new Error('Failed to fetch progress');
     }
+
+    console.log('Current progress:', progress);
 
     const completedLessons = progress ? (progress.completed_lessons || []) : [];
 
@@ -137,27 +142,51 @@ export async function completeLesson(courseId: string, lessonId: string) {
             .select('*', { count: 'exact', head: true })
             .eq('course_id', courseId);
 
-        const isCourseCompleted = count ? newCompletedLessons.length === count : false;
+        const isCourseCompleted = count ? newCompletedLessons.length >= count : false;
 
-        // Upsert progress
-        const { error: upsertError } = await supabase
-            .from('user_course_progress')
-            .upsert({
-                user_id: user.id,
-                course_id: courseId,
-                completed_lessons: newCompletedLessons,
-                status: isCourseCompleted ? 'completed' : 'in_progress',
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id,course_id' });
+        console.log('Updating progress:', { newCompletedLessons, isCourseCompleted, lessonCount: count });
 
-        if (upsertError) {
-            console.error('Error updating progress:', upsertError);
-            throw new Error('Failed to update progress');
+        if (progress) {
+            // Update existing record
+            const { error: updateError } = await supabase
+                .from('user_course_progress')
+                .update({
+                    completed_lessons: newCompletedLessons,
+                    status: isCourseCompleted ? 'completed' : 'in_progress',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', progress.id);
+
+            if (updateError) {
+                console.error('Error updating progress:', updateError);
+                throw new Error('Failed to update progress');
+            }
+            console.log('Progress updated successfully');
+        } else {
+            // Insert new record
+            const { error: insertError } = await supabase
+                .from('user_course_progress')
+                .insert({
+                    user_id: user.id,
+                    course_id: courseId,
+                    completed_lessons: newCompletedLessons,
+                    status: isCourseCompleted ? 'completed' : 'in_progress',
+                    updated_at: new Date().toISOString()
+                });
+
+            if (insertError) {
+                console.error('Error inserting progress:', insertError);
+                throw new Error('Failed to insert progress');
+            }
+            console.log('Progress inserted successfully');
         }
+    } else {
+        console.log('Lesson already completed, skipping');
     }
 
     revalidatePath(`/dashboard/courses/${courseId}`);
 }
+
 
 export async function getNextCourseId(currentCourseId: string) {
     const supabase = await createClient();
