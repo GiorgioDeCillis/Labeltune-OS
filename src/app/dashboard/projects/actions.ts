@@ -453,6 +453,33 @@ export async function startTasking(projectId: string) {
         throw new Error('Not assigned to this project or inactive');
     }
 
+    // 1.5 Check if user has completed all courses for this project
+    const { data: courses } = await supabase
+        .from('courses')
+        .select('id')
+        .eq('project_id', projectId);
+
+    if (courses && courses.length > 0) {
+        const { data: progress } = await supabase
+            .from('user_course_progress')
+            .select('status, course_id')
+            .eq('user_id', user.id)
+            .in('course_id', courses.map(c => c.id));
+
+        const progressMap = new Map(progress?.map(p => [p.course_id, p.status]));
+        let allCompleted = true;
+        for (const course of courses) {
+            if (progressMap.get(course.id) !== 'completed') {
+                allCompleted = false;
+                break;
+            }
+        }
+
+        if (!allCompleted) {
+            redirect(`/dashboard/projects/${projectId}?error=Please complete all required courses first`);
+        }
+    }
+
     // 2. Check for in_progress task (resume)
     const { data: inProgressTask } = await supabase
         .from('tasks')

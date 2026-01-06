@@ -29,6 +29,15 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
         hoursWorked: 42, // Mocked for design
         avgRate: 15.50
     });
+    const [onboardingInfo, setOnboardingInfo] = useState<{
+        assessmentStatus: 'Completed' | 'Failed' | 'In Progress';
+        firstIncompleteCourseId: string | null;
+        onboardingStarted: boolean;
+    }>({
+        assessmentStatus: 'Completed',
+        firstIncompleteCourseId: null,
+        onboardingStarted: false
+    });
     const [hoveredBar, setHoveredBar] = useState<number | null>(null);
     const supabase = createClient();
     const searchParams = useSearchParams();
@@ -64,7 +73,60 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
 
             if (projectsError) console.error('Error fetching assigned projects:', projectsError);
             else if (projectsData) {
-                setProjects(projectsData.map((item: any) => item.projects).filter((p: any) => p !== null));
+                const fetchedProjects = projectsData.map((item: any) => item.projects).filter((p: any) => p !== null);
+                setProjects(fetchedProjects);
+
+                if (fetchedProjects.length > 0) {
+                    const activeProjectId = fetchedProjects[0].id;
+
+                    // Fetch courses for this project
+                    const { data: courses } = await supabase
+                        .from('courses')
+                        .select('*')
+                        .eq('project_id', activeProjectId)
+                        .order('created_at', { ascending: true });
+
+                    if (courses && courses.length > 0) {
+                        const { data: progress } = await supabase
+                            .from('user_course_progress')
+                            .select('status, course_id')
+                            .eq('user_id', user.id)
+                            .in('course_id', courses.map(c => c.id));
+
+                        const progressMap = new Map(progress?.map(p => [p.course_id, p.status]));
+                        const onboardingStarted = progress && progress.length > 0;
+
+                        let hasFailed = false;
+                        let allCompleted = true;
+                        let firstIncompleteCourseId = null;
+
+                        for (const course of courses) {
+                            const status = progressMap.get(course.id);
+                            if (status === 'failed') {
+                                hasFailed = true;
+                                break;
+                            }
+                            if (status !== 'completed') {
+                                allCompleted = false;
+                                if (!firstIncompleteCourseId) {
+                                    firstIncompleteCourseId = course.id;
+                                }
+                            }
+                        }
+
+                        setOnboardingInfo({
+                            assessmentStatus: hasFailed ? 'Failed' : (allCompleted ? 'Completed' : 'In Progress'),
+                            firstIncompleteCourseId,
+                            onboardingStarted
+                        });
+                    } else {
+                        setOnboardingInfo({
+                            assessmentStatus: 'Completed',
+                            firstIncompleteCourseId: null,
+                            onboardingStarted: false
+                        });
+                    }
+                }
             }
 
             // Fetch total tasks completed
@@ -160,15 +222,26 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                 <Clock className="w-4 h-4" />
                                                 <span>Started {new Date(activeProject.created_at).toLocaleDateString()}</span>
                                                 <span className="mx-2 text-white/20">|</span>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        startTasking(activeProject.id);
-                                                    }}
-                                                    className="text-primary hover:underline hover:text-primary/80 transition-colors"
-                                                >
-                                                    Start Tasking
-                                                </button>
+                                                {onboardingInfo.assessmentStatus === 'Completed' ? (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            startTasking(activeProject.id);
+                                                        }}
+                                                        className="text-primary hover:underline hover:text-primary/80 transition-colors"
+                                                    >
+                                                        Start Tasking
+                                                    </button>
+                                                ) : onboardingInfo.assessmentStatus === 'Failed' ? (
+                                                    <span className="text-red-400 font-bold">Assessment Failed</span>
+                                                ) : (
+                                                    <Link
+                                                        href={`/dashboard/courses/${onboardingInfo.firstIncompleteCourseId}`}
+                                                        className="text-primary hover:underline hover:text-primary/80 transition-colors"
+                                                    >
+                                                        {onboardingInfo.onboardingStarted ? 'Continue Onboarding' : 'Start Onboarding'}
+                                                    </Link>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

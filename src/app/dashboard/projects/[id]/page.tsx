@@ -54,6 +54,9 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
     // Determine Assessment Status for Annotators
     let assessmentStatus = 'In Progress';
+    let firstIncompleteCourseId = null;
+    let onboardingStarted = false;
+
     if (!isPM && courses && courses.length > 0) {
         const { data: progress } = await supabase
             .from('user_course_progress')
@@ -62,6 +65,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             .in('course_id', courses.map(c => c.id));
 
         const progressMap = new Map(progress?.map(p => [p.course_id, p.status]));
+        onboardingStarted = progress && progress.length > 0;
 
         let hasFailed = false;
         let allCompleted = true;
@@ -74,6 +78,9 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             }
             if (status !== 'completed') {
                 allCompleted = false;
+                if (!firstIncompleteCourseId) {
+                    firstIncompleteCourseId = course.id;
+                }
             }
         }
 
@@ -243,11 +250,24 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
                     <ProjectGuidelinesLink guidelines={project.guidelines} className="text-[var(--primary)] hover:opacity-80 text-sm font-bold flex items-center gap-1 transition-opacity" />
 
-                    <form action={startTasking.bind(null, project.id)} className="ml-auto">
-                        <button className="text-white hover:opacity-80 text-sm font-bold flex items-center gap-1">
-                            Start Tasking <ChevronRight className="w-4 h-4" />
-                        </button>
-                    </form>
+                    {assessmentStatus === 'Completed' ? (
+                        <form action={startTasking.bind(null, project.id)} className="ml-auto">
+                            <button className="text-white hover:opacity-80 text-sm font-bold flex items-center gap-1">
+                                Start Tasking <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </form>
+                    ) : assessmentStatus === 'Failed' ? (
+                        <div className="ml-auto text-red-400 text-sm font-bold flex items-center gap-1">
+                            Assessment Failed <AlertCircle className="w-4 h-4" />
+                        </div>
+                    ) : (
+                        <Link
+                            href={`/dashboard/courses/${firstIncompleteCourseId}`}
+                            className="ml-auto text-white hover:opacity-80 text-sm font-bold flex items-center gap-1"
+                        >
+                            {onboardingStarted ? 'Continue Onboarding' : 'Start Onboarding'} <ChevronRight className="w-4 h-4" />
+                        </Link>
+                    )}
                 </div>
             </div>
 
