@@ -276,30 +276,34 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                     </div>
                 </div>
 
-                {/* Feedback Section (Context-Aware) */}
-                {activeVersion === 'annotator' && task.review_feedback && (
-                    <div className="px-6 py-4 border-t border-white/5 bg-yellow-500/5">
-                        <div className="flex items-start gap-3">
-                            <MessageSquare className="w-4 h-4 text-yellow-500 mt-1" />
-                            <div>
-                                <p className="text-[10px] text-yellow-500/70 font-bold uppercase tracking-wider">Reviewer Feedback to Attempter</p>
-                                <p className="text-sm text-foreground/80 mt-1 italic">"{task.review_feedback}"</p>
+                {/* Feedback Section */}
+                <div className="flex flex-col">
+                    {/* Reviewer -> Attempter Feedback (Visible in both if exists, but styled differently) */}
+                    {task.review_feedback && (
+                        <div className={`px-6 py-3 border-t border-white/5 ${activeVersion === 'annotator' ? 'bg-yellow-500/5' : 'bg-white/[0.02]'}`}>
+                            <div className="flex items-start gap-3">
+                                <MessageSquare className="w-4 h-4 text-yellow-500 mt-1" />
+                                <div>
+                                    <p className="text-[10px] text-yellow-500/70 font-bold uppercase tracking-wider">Reviewer Feedback to Attempter</p>
+                                    <p className="text-sm text-foreground/80 mt-0.5 italic">"{task.review_feedback}"</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {activeVersion === 'reviewer' && task.reviewer_feedback && (
-                    <div className="px-6 py-4 border-t border-white/10 bg-primary/10">
-                        <div className="flex items-start gap-3">
-                            <MessageSquare className="w-4 h-4 text-primary mt-1" />
-                            <div>
-                                <p className="text-[10px] text-primary font-bold uppercase tracking-wider">Admin/PM Feedback to Reviewer</p>
-                                <p className="text-sm text-foreground/80 mt-1 italic">"{task.reviewer_feedback}"</p>
+                    {/* Admin/PM -> Reviewer Feedback (Visible only in Reviewer tab) */}
+                    {activeVersion === 'reviewer' && task.reviewer_feedback && (
+                        <div className="px-6 py-3 border-t border-white/10 bg-primary/10">
+                            <div className="flex items-start gap-3">
+                                <MessageSquare className="w-4 h-4 text-primary mt-1" />
+                                <div>
+                                    <p className="text-[10px] text-primary font-bold uppercase tracking-wider">Admin/PM Feedback to Reviewer</p>
+                                    <p className="text-sm text-foreground/80 mt-0.5 italic">"{task.reviewer_feedback}"</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             {/* Admin/PM Feedback Form to Reviewer */}
