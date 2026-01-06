@@ -65,7 +65,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
             .in('course_id', courses.map(c => c.id));
 
         const progressMap = new Map(progress?.map(p => [p.course_id, p.status]));
-        onboardingStarted = progress && progress.length > 0;
+        onboardingStarted = !!(progress && progress.length > 0);
 
         let hasFailed = false;
         let allCompleted = true;

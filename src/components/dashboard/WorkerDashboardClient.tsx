@@ -94,7 +94,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                             .in('course_id', courses.map(c => c.id));
 
                         const progressMap = new Map(progress?.map(p => [p.course_id, p.status]));
-                        const onboardingStarted = progress && progress.length > 0;
+                        const onboardingStarted = !!(progress && progress.length > 0);
 
                         let hasFailed = false;
                         let allCompleted = true;
