@@ -37,14 +37,20 @@ export function TaskRenderer({
     initialData,
     isReadOnly = false,
     maxTime,
-    initialTimeSpent = 0
+    initialTimeSpent = 0,
+    projectId,
+    initialEarnings = 0,
+    taskStatus
 }: {
     schema: TaskComponent[],
     taskId: string,
     initialData?: any,
     isReadOnly?: boolean,
     maxTime?: number | null,
-    initialTimeSpent?: number
+    initialTimeSpent?: number,
+    projectId: string,
+    initialEarnings?: number,
+    taskStatus?: string
 }) {
     const [formData, setFormData] = useState<any>(initialData || {});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,7 +58,16 @@ export function TaskRenderer({
     const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
     const [isExpired, setIsExpired] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-    const [submissionResults, setSubmissionResults] = useState<{ earnings: number; timeSpent: number; projectId: string } | null>(null);
+
+    // Initialize submission results if task is already completed
+    const [submissionResults, setSubmissionResults] = useState<{ earnings: number; timeSpent: number; projectId: string } | null>(
+        taskStatus === 'completed' || taskStatus === 'approved' ? {
+            earnings: initialEarnings,
+            timeSpent: initialTimeSpent,
+            projectId: projectId
+        } : null
+    );
+
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const router = useRouter();
     const supabase = createClient();

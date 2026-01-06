@@ -71,6 +71,9 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
                                     isReadOnly={!isAssignedToMe}
                                     maxTime={task.projects?.max_task_time}
                                     initialTimeSpent={task.annotator_time_spent || 0}
+                                    projectId={task.project_id}
+                                    initialEarnings={task.annotator_earnings || 0}
+                                    taskStatus={task.status}
                                 />
                             </div>
                         ) : (
