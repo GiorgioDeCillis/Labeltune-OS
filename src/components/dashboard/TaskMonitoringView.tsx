@@ -100,7 +100,10 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Link href={`/dashboard/projects/${project.id}/tasks`} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+                    <Link
+                        href={currentUserRole === 'worker' ? '/dashboard/history' : `/dashboard/projects/${project.id}/tasks`}
+                        className="p-2 hover:bg-white/5 rounded-full transition-colors"
+                    >
                         <ChevronLeft className="w-5 h-5 text-muted-foreground" />
                     </Link>
                     <div>
@@ -127,7 +130,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className={`grid grid-cols-1 ${currentUserRole === 'worker' ? '' : 'md:grid-cols-2'} gap-6`}>
                 {/* Annotator Info */}
                 <div className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -182,57 +185,59 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                 </div>
 
                 {/* Reviewer Info */}
-                <div className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Activity className="w-16 h-16 text-yellow-500" />
-                    </div>
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 text-lg font-bold border border-yellow-500/20 overflow-hidden">
-                            {reviewer?.avatar_url ? (
-                                <img src={reviewer.avatar_url} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                                reviewer?.full_name?.[0] || 'R'
-                            )}
+                {currentUserRole !== 'worker' && (
+                    <div className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <Activity className="w-16 h-16 text-yellow-500" />
                         </div>
-                        <div>
-                            <h3 className="text-lg font-bold">Reviewer</h3>
-                            <p className="text-sm text-muted-foreground">{reviewer?.full_name || 'Not reviewed yet'}</p>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Time Spent</p>
-                            <div className="flex items-center gap-1.5 text-foreground font-medium">
-                                <Timer className="w-3.5 h-3.5 text-yellow-500" />
-                                <span>{formatTime(task.reviewer_time_spent)}</span>
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 text-lg font-bold border border-yellow-500/20 overflow-hidden">
+                                {reviewer?.avatar_url ? (
+                                    <img src={reviewer.avatar_url} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                    reviewer?.full_name?.[0] || 'R'
+                                )}
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold">Reviewer</h3>
+                                <p className="text-sm text-muted-foreground">{reviewer?.full_name || 'Not reviewed yet'}</p>
                             </div>
                         </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Earnings</p>
-                            <div className="flex items-center gap-1.5 text-green-400 font-bold">
-                                <DollarSign className="w-3.5 h-3.5" />
-                                <span>{task.reviewer_earnings?.toFixed(2) || '0.00'}</span>
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Time Spent</p>
+                                <div className="flex items-center gap-1.5 text-foreground font-medium">
+                                    <Timer className="w-3.5 h-3.5 text-yellow-500" />
+                                    <span>{formatTime(task.reviewer_time_spent)}</span>
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Earnings</p>
+                                <div className="flex items-center gap-1.5 text-green-400 font-bold">
+                                    <DollarSign className="w-3.5 h-3.5" />
+                                    <span>{task.reviewer_earnings?.toFixed(2) || '0.00'}</span>
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Rev. Rating</p>
+                                <div className="flex items-center gap-1.5 text-yellow-500 font-bold">
+                                    <Star className="w-3.5 h-3.5" />
+                                    <span>{task.reviewer_rating?.toFixed(1) || '-'}</span>
+                                </div>
                             </div>
                         </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Rev. Rating</p>
-                            <div className="flex items-center gap-1.5 text-yellow-500 font-bold">
-                                <Star className="w-3.5 h-3.5" />
-                                <span>{task.reviewer_rating?.toFixed(1) || '-'}</span>
+                        <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Started At</p>
+                                <p className="text-xs font-medium text-foreground">{formatDate(task.reviewer_started_at)}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Finished At</p>
+                                <p className="text-xs font-medium text-foreground">{formatDate(task.reviewer_completed_at)}</p>
                             </div>
                         </div>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Started At</p>
-                            <p className="text-xs font-medium text-foreground">{formatDate(task.reviewer_started_at)}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Finished At</p>
-                            <p className="text-xs font-medium text-foreground">{formatDate(task.reviewer_completed_at)}</p>
-                        </div>
-                    </div>
-                </div>
+                )}
             </div>
 
             {/* Content & Comparison */}
