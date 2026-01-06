@@ -7,6 +7,7 @@ import { TaskComponent } from '@/components/builder/types';
 import { TaskTimerHeader } from '@/components/TaskTimerHeader';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
 import { CopyableTaskId } from '@/components/CopyableTaskId';
+import { CopyableId } from '@/components/CopyableId';
 
 export default async function ReviewTaskPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -60,10 +61,10 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
                             <div className="flex items-center gap-4 mt-1">
                                 <CopyableTaskId taskId={task.id} />
                                 <span className="text-white/20">|</span>
-                                {/* Annotator Info Display */}
-                                <span className="text-xs text-muted-foreground font-mono">
-                                    Annotated by {task.profiles?.full_name || 'Unknown'}
-                                </span>
+                                {/* Annotator ID Display */}
+                                {task.assigned_to && (
+                                    <CopyableId label="Annotator ID" id={task.assigned_to} />
+                                )}
                                 <span className="text-white/20">|</span>
                                 <ProjectGuidelinesLink guidelines={task.projects?.guidelines} label="Read Guidelines" />
                                 <TaskTimerHeader
