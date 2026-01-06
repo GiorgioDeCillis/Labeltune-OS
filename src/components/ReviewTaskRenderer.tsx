@@ -104,8 +104,8 @@ export function ReviewTaskRenderer({
     };
 
     return (
-        <div className="flex flex-col h-full">
-            <div className="flex-1 space-y-8 overflow-y-auto pr-2 custom-scrollbar p-1">
+        <div className="relative pb-32">
+            <div className="space-y-8 pr-2">
                 {schema.map((component) => {
                     // Objects
                     if (component.type === 'Image') return <ImageObject key={component.id} component={component} data={taskData} />;
@@ -139,7 +139,7 @@ export function ReviewTaskRenderer({
                 })}
             </div>
 
-            <div className="pt-6 border-t border-white/5 space-y-4 mt-4">
+            <div className="pt-6 border-t border-white/5 space-y-4 mt-8 mb-20">
                 <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2 text-primary font-mono text-sm">
                         <Timer className="w-4 h-4" />

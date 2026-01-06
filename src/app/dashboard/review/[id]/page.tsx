@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
-import { ChevronLeft, Info } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { ReviewTaskRenderer } from '@/components/ReviewTaskRenderer';
 import { TaskComponent } from '@/components/builder/types';
@@ -61,31 +61,16 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
             </div>
 
             {/* Workspace */}
-            <div className="flex-1 grid md:grid-cols-3 gap-6 min-h-[500px]">
-                {/* Data Panel */}
-                <div className="md:col-span-2 glass-panel p-6 rounded-2xl flex flex-col">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Original Data</h3>
-                        <div className="text-xs text-muted-foreground flex items-center gap-1 bg-white/5 px-2 py-1 rounded">
-                            <Info className="w-3 h-3" />
-                            Read Only
-                        </div>
-                    </div>
-                    <div className="flex-1 bg-black/20 rounded-xl p-6 font-serif leading-relaxed text-lg border border-white/5 overflow-y-auto">
-                        {/* Placeholder for dynamic content rendering */}
-                        {typeof task.payload === 'string' ? task.payload : (task.payload as any)?.text || JSON.stringify(task.payload, null, 2)}
-                    </div>
-                </div>
-
-                {/* Tool Panel (Review Mode) */}
-                <div className="glass-panel p-6 rounded-2xl flex flex-col h-full border-2 border-yellow-500/10">
-                    <h3 className="text-sm font-bold text-yellow-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <div className="flex justify-center min-h-[500px]">
+                {/* Tool Panel - Centered (Review Mode) */}
+                <div className="w-full flex flex-col">
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
                         <span>Review & Edit</span>
                     </h3>
 
-                    <div className="flex-1 relative">
+                    <div className="relative">
                         {templateSchema.length > 0 ? (
-                            <div className="absolute inset-0">
+                            <div>
                                 <ReviewTaskRenderer
                                     schema={templateSchema}
                                     taskId={task.id}
