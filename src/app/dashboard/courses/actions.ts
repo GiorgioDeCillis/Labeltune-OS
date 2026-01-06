@@ -158,3 +158,33 @@ export async function completeLesson(courseId: string, lessonId: string) {
 
     revalidatePath(`/dashboard/courses/${courseId}`);
 }
+
+export async function getNextCourseId(currentCourseId: string) {
+    const supabase = await createClient();
+
+    // Get current course to find its project_id
+    const { data: currentCourse } = await supabase
+        .from('courses')
+        .select('project_id, created_at')
+        .eq('id', currentCourseId)
+        .single();
+
+    if (!currentCourse || !currentCourse.project_id) return null;
+
+    // Get all courses for this project, ordered by creation (or order if you had it)
+    // Assuming simple chronological order for now
+    const { data: courses } = await supabase
+        .from('courses')
+        .select('id, created_at')
+        .eq('project_id', currentCourse.project_id)
+        .order('created_at', { ascending: true });
+
+    if (!courses) return null;
+
+    const currentIndex = courses.findIndex(c => c.id === currentCourseId);
+    if (currentIndex === -1 || currentIndex === courses.length - 1) {
+        return null;
+    }
+
+    return courses[currentIndex + 1].id;
+}

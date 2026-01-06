@@ -48,8 +48,24 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
         }
     };
 
+    const [showCompletionModal, setShowCompletionModal] = useState(false);
+    const [nextCourseId, setNextCourseId] = useState<string | null>(null);
+
+    const handleCompleteCourse = async () => {
+        try {
+            await completeLesson(course.id, activeLessonId);
+            // Check for next course
+            const { getNextCourseId } = await import('@/app/dashboard/courses/actions');
+            const nextId = await getNextCourseId(course.id);
+            setNextCourseId(nextId);
+            setShowCompletionModal(true);
+        } catch (error) {
+            console.error("Failed to complete course", error);
+        }
+    };
+
     return (
-        <div className="flex flex-1 gap-6 overflow-hidden h-full min-h-0">
+        <div className="flex flex-1 gap-6 overflow-hidden h-full min-h-0 relative">
             {/* Sidebar (Lesson List) */}
             <div className={`glass-panel flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-80' : 'w-0 opacity-0 overflow-hidden'}`}>
                 <div className="p-4 border-b border-white/5">
@@ -162,7 +178,10 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
                                                 Next Lesson <ChevronRight className="w-4 h-4" />
                                             </button>
                                         ) : (
-                                            <button className="px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 flex items-center gap-2">
+                                            <button
+                                                onClick={handleCompleteCourse}
+                                                className="px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 flex items-center gap-2"
+                                            >
                                                 Complete Course <CheckCircle className="w-4 h-4" />
                                             </button>
                                         )}
@@ -188,18 +207,63 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
                         <ChevronLeft className="w-4 h-4" /> Previous Lesson
                     </button>
 
-                    <button
-                        onClick={handleNext}
-                        disabled={!hasNext} // Later: change to "Complete & Continue" if last?
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${hasNext
-                            ? 'bg-primary text-primary-foreground hover:opacity-90 shadow-[0_0_15px_rgba(var(--primary),0.3)]'
-                            : 'bg-white/10 text-muted-foreground cursor-not-allowed'
-                            }`}
-                    >
-                        {hasNext ? 'Next Lesson' : 'Course Completed'} <ChevronRight className="w-4 h-4" />
-                    </button>
+                    {hasNext ? (
+                        <button
+                            onClick={handleNext}
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all bg-primary text-primary-foreground hover:opacity-90 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                        >
+                            Next Lesson <ChevronRight className="w-4 h-4" />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleCompleteCourse}
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all bg-green-500 text-white hover:bg-green-600 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                        >
+                            Complete Course <CheckCircle className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             </div>
+
+            {/* Completion Modal */}
+            {showCompletionModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-[#0A0A0A] border border-white/10 rounded-2xl w-full max-w-md p-8 shadow-2xl scale-100 animate-in zoom-in-95 duration-300">
+                        <div className="flex flex-col items-center text-center space-y-6">
+                            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-2">
+                                <CheckCircle className="w-8 h-8 text-green-500" />
+                            </div>
+
+                            <div className="space-y-2">
+                                <h3 className="text-2xl font-bold text-white">Course Completed!</h3>
+                                <p className="text-muted-foreground">
+                                    You have successfully finished <br />
+                                    <span className="text-white font-medium">{course.title}</span>
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col gap-3 w-full pt-4">
+                                {nextCourseId ? (
+                                    <Link href={`/dashboard/courses/${nextCourseId}`}>
+                                        <button className="w-full py-3.5 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                                            Start Next Course <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </Link>
+                                ) : null}
+
+                                <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/courses'}>
+                                    <button className={`w-full py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${nextCourseId
+                                            ? 'bg-white/5 hover:bg-white/10 text-white'
+                                            : 'bg-primary text-primary-foreground hover:opacity-90'
+                                        }`}>
+                                        Return to Dashboard
+                                    </button>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
