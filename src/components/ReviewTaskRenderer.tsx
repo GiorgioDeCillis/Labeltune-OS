@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { TaskComponent } from '@/components/builder/types';
 import { useRouter } from 'next/navigation';
 import { Loader2, ThumbsUp, ThumbsDown, Timer, Star } from 'lucide-react';
-import { approveTask, rejectTask } from '@/app/dashboard/review/actions';
+import { approveTask, rejectTask, updateReviewTimer } from '@/app/dashboard/review/actions';
 import { useEffect, useRef } from 'react';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
@@ -32,22 +32,25 @@ import {
 export function ReviewTaskRenderer({
     schema,
     taskId,
-    initialData
+    initialData,
+    initialTimeSpent = 0
 }: {
     schema: TaskComponent[],
     taskId: string,
-    initialData?: any
+    initialData?: any,
+    initialTimeSpent?: number
 }) {
     const [formData, setFormData] = useState<any>(initialData || {});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [rating, setRating] = useState(5);
-    const [seconds, setSeconds] = useState(0);
+    const [seconds, setSeconds] = useState(initialTimeSpent);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const [confirmAction, setConfirmAction] = useState<{
         isOpen: boolean;
         type: 'approve' | 'reject' | null;
     }>({ isOpen: false, type: null });
 
+    // Timer Logic
     useEffect(() => {
         timerRef.current = setInterval(() => {
             setSeconds(prev => prev + 1);
@@ -56,6 +59,24 @@ export function ReviewTaskRenderer({
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, []);
+
+    // Autosave timer every 5 seconds
+    const secondsRef = useRef(seconds);
+    useEffect(() => {
+        secondsRef.current = seconds;
+    }, [seconds]);
+
+    useEffect(() => {
+        if (isSubmitting) return;
+
+        const saveInterval = setInterval(() => {
+            if (secondsRef.current > initialTimeSpent) {
+                updateReviewTimer(taskId, secondsRef.current);
+            }
+        }, 5000);
+
+        return () => clearInterval(saveInterval);
+    }, [taskId, initialTimeSpent, isSubmitting]);
 
     const formatTime = (totalSeconds: number) => {
         const h = Math.floor(totalSeconds / 3600);
