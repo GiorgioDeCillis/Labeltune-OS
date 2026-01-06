@@ -235,8 +235,8 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate, userRole 
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {(task.status === 'submitted' || task.status === 'completed' || userRole === 'admin' || userRole === 'pm') && (
-                                                    <Link href={`/dashboard/review/${task.id}`}>
-                                                        <button className="p-2 bg-yellow-500/10 text-yellow-500 rounded-lg hover:bg-yellow-500/20 transition-all" title="Review Task">
+                                                    <Link href={task.status === 'submitted' ? `/dashboard/review/${task.id}` : `/dashboard/projects/${projectId}/tasks/${task.id}`}>
+                                                        <button className="p-2 bg-yellow-500/10 text-yellow-500 rounded-lg hover:bg-yellow-500/20 transition-all" title={task.status === 'submitted' ? "Review Task" : "View Monitoring"}>
                                                             <ExternalLink className="w-4 h-4" />
                                                         </button>
                                                     </Link>

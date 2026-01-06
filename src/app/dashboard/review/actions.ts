@@ -147,6 +147,17 @@ export async function submitReviewerFeedback(taskId: string, rating: number, fee
 
     if (!user) return { success: false, error: 'Unauthorized' };
 
+    // Check if user is Admin or PM
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'pm')) {
+        return { success: false, error: 'Only Admin or PM can submit reviewer feedback' };
+    }
+
     const { error } = await supabase
         .from('tasks')
         .update({
@@ -154,8 +165,7 @@ export async function submitReviewerFeedback(taskId: string, rating: number, fee
             reviewer_rating: rating,
             reviewer_feedback: feedback
         })
-        .eq('id', taskId)
-        .eq('assigned_to', user.id);
+        .eq('id', taskId);
 
     if (error) {
         console.error('Error submitting reviewer feedback:', error);

@@ -48,9 +48,10 @@ interface TaskMonitoringViewProps {
     project: any;
     annotator: any;
     reviewer: any;
+    currentUserRole?: string;
 }
 
-export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskMonitoringViewProps) {
+export function TaskMonitoringView({ task, project, annotator, reviewer, currentUserRole }: TaskMonitoringViewProps) {
     const router = useRouter();
     const [activeVersion, setActiveVersion] = useState<'annotator' | 'reviewer'>(
         (task.status === 'approved' || task.status === 'completed') ? 'reviewer' : 'annotator'
@@ -89,6 +90,8 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
     };
 
     const currentLabels = activeVersion === 'annotator' ? (task.annotator_labels || task.labels) : task.labels;
+
+    const isPrivileged = currentUserRole === 'admin' || currentUserRole === 'pm';
 
     return (
         <div className="space-y-6">
@@ -219,7 +222,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
                     </div>
                     <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-1 gap-4">
                         <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Feedback given by Attempter</p>
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Feedback given by Admin/PM</p>
                             {task.reviewer_feedback ? (
                                 <p className="text-xs text-foreground/80 italic font-medium">"{task.reviewer_feedback}"</p>
                             ) : (
@@ -290,8 +293,8 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
                 )}
             </div>
 
-            {/* Attempter Feedback Form to Reviewer */}
-            {task.status === 'completed' && (
+            {/* Admin/PM Feedback Form to Reviewer */}
+            {(task.status === 'completed' && isPrivileged) && (
                 <div className="glass-panel p-8 rounded-2xl border-2 border-primary/20 shadow-xl shadow-primary/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">

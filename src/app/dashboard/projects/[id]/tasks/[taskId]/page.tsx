@@ -50,12 +50,20 @@ export default async function SingleTaskMonitoringPage({
         }
     }
 
+    // Fetch current user's role
+    const { data: currentUserProfile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
     return (
         <TaskMonitoringView
             task={task}
             project={task.projects}
             annotator={annotator}
             reviewer={reviewer}
+            currentUserRole={currentUserProfile?.role || 'worker'}
         />
     );
 }
