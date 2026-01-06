@@ -19,6 +19,7 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
     const router = useRouter();
     const [activeLessonId, setActiveLessonId] = useState<string>(course.lessons?.[0]?.id || '');
     const [isSidebarOpen, setSidebarOpen] = useState(true);
+    const [localCompletedLessons, setLocalCompletedLessons] = useState<string[]>(completedLessonIds);
 
     const activeLesson = course.lessons.find(l => l.id === activeLessonId) || course.lessons[0];
     const activeIndex = course.lessons.findIndex(l => l.id === activeLessonId);
@@ -29,6 +30,9 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
     const handleNext = async () => {
         // Optimistic update: Navigate immediately
         const lessonToComplete = activeLessonId;
+
+        // Update local state optimistically
+        setLocalCompletedLessons(prev => prev.includes(lessonToComplete) ? prev : [...prev, lessonToComplete]);
 
         if (hasNext) {
             setActiveLessonId(course.lessons[activeIndex + 1].id);
@@ -53,6 +57,9 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
 
     const handleCompleteCourse = async () => {
         try {
+            // Mark last lesson as completed locally
+            setLocalCompletedLessons(prev => prev.includes(activeLessonId) ? prev : [...prev, activeLessonId]);
+
             await completeLesson(course.id, activeLessonId);
             // Check for next course
             const nextId = await getNextCourseId(course.id);
@@ -74,7 +81,7 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
                 <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
                     {course.lessons.map((lesson, index) => {
                         const isActive = lesson.id === activeLessonId;
-                        const isCompleted = completedLessonIds.includes(lesson.id);
+                        const isCompleted = localCompletedLessons.includes(lesson.id);
 
                         return (
                             <button
