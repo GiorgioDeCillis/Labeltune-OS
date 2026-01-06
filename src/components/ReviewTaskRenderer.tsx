@@ -31,6 +31,9 @@ import {
 
 import { useToast } from '@/components/Toast';
 
+import { startTasking } from '@/app/dashboard/projects/actions';
+import { TaskSubmissionSuccess } from '@/components/dashboard/TaskSubmissionSuccess';
+
 export function ReviewTaskRenderer({
     schema,
     taskId,
@@ -46,6 +49,7 @@ export function ReviewTaskRenderer({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [rating, setRating] = useState(5);
     const [seconds, setSeconds] = useState(initialTimeSpent);
+    const [submissionResults, setSubmissionResults] = useState<{ earnings: number; timeSpent: number; projectId: string } | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const { showToast } = useToast();
     const router = useRouter();
@@ -56,13 +60,15 @@ export function ReviewTaskRenderer({
 
     // Timer Logic
     useEffect(() => {
-        timerRef.current = setInterval(() => {
-            setSeconds(prev => prev + 1);
-        }, 1000);
+        if (!submissionResults) {
+            timerRef.current = setInterval(() => {
+                setSeconds(prev => prev + 1);
+            }, 1000);
+        }
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, []);
+    }, [submissionResults]);
 
     // Autosave timer every 5 seconds
     const secondsRef = useRef(seconds);
@@ -71,7 +77,7 @@ export function ReviewTaskRenderer({
     }, [seconds]);
 
     useEffect(() => {
-        if (isSubmitting) return;
+        if (isSubmitting || submissionResults) return;
 
         const saveInterval = setInterval(() => {
             if (secondsRef.current > initialTimeSpent) {
@@ -80,7 +86,7 @@ export function ReviewTaskRenderer({
         }, 5000);
 
         return () => clearInterval(saveInterval);
-    }, [taskId, initialTimeSpent, isSubmitting]);
+    }, [taskId, initialTimeSpent, isSubmitting, submissionResults]);
 
     const formatTime = (totalSeconds: number) => {
         const h = Math.floor(totalSeconds / 3600);
@@ -100,14 +106,28 @@ export function ReviewTaskRenderer({
         setConfirmAction({ isOpen: true, type: 'approve' });
     };
 
+    const handleNextTask = async () => {
+        if (submissionResults?.projectId) {
+            await startTasking(submissionResults.projectId);
+        } else {
+            router.push('/dashboard/review');
+        }
+    }
+
     const executeApprove = async () => {
         setConfirmAction({ isOpen: false, type: null });
         setIsSubmitting(true);
         try {
-            await approveTask(taskId, formData, rating, seconds);
-            showToast('Task approved successfully', 'success');
-            router.refresh();
-            router.push('/dashboard/review');
+            const result = await approveTask(taskId, formData, rating, seconds);
+            if (result.success && result.data) {
+                setSubmissionResults(result.data as any);
+                showToast('Task approved successfully', 'success');
+            } else {
+                // Fallback / legacy just in case
+                showToast('Task approved successfully', 'success');
+                router.refresh();
+                router.push('/dashboard/review');
+            }
         } catch (e) {
             console.error(e);
             showToast('Failed to approve task', 'error');
@@ -136,6 +156,17 @@ export function ReviewTaskRenderer({
 
     return (
         <div className="relative pb-32">
+            {/* Success Screen Overlay */}
+            {submissionResults && (
+                <TaskSubmissionSuccess
+                    earnings={submissionResults.earnings}
+                    timeSpent={submissionResults.timeSpent}
+                    projectId={submissionResults.projectId}
+                    onDashboard={() => router.push('/dashboard/review')}
+                    onNextTask={handleNextTask}
+                />
+            )}
+
             <div className="space-y-8 pr-2">
                 {schema.map((component) => {
                     // Objects

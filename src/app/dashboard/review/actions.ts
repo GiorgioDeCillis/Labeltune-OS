@@ -45,7 +45,14 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
     revalidatePath('/dashboard/review');
     revalidatePath(`/dashboard/projects/${task?.project_id}/tasks`);
 
-    return { success: true };
+    return {
+        success: true,
+        data: {
+            earnings,
+            timeSpent,
+            projectId: task?.project_id
+        }
+    };
 }
 
 export async function rejectTask(taskId: string) {
