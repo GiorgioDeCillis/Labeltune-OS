@@ -434,6 +434,37 @@ export async function updateAssigneesStatus(projectId: string, userIds: string[]
     revalidatePath(`/dashboard/projects/${projectId}/team`);
 }
 
+export async function toggleReviewerStatus(projectId: string, userId: string, isReviewer: boolean) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Verify admin/pm
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'pm' && profile?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const { error } = await supabase
+        .from('project_assignees')
+        .update({ is_reviewer: isReviewer })
+        .eq('project_id', projectId)
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('Error toggling reviewer status:', error);
+        throw new Error('Failed to toggle reviewer status');
+    }
+
+    revalidatePath(`/dashboard/projects/${projectId}/team`);
+}
+
 export async function startTasking(projectId: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -550,4 +581,41 @@ export async function startTasking(projectId: string) {
     console.log('No tasks available at all.');
     // No tasks available or assigned
     redirect(`/dashboard/projects/${projectId}?error=No tasks available to start`);
+}
+
+export async function startReviewing(projectId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) redirect('/login');
+
+    // 1. Check if user is a reviewer for this project
+    const { data: assignment } = await supabase
+        .from('project_assignees')
+        .select('status, is_reviewer')
+        .eq('project_id', projectId)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .single();
+
+    if (!assignment || !assignment.is_reviewer) {
+        redirect(`/dashboard/projects/${projectId}?error=You are not a reviewer for this project`);
+    }
+
+    // 2. Find a task waiting for review (status = 'submitted')
+    const { data: taskToReview } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('status', 'submitted')
+        .neq('assigned_to', user.id) // Don't review own tasks
+        .limit(1)
+        .maybeSingle();
+
+    if (taskToReview) {
+        redirect(`/dashboard/review/${taskToReview.id}`);
+    }
+
+    // No tasks to review - redirect back with message
+    redirect(`/dashboard/projects/${projectId}?error=No tasks available for review`);
 }

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Settings, BookOpen, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
 import { ProjectHeaderActions } from '@/components/dashboard/ProjectHeaderActions';
-import { startTasking } from '../actions';
+import { startTasking, startReviewing } from '../actions';
 import { ToastQueryHandler } from '@/components/dashboard/ToastQueryHandler';
 
 
@@ -38,17 +38,34 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         .eq('project_id', project.id)
         .order('created_at', { ascending: true });
 
-    // For non-admins, check if they are assigned and active
+    // For non-admins, check if they are assigned and active + get reviewer status
+    let isReviewer = false;
+    let hasTasksToReview = false;
+
     if (!isPM) {
         const { data: assignment } = await supabase
             .from('project_assignees')
-            .select('status')
+            .select('status, is_reviewer')
             .eq('project_id', id)
             .eq('user_id', user.id)
             .maybeSingle();
 
         if (!assignment || assignment.status !== 'active') {
             redirect('/dashboard');
+        }
+
+        isReviewer = assignment.is_reviewer || false;
+
+        // If user is a reviewer, check if there are tasks to review
+        if (isReviewer) {
+            const { count } = await supabase
+                .from('tasks')
+                .select('*', { count: 'exact', head: true })
+                .eq('project_id', id)
+                .eq('status', 'submitted')
+                .neq('assigned_to', user.id); // Don't count own tasks
+
+            hasTasksToReview = (count || 0) > 0;
         }
     }
 
@@ -251,11 +268,19 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                     <ProjectGuidelinesLink guidelines={project.guidelines} className="text-[var(--primary)] hover:opacity-80 text-sm font-bold flex items-center gap-1 transition-opacity" />
 
                     {assessmentStatus === 'Completed' ? (
-                        <form action={startTasking.bind(null, project.id)} className="ml-auto">
-                            <button className="text-white hover:opacity-80 text-sm font-bold flex items-center gap-1">
-                                Start Tasking <ChevronRight className="w-4 h-4" />
-                            </button>
-                        </form>
+                        isReviewer && hasTasksToReview ? (
+                            <form action={startReviewing.bind(null, project.id)} className="ml-auto">
+                                <button className="text-white hover:opacity-80 text-sm font-bold flex items-center gap-1">
+                                    Start Reviewing <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </form>
+                        ) : (
+                            <form action={startTasking.bind(null, project.id)} className="ml-auto">
+                                <button className="text-white hover:opacity-80 text-sm font-bold flex items-center gap-1">
+                                    Start Tasking <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </form>
+                        )
                     ) : assessmentStatus === 'Failed' ? (
                         <div className="ml-auto text-red-400 text-sm font-bold flex items-center gap-1">
                             Assessment Failed <AlertCircle className="w-4 h-4" />

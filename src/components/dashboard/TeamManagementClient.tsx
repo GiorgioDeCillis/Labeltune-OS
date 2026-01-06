@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { User, CheckCircle, XCircle, Trash2, Plus, Search, Pause, Play, ArrowLeft, Users, Loader2 } from 'lucide-react';
-import { assignUserToProject, removeUserFromProject, updateAssigneeStatus, assignUsersToProject, removeUsersFromProject, updateAssigneesStatus } from '@/app/dashboard/projects/actions';
+import { User, CheckCircle, XCircle, Trash2, Plus, Search, Pause, Play, ArrowLeft, Users, Loader2, Shield } from 'lucide-react';
+import { assignUserToProject, removeUserFromProject, updateAssigneeStatus, assignUsersToProject, removeUsersFromProject, updateAssigneesStatus, toggleReviewerStatus } from '@/app/dashboard/projects/actions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/Toast';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -22,6 +22,7 @@ interface TeamMember {
     isQualified: boolean;
     isAssigned: boolean;
     status: 'active' | 'paused' | 'inactive';
+    isReviewer?: boolean;
 }
 
 interface TeamManagementClientProps {
@@ -119,6 +120,23 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
         } catch (error) {
             console.error('Failed to update status:', error);
             showToast('Failed to update status', 'error');
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    const handleToggleReviewer = async (member: TeamMember) => {
+        if (processingId) return;
+        const newIsReviewer = !member.isReviewer;
+
+        setProcessingId(member.id);
+        try {
+            await toggleReviewerStatus(projectId, member.id, newIsReviewer);
+            showToast(newIsReviewer ? 'Reviewer role assigned' : 'Reviewer role removed', 'success');
+            setMembers(prev => prev.map(m => m.id === member.id ? { ...m, isReviewer: newIsReviewer } : m));
+        } catch (error) {
+            console.error('Failed to toggle reviewer status:', error);
+            showToast('Failed to toggle reviewer status', 'error');
         } finally {
             setProcessingId(null);
         }
@@ -375,6 +393,20 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
                                                             worker.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />
                                                         )}
                                                     </button>
+                                                    {/* Reviewer toggle - only for annotators */}
+                                                    {worker.role === 'annotator' && (
+                                                        <button
+                                                            onClick={() => handleToggleReviewer(worker)}
+                                                            disabled={processingId === worker.id}
+                                                            title={worker.isReviewer ? 'Remove reviewer role' : 'Assign reviewer role'}
+                                                            className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${worker.isReviewer
+                                                                ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                                                                : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/60'
+                                                                }`}
+                                                        >
+                                                            {processingId === worker.id ? '...' : <Shield className="w-4 h-4" />}
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => handleRemove(worker)}
                                                         disabled={processingId === worker.id}

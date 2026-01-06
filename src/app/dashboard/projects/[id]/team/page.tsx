@@ -40,13 +40,13 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
     if (profilesError) console.error('ProjectTeamPage: profilesError:', profilesError);
 
 
-    // 3. Fetch current assignments for this project
+    // 3. Fetch current assignments for this project (including is_reviewer)
     const { data: assignments } = await supabase
         .from('project_assignees')
-        .select('user_id, status')
+        .select('user_id, status, is_reviewer')
         .eq('project_id', id);
 
-    const assignmentMap = new Map((assignments || []).map(a => [a.user_id, a.status || 'active']));
+    const assignmentMap = new Map((assignments || []).map(a => [a.user_id, { status: a.status || 'active', is_reviewer: a.is_reviewer || false }]));
     const assignedUserIds = new Set(assignmentMap.keys());
 
     // 4. Fetch All Progress for this project's courses
@@ -68,7 +68,9 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
         const totalCourses = requiredCourseIds.length;
         const isQualified = totalCourses === 0 || completedCourses === totalCourses;
         const isAssigned = assignedUserIds.has(u.id);
-        const status = assignmentMap.get(u.id) || 'inactive'; // Use 'inactive' for unassigned users
+        const assignmentData = assignmentMap.get(u.id);
+        const status = assignmentData?.status || 'inactive'; // Use 'inactive' for unassigned users
+        const isReviewer = assignmentData?.is_reviewer || false;
 
         return {
             ...u,
@@ -76,7 +78,8 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
             totalCourses,
             isQualified,
             isAssigned,
-            status
+            status,
+            isReviewer
         };
     });
 
