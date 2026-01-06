@@ -46,6 +46,7 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
                             <span className="text-white/20">|</span>
                             <ProjectGuidelinesLink guidelines={task.projects?.guidelines} label="Read Guidelines" />
                             <TaskTimerHeader
+                                key={task.id}
                                 initialTimeSpent={task.annotator_time_spent || 0}
                                 maxTime={task.projects?.max_task_time}
                                 isReadOnly={!isAssignedToMe}
@@ -65,6 +66,7 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
                         {templateSchema.length > 0 ? (
                             <div>
                                 <TaskRenderer
+                                    key={task.id}
                                     schema={templateSchema}
                                     taskId={task.id}
                                     initialData={{ ...(typeof task.payload === 'string' ? JSON.parse(task.payload) : task.payload || {}), ...(typeof task.labels === 'string' ? JSON.parse(task.labels) : task.labels || {}) }}

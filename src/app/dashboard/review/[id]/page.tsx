@@ -68,6 +68,7 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
                                 <span className="text-white/20">|</span>
                                 <ProjectGuidelinesLink guidelines={task.projects?.guidelines} label="Read Guidelines" />
                                 <TaskTimerHeader
+                                    key={task.id}
                                     initialTimeSpent={task.reviewer_time_spent || 0}
                                     maxTime={task.projects?.max_task_time}
                                     isReadOnly={false}
@@ -90,6 +91,7 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
                         {templateSchema.length > 0 ? (
                             <div>
                                 <ReviewTaskRenderer
+                                    key={task.id}
                                     schema={templateSchema}
                                     taskId={task.id}
                                     initialData={{ ...(typeof task.payload === 'string' ? JSON.parse(task.payload) : task.payload || {}), ...(typeof task.labels === 'string' ? JSON.parse(task.labels) : task.labels || {}) }}
