@@ -79,7 +79,7 @@ export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesView
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-200">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-            <div className="relative w-full max-w-6xl h-full max-h-[85vh] bg-[#0A0A0A] border border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-6xl h-[90vh] bg-[#0A0A0A] border border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
                     <div className="flex items-center gap-3">
@@ -114,8 +114,8 @@ export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesView
                                     key={s.id}
                                     onClick={() => setActiveSectionId(s.id)}
                                     className={`w-full p-3 rounded-xl text-left text-sm font-medium transition-all flex items-center justify-between group ${activeSectionId === s.id
-                                            ? 'bg-primary/10 text-primary border-primary/20'
-                                            : 'text-muted-foreground hover:bg-white/5 hover:text-white'
+                                        ? 'bg-primary/10 text-primary border-primary/20'
+                                        : 'text-muted-foreground hover:bg-white/5 hover:text-white'
                                         }`}
                                 >
                                     <span className="truncate">{s.title}</span>
