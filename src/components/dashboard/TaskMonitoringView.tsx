@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/Toast';
 import { submitReviewerFeedback } from '@/app/dashboard/review/actions';
 import { TaskComponent } from '@/components/builder/types';
 import {
@@ -53,6 +54,7 @@ interface TaskMonitoringViewProps {
 
 export function TaskMonitoringView({ task, project, annotator, reviewer, currentUserRole }: TaskMonitoringViewProps) {
     const router = useRouter();
+    const { showToast } = useToast();
     const [activeVersion, setActiveVersion] = useState<'annotator' | 'reviewer'>(
         (task.status === 'approved' || task.status === 'completed') ? 'reviewer' : 'annotator'
     );
@@ -341,9 +343,10 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                                 try {
                                     const result = await submitReviewerFeedback(task.id, feedbackRating, feedbackText);
                                     if (result.success) {
+                                        showToast('Feedback submitted successfully and task finalized', 'success');
                                         router.refresh();
                                     } else {
-                                        alert('Error submitting feedback: ' + result.error);
+                                        showToast(result.error || 'Error submitting feedback', 'error');
                                     }
                                 } finally {
                                     setIsSubmittingFeedback(false);
