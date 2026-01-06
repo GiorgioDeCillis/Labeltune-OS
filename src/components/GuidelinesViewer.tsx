@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, FileText, Download, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { InstructionSection } from '@/app/dashboard/projects/new/steps/InstructionsStep';
@@ -13,8 +14,13 @@ interface GuidelinesViewerProps {
 
 export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesViewerProps) {
     const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
 
-    if (!isOpen) return null;
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!isOpen || !mounted) return null;
 
     let sections: InstructionSection[] = [];
     if (typeof guidelines === 'string') {
@@ -75,7 +81,7 @@ export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesView
         printWindow.document.close();
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-200">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
@@ -141,6 +147,7 @@ export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesView
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
