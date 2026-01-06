@@ -538,7 +538,7 @@ export default function ProfilePage() {
                     <div className="p-2 bg-primary/10 rounded-lg">
                         <Palette className="text-primary w-5 h-5" />
                     </div>
-                    <h3 className="text-xl font-bold">Impostazioni di Aspetto</h3>
+                    <h3 className="text-xl font-bold">Aspetto</h3>
                 </div>
 
                 <div className="grid lg:grid-cols-2 gap-12">
