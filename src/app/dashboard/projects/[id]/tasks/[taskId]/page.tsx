@@ -63,7 +63,7 @@ export default async function SingleTaskMonitoringPage({
             project={task.projects}
             annotator={annotator}
             reviewer={reviewer}
-            currentUserRole={currentUserProfile?.role || 'worker'}
+            currentUserRole={currentUserProfile?.role || 'annotator'}
         />
     );
 }

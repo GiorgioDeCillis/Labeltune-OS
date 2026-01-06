@@ -112,7 +112,7 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
                 initialTasks={tasks || []}
                 projectId={id}
                 payRate={payRate}
-                userRole={profile?.role || 'worker'}
+                userRole={profile?.role || 'annotator'}
             />
         </div>
     );

@@ -101,7 +101,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Link
-                        href={currentUserRole === 'worker' ? '/dashboard/history' : `/dashboard/projects/${project.id}/tasks`}
+                        href={currentUserRole === 'annotator' ? '/dashboard/history' : `/dashboard/projects/${project.id}/tasks`}
                         className="p-2 hover:bg-white/5 rounded-full transition-colors"
                     >
                         <ChevronLeft className="w-5 h-5 text-muted-foreground" />
@@ -130,7 +130,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
             </div>
 
             {/* Metrics Grid */}
-            <div className={`grid grid-cols-1 ${currentUserRole === 'worker' ? '' : 'md:grid-cols-2'} gap-6`}>
+            <div className={`grid grid-cols-1 ${currentUserRole === 'annotator' ? '' : 'md:grid-cols-2'} gap-6`}>
                 {/* Annotator Info */}
                 <div className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -185,7 +185,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                 </div>
 
                 {/* Reviewer Info */}
-                {currentUserRole !== 'worker' && (
+                {currentUserRole !== 'annotator' && (
                     <div className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                             <Activity className="w-16 h-16 text-yellow-500" />
