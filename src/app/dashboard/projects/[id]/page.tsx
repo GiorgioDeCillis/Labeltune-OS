@@ -244,7 +244,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                     <ProjectGuidelinesLink guidelines={project.guidelines} className="text-[var(--primary)] hover:opacity-80 text-sm font-bold flex items-center gap-1 transition-opacity" />
 
                     <form action={startTasking.bind(null, project.id)} className="ml-auto">
-                        <button className="text-[var(--primary)] hover:opacity-80 text-sm font-bold flex items-center gap-1">
+                        <button className="text-white hover:opacity-80 text-sm font-bold flex items-center gap-1">
                             Start Tasking <ChevronRight className="w-4 h-4" />
                         </button>
                     </form>
