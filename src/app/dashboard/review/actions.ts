@@ -20,7 +20,9 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
         .single();
 
     const projectsData = task?.projects as any;
-    const payRate = parseFloat((Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0');
+    const rawRate = (Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0';
+    const cleanRate = rawRate.toString().replace(/[^0-9.]/g, '');
+    const payRate = parseFloat(cleanRate) || 0;
     // Reviewer earnings - might be different but let's assume same for now or a fraction.
     // User said "guadagno del reviewer sulla base del tempo trascorso sulla task e paga oraria del progetto".
     const earnings = (timeSpent / 3600) * payRate;
