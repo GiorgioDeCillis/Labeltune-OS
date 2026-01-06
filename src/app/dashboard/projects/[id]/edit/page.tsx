@@ -142,15 +142,6 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
                     />
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-bold uppercase text-muted-foreground">Guidelines (Markdown)</label>
-                    <textarea
-                        name="guidelines"
-                        defaultValue={project.guidelines || ''}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary h-48 font-mono text-sm"
-                        placeholder="# Project Guidelines..."
-                    />
-                </div>
 
                 <div className="pt-4 border-t border-white/10 flex justify-end">
                     <button type="submit" className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 transition-all flex items-center gap-2">

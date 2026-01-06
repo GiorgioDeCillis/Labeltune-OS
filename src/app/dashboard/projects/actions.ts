@@ -124,7 +124,6 @@ export async function updateProject(id: string, formData: FormData) {
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
     const type = formData.get('type') as string;
-    const guidelines = formData.get('guidelines') as string;
     const pay_rate = formData.get('pay_rate') as string;
     const status = formData.get('status') as string;
     const max_task_time_min = formData.get('max_task_time') ? Number(formData.get('max_task_time')) : null;
@@ -132,18 +131,23 @@ export async function updateProject(id: string, formData: FormData) {
 
     const max_task_time = max_task_time_min ? max_task_time_min * 60 : null;
 
+    const updateData: any = {
+        name,
+        description,
+        type,
+        pay_rate,
+        status,
+        max_task_time,
+        total_tasks
+    };
+
+    if (formData.has('guidelines')) {
+        updateData.guidelines = formData.get('guidelines') as string;
+    }
+
     const { error } = await supabase
         .from('projects')
-        .update({
-            name,
-            description,
-            type,
-            guidelines,
-            pay_rate,
-            status,
-            max_task_time,
-            total_tasks
-        })
+        .update(updateData)
         .eq('id', id);
 
     if (error) {
