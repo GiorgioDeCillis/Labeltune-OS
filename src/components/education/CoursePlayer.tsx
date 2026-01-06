@@ -27,12 +27,15 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
     const hasPrev = activeIndex > 0;
 
     const handleNext = async () => {
-        // Optimistic update or wait? Let's wait for simplicity in this MVP
+        // Optimistic update: Navigate immediately
+        const lessonToComplete = activeLessonId;
+
+        if (hasNext) {
+            setActiveLessonId(course.lessons[activeIndex + 1].id);
+        }
+
         try {
-            await completeLesson(course.id, activeLessonId);
-            if (hasNext) {
-                setActiveLessonId(course.lessons[activeIndex + 1].id);
-            }
+            await completeLesson(course.id, lessonToComplete);
         } catch (error) {
             console.error("Failed to complete lesson", error);
             // Optionally show toast error
