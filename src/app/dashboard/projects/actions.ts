@@ -620,14 +620,11 @@ export async function startSpecificTask(taskId: string) {
     }
 
     // Start the task: assign to current user and set status to in_progress
-    const now = new Date().toISOString();
     const { error: updateError } = await supabase
         .from('tasks')
         .update({
             assigned_to: user.id,
-            status: 'in_progress',
-            started_at: now,
-            attempter_started_at: now
+            status: 'in_progress'
         })
         .eq('id', taskId);
 
