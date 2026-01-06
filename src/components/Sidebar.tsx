@@ -59,7 +59,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
         ...(isClient ? clientLinks : commonLinks),
         ...((isPM || isAdmin) ? pmLinks : []),
         ...((isPM || isAdmin || isReviewer) ? reviewLinks : []),
-        ...((isAnnotator || isReviewer) ? workerLinks : []),
+        ...((isAnnotator || isReviewer || isPM || isAdmin) ? workerLinks : []),
         { href: '/dashboard/profile', label: 'Profile', icon: User },
     ];
 
