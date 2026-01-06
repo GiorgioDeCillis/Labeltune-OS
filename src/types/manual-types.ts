@@ -1,4 +1,4 @@
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'reviewed';
+export type TaskStatus = 'pending' | 'in_progress' | 'submitted' | 'completed' | 'approved' | 'rejected';
 
 export interface Task {
     id: string;

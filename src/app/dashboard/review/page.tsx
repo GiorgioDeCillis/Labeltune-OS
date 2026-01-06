@@ -46,7 +46,7 @@ export default async function ReviewPage() {
                 avatar_url
             )
         `)
-        .eq('status', 'completed')
+        .eq('status', 'submitted')
         .order('created_at', { ascending: false });
 
     return (

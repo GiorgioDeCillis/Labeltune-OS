@@ -51,7 +51,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                     projects (name)
                 `)
                 .eq('assigned_to', user.id)
-                .in('status', ['completed', 'approved', 'rejected'])
+                .in('status', ['submitted', 'completed', 'approved', 'rejected'])
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -65,6 +65,8 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                 annotator_earnings: t.annotator_earnings || 0,
                 review_rating: t.review_rating,
                 review_feedback: t.review_feedback,
+                reviewer_rating: t.reviewer_rating,
+                reviewer_feedback: t.reviewer_feedback,
                 created_at: t.created_at,
                 completed_at: t.updated_at
             }));
@@ -83,7 +85,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
     );
 
     const stats = {
-        totalCompleted: tasks.filter(t => t.status === 'completed' || t.status === 'approved').length,
+        totalCompleted: tasks.filter(t => t.status === 'submitted' || t.status === 'completed' || t.status === 'approved').length,
         totalEarnings: tasks.reduce((acc, t) => acc + t.annotator_earnings, 0),
         avgRating: tasks.filter(t => t.review_rating !== null).length > 0
             ? tasks.filter(t => t.review_rating !== null).reduce((acc, t) => acc + (t.review_rating || 0), 0) / tasks.filter(t => t.review_rating !== null).length
@@ -189,7 +191,9 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                                                 <span className="text-sm font-bold text-white group-hover:text-primary transition-colors">
                                                     {task.project_name}
                                                 </span>
-                                                <span className="text-[10px] font-mono text-white/40">#{task.id}</span>
+                                                <Link href={`/dashboard/projects/${task.project_id}/tasks/${task.id}`} className="hover:text-primary transition-colors">
+                                                    <span className="text-[10px] font-mono text-white/40">#{task.id}</span>
+                                                </Link>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -341,7 +345,8 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
 
 function StatusBadge({ status }: { status: string }) {
     const configs: any = {
-        completed: { color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20', label: 'Completed' },
+        submitted: { color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20', label: 'Submitted' },
+        completed: { color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20', label: 'Completed' },
         approved: { color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20', label: 'Approved' },
         rejected: { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20', label: 'Rejected' },
     };

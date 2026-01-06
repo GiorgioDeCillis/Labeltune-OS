@@ -33,15 +33,14 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
     // Reviewer earnings
     const earnings = (timeSpent / 3600) * payRate;
 
-    // Update the task. We update both review_rating and reviewer_rating for compatibility
+    // Update the task. 
     const { error } = await supabase
         .from('tasks')
         .update({
-            status: 'approved',
+            status: 'completed',
             labels: finalLabels,
             reviewed_by: user.id,
             review_rating: rating,
-            reviewer_rating: rating,
             review_feedback: feedback,
             reviewer_time_spent: timeSpent,
             reviewer_earnings: earnings,
@@ -138,6 +137,33 @@ export async function updateReviewTimer(taskId: string, timeSpent: number) {
         console.error('Error updating review timer:', error);
         return { error: 'Failed to update timer' };
     }
+
+    return { success: true };
+}
+
+export async function submitReviewerFeedback(taskId: string, rating: number, feedback: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    const { error } = await supabase
+        .from('tasks')
+        .update({
+            status: 'approved',
+            reviewer_rating: rating,
+            reviewer_feedback: feedback
+        })
+        .eq('id', taskId)
+        .eq('assigned_to', user.id);
+
+    if (error) {
+        console.error('Error submitting reviewer feedback:', error);
+        return { success: false, error: `Database error: ${error.message}` };
+    }
+
+    revalidatePath(`/dashboard/history`);
+    revalidatePath(`/dashboard/projects`);
 
     return { success: true };
 }

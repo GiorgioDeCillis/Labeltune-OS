@@ -14,9 +14,12 @@ import {
     MessageSquare,
     Activity,
     Copy,
-    Check
+    Check,
+    Send
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { submitReviewerFeedback } from '@/app/dashboard/review/actions';
 import { TaskComponent } from '@/components/builder/types';
 import {
     ImageObject,
@@ -48,8 +51,14 @@ interface TaskMonitoringViewProps {
 }
 
 export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskMonitoringViewProps) {
-    const [activeVersion, setActiveVersion] = useState<'annotator' | 'reviewer'>(task.status === 'approved' ? 'reviewer' : 'annotator');
+    const router = useRouter();
+    const [activeVersion, setActiveVersion] = useState<'annotator' | 'reviewer'>(
+        (task.status === 'approved' || task.status === 'completed') ? 'reviewer' : 'annotator'
+    );
     const [copied, setCopied] = useState(false);
+    const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+    const [feedbackRating, setFeedbackRating] = useState(0);
+    const [feedbackText, setFeedbackText] = useState('');
     const schema = project.template_schema as TaskComponent[];
 
     const handleCopy = () => {
@@ -208,7 +217,17 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
                             </div>
                         </div>
                     </div>
-                    <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
+                    <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-1 gap-4">
+                        <div className="space-y-1">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Feedback given by Attempter</p>
+                            {task.reviewer_feedback ? (
+                                <p className="text-xs text-foreground/80 italic font-medium">"{task.reviewer_feedback}"</p>
+                            ) : (
+                                <p className="text-xs text-muted-foreground/50 italic">No feedback given yet</p>
+                            )}
+                        </div>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Started At</p>
                             <p className="text-xs font-medium text-foreground">{formatDate(task.reviewer_started_at)}</p>
@@ -263,13 +282,84 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
                         <div className="flex items-start gap-3">
                             <MessageSquare className="w-4 h-4 text-yellow-500 mt-1" />
                             <div>
-                                <p className="text-[10px] text-yellow-500/70 font-bold uppercase tracking-wider">Reviewer Feedback</p>
+                                <p className="text-[10px] text-yellow-500/70 font-bold uppercase tracking-wider">Reviewer Feedback to Attempter</p>
                                 <p className="text-sm text-foreground/80 mt-1 italic">"{task.review_feedback}"</p>
                             </div>
                         </div>
                     </div>
                 )}
             </div>
+
+            {/* Attempter Feedback Form to Reviewer */}
+            {task.status === 'completed' && (
+                <div className="glass-panel p-8 rounded-2xl border-2 border-primary/20 shadow-xl shadow-primary/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <Star className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold">Feedback to Reviewer</h3>
+                            <p className="text-sm text-muted-foreground">The task is complete. Please rate the reviewer's feedback to finalize the task.</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-8">
+                        {/* Rating Selection */}
+                        <div className="space-y-3">
+                            <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Rate the quality of the review</p>
+                            <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        onClick={() => setFeedbackRating(star)}
+                                        className={`p-2 rounded-lg transition-all ${feedbackRating >= star ? 'bg-yellow-500/10 text-yellow-500 scale-110' : 'bg-white/5 text-muted-foreground hover:bg-white/10'}`}
+                                    >
+                                        <Star className={`w-8 h-8 ${feedbackRating >= star ? 'fill-current' : ''}`} />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Feedback Text */}
+                        <div className="space-y-3">
+                            <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Additional Comments (Optional)</p>
+                            <textarea
+                                value={feedbackText}
+                                onChange={(e) => setFeedbackText(e.target.value)}
+                                placeholder="What did you think of the review? Was it helpful?"
+                                className="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all resize-none"
+                            />
+                        </div>
+
+                        <button
+                            disabled={feedbackRating === 0 || isSubmittingFeedback}
+                            onClick={async () => {
+                                setIsSubmittingFeedback(true);
+                                try {
+                                    const result = await submitReviewerFeedback(task.id, feedbackRating, feedbackText);
+                                    if (result.success) {
+                                        router.refresh();
+                                    } else {
+                                        alert('Error submitting feedback: ' + result.error);
+                                    }
+                                } finally {
+                                    setIsSubmittingFeedback(false);
+                                }
+                            }}
+                            className="w-full py-4 bg-primary text-black font-black uppercase tracking-widest rounded-xl hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-2 group"
+                        >
+                            {isSubmittingFeedback ? (
+                                <Timer className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <>
+                                    <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                    Submit Feedback & Finalize
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -278,15 +368,19 @@ function StatusBadge({ status }: { status: string }) {
     const styles: Record<string, string> = {
         pending: 'bg-white/5 text-muted-foreground border-white/10',
         in_progress: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-        completed: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+        submitted: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+        completed: 'bg-primary/10 text-primary border-primary/20',
         approved: 'bg-green-500/10 text-green-400 border-green-500/20',
+        rejected: 'bg-red-500/10 text-red-400 border-red-500/20',
     };
 
     const icons: Record<string, any> = {
         pending: Clock,
         in_progress: Timer,
+        submitted: Clock,
         completed: AlertCircle,
         approved: CheckCircle2,
+        rejected: AlertCircle,
     };
 
     const Icon = icons[status] || Clock;

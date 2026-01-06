@@ -109,8 +109,10 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate }: Project
                                 { code: 'all', name: 'All Statuses' },
                                 { code: 'pending', name: 'Pending' },
                                 { code: 'in_progress', name: 'In Progress' },
+                                { code: 'submitted', name: 'Submitted' },
                                 { code: 'completed', name: 'Completed' },
-                                { code: 'approved', name: 'Approved' }
+                                { code: 'approved', name: 'Approved' },
+                                { code: 'rejected', name: 'Rejected' }
                             ]}
                             value={statusFilter}
                             onChange={setStatusFilter}
@@ -262,15 +264,19 @@ function StatusBadge({ status }: { status: string }) {
     const styles: Record<string, string> = {
         pending: 'bg-white/5 text-muted-foreground border-white/10',
         in_progress: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-        completed: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+        submitted: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+        completed: 'bg-primary/10 text-primary border-primary/20',
         approved: 'bg-green-500/10 text-green-400 border-green-500/20',
+        rejected: 'bg-red-500/10 text-red-400 border-red-500/20',
     };
 
     const icons: Record<string, any> = {
         pending: Clock,
         in_progress: Timer,
+        submitted: Clock,
         completed: AlertCircle,
         approved: CheckCircle2,
+        rejected: AlertCircle,
     };
 
     const Icon = icons[status] || Clock;
