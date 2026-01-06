@@ -38,18 +38,33 @@ export function ReviewTaskRenderer({
     schema,
     taskId,
     initialData,
-    initialTimeSpent = 0
+    initialTimeSpent = 0,
+    projectId,
+    initialEarnings = 0,
+    taskStatus
 }: {
     schema: TaskComponent[],
     taskId: string,
     initialData?: any,
-    initialTimeSpent?: number
+    initialTimeSpent?: number,
+    projectId: string,
+    initialEarnings?: number,
+    taskStatus?: string
 }) {
     const [formData, setFormData] = useState<any>(initialData || {});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [rating, setRating] = useState(5);
     const [seconds, setSeconds] = useState(initialTimeSpent);
-    const [submissionResults, setSubmissionResults] = useState<{ earnings: number; timeSpent: number; projectId: string } | null>(null);
+
+    // Initialize submission results if task is already approved
+    const [submissionResults, setSubmissionResults] = useState<{ earnings: number; timeSpent: number; projectId: string } | null>(
+        taskStatus === 'approved' ? {
+            earnings: initialEarnings,
+            timeSpent: initialTimeSpent,
+            projectId: projectId
+        } : null
+    );
+
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const { showToast } = useToast();
     const router = useRouter();

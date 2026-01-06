@@ -94,6 +94,9 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
                                     taskId={task.id}
                                     initialData={{ ...(typeof task.payload === 'string' ? JSON.parse(task.payload) : task.payload || {}), ...(typeof task.labels === 'string' ? JSON.parse(task.labels) : task.labels || {}) }}
                                     initialTimeSpent={task.reviewer_time_spent || 0}
+                                    projectId={task.project_id}
+                                    initialEarnings={task.reviewer_earnings || 0}
+                                    taskStatus={task.status}
                                 />
                             </div>
                         ) : (
