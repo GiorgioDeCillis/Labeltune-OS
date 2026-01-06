@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { QuizPlayer } from './QuizPlayer';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
-import { completeLesson } from '@/app/dashboard/courses/actions';
+{/* Navigation Footer Removed */ }
 
 interface CoursePlayerProps {
     course: Course & { lessons: Lesson[] };
@@ -55,7 +55,6 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
         try {
             await completeLesson(course.id, activeLessonId);
             // Check for next course
-            const { getNextCourseId } = await import('@/app/dashboard/courses/actions');
             const nextId = await getNextCourseId(course.id);
             setNextCourseId(nextId);
             setShowCompletionModal(true);
@@ -160,32 +159,7 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
                                         <ReactMarkdown>{activeLesson.content || ''}</ReactMarkdown>
                                     </div>
 
-                                    {/* Navigation Footer */}
-                                    <div className="pt-12 mt-12 border-t border-white/5 flex items-center justify-between">
-                                        <button
-                                            disabled={!hasPrev}
-                                            onClick={() => setActiveLessonId(course.lessons[activeIndex - 1].id)}
-                                            className="px-6 py-3 rounded-lg border border-white/10 hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2 font-medium transition-all"
-                                        >
-                                            <ChevronLeft className="w-4 h-4" /> Previous
-                                        </button>
 
-                                        {hasNext ? (
-                                            <button
-                                                onClick={handleNext}
-                                                className="px-6 py-3 bg-white text-black font-bold rounded-lg hover:bg-white/90 flex items-center gap-2 transition-colors"
-                                            >
-                                                Next Lesson <ChevronRight className="w-4 h-4" />
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={handleCompleteCourse}
-                                                className="px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 flex items-center gap-2"
-                                            >
-                                                Complete Course <CheckCircle className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
                                 </div>
                             )}
                         </div>
@@ -253,8 +227,8 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
 
                                 <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/courses'}>
                                     <button className={`w-full py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${nextCourseId
-                                            ? 'bg-white/5 hover:bg-white/10 text-white'
-                                            : 'bg-primary text-primary-foreground hover:opacity-90'
+                                        ? 'bg-white/5 hover:bg-white/10 text-white'
+                                        : 'bg-primary text-primary-foreground hover:opacity-90'
                                         }`}>
                                         Return to Dashboard
                                     </button>
