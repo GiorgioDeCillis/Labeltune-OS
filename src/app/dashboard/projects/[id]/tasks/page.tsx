@@ -58,9 +58,9 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
         const statusPriority: Record<string, number> = {
             'submitted': 1,
             'completed': 2,
-            'in_progress': 3,
-            'pending': 4,
-            'approved': 5,
+            'approved': 3,
+            'in_progress': 4,
+            'pending': 5,
             'rejected': 6
         };
 
