@@ -9,6 +9,7 @@ interface CustomDateInputProps {
     error?: string;
     className?: string;
     placeholder?: string;
+    defaultValue?: string; // Expects YYYY-MM-DD
 }
 
 export default function CustomDateInput({
@@ -16,10 +17,21 @@ export default function CustomDateInput({
     required,
     error,
     className,
-    placeholder = "DD/MM/YYYY"
+    placeholder = "DD/MM/YYYY",
+    defaultValue
 }: CustomDateInputProps) {
     const [displayValue, setDisplayValue] = useState('');
     const [isoValue, setIsoValue] = useState('');
+
+    useEffect(() => {
+        if (defaultValue) {
+            const [year, month, day] = defaultValue.split('-');
+            if (year && month && day) {
+                setDisplayValue(`${day}/${month}/${year}`);
+                setIsoValue(defaultValue);
+            }
+        }
+    }, [defaultValue]);
 
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         let val = e.target.value;

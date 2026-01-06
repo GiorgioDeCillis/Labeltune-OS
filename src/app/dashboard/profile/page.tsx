@@ -1,12 +1,15 @@
 'use client';
 
 import { useTheme } from '@/context/ThemeContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles, Camera, Loader2, Copy, Check, FileText, ExternalLink } from 'lucide-react';
+import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles, Camera, Loader2, Copy, Check, FileText, ExternalLink, Phone, MapPin, CreditCard, Github, Linkedin, Smartphone, Briefcase, Lock, Key, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getDefaultAvatar } from '@/utils/avatar';
+import { updateProfile, updatePassword } from './actions';
+import CustomSelect from '@/components/CustomSelect';
+import CustomDateInput from '@/components/CustomDateInput';
 
 export default function ProfilePage() {
     const {
@@ -19,6 +22,16 @@ export default function ProfilePage() {
     const [isUploading, setIsUploading] = useState(false);
     const [avatarError, setAvatarError] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
+
+    const [passwordSaving, setPasswordSaving] = useState(false);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+
     const supabase = createClient();
 
     useEffect(() => {
@@ -89,6 +102,50 @@ export default function ProfilePage() {
         navigator.clipboard.writeText(user.id);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSaving(true);
+        setError(null);
+        setSuccess(null);
+
+        const formData = new FormData(e.currentTarget);
+        try {
+            await updateProfile(formData);
+            setSuccess('Profilo aggiornato con successo');
+            setIsEditing(false);
+
+            // Refresh local state
+            const { data: updatedProfile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+            setProfile(updatedProfile);
+        } catch (err: any) {
+            setError(err.message || 'Errore durante l\'aggiornamento');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleUpdatePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setPasswordSaving(true);
+        setPasswordError(null);
+        setPasswordSuccess(null);
+
+        const formData = new FormData(e.currentTarget);
+        try {
+            await updatePassword(formData);
+            setPasswordSuccess('Password aggiornata con successo');
+            (e.target as HTMLFormElement).reset();
+        } catch (err: any) {
+            setPasswordError(err.message || 'Errore durante l\'aggiornamento della password');
+        } finally {
+            setPasswordSaving(false);
+        }
     };
 
     const wallpaperOptions = {
@@ -187,135 +244,328 @@ export default function ProfilePage() {
             </motion.div>
 
             <div className="grid md:grid-cols-2 gap-8">
-                {/* User Info from Onboarding */}
+                {/* User Info Section */}
                 <motion.section
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="glass-panel p-6 rounded-3xl space-y-6"
+                    className="glass-panel p-6 rounded-3xl space-y-6 flex flex-col"
                 >
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <User className="text-primary w-5 h-5" />
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                                <User className="text-primary w-5 h-5" />
+                            </div>
+                            <h3 className="text-xl font-bold">Dati Personali</h3>
                         </div>
-                        <h3 className="text-xl font-bold">Dati Personali</h3>
+                        <button
+                            onClick={() => setIsEditing(!isEditing)}
+                            className={`px-4 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${isEditing ? 'bg-white/10 hover:bg-white/20' : 'bg-primary/20 text-primary hover:bg-primary/30'
+                                }`}
+                        >
+                            {isEditing ? 'Annulla' : 'Modifica'}
+                        </button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 text-sm">
-                        <div className="flex justify-between items-center py-2 border-b border-white/5">
-                            <span className="opacity-60">Nome Completo</span>
-                            <span className="font-bold">{profile?.full_name || '-'}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-white/5">
-                            <span className="opacity-60">Telefono</span>
-                            <span className="font-bold">{profile?.phone_number || '-'}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-white/5">
-                            <span className="opacity-60">Nazionalità</span>
-                            <span className="font-bold uppercase">{profile?.nationality || '-'}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-white/5">
-                            <span className="opacity-60">Lingua (Tag)</span>
-                            <span className="font-bold px-2 py-0.5 bg-primary/20 rounded-md text-primary">{profile?.locale_tag || '-'}</span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-white/5">
-                            <span className="opacity-60">Email PayPal</span>
-                            <span className="font-bold">{profile?.paypal_email || '-'}</span>
-                        </div>
-                        {profile?.cv_url && (
-                            <a
-                                href={profile.cv_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 w-full py-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all font-bold mt-2"
-                            >
-                                <FileText className="w-4 h-4 text-primary" />
-                                Visualizza CV
-                                <ExternalLink className="w-3 h-3 opacity-40" />
-                            </a>
-                        )}
-                    </div>
-                </motion.section>
-
-                {/* Theme Selection */}
-                <motion.section
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="glass-panel p-6 rounded-3xl space-y-6"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <Palette className="text-primary w-5 h-5" />
-                        </div>
-                        <h3 className="text-xl font-bold">Theme</h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                        <ThemeButton
-                            active={theme === 'osaka-jade'}
-                            onClick={() => setTheme('osaka-jade')}
-                            title="Osaka Jade"
-                            desc="Industrial emerald and deep charcoal"
-                            color="bg-emerald-500"
-                        />
-                        <ThemeButton
-                            active={theme === 'ayaka'}
-                            onClick={() => setTheme('ayaka')}
-                            title="Ayaka"
-                            desc="Elegant coral and misty quartz"
-                            color="bg-[#DB595C]"
-                        />
-                        <ThemeButton
-                            active={theme === 'purple-moon'}
-                            onClick={() => setTheme('purple-moon')}
-                            title="Purple Moon"
-                            desc="Enchanting violet and cosmic dust"
-                            color="bg-[#A949D9]"
-                        />
-                    </div>
-                </motion.section>
-            </div>
-
-            {/* Wallpaper Selection & Settings... */}
-            <div className="grid md:grid-cols-1 gap-8">
-                {/* Wallpaper Selection */}
-                <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="glass-panel p-6 rounded-3xl space-y-6"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <ImageIcon className="text-primary w-5 h-5" />
-                        </div>
-                        <h3 className="text-xl font-bold">Background</h3>
-                    </div>
-
-                    <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-                        {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
-                            <button
-                                key={wp.id}
-                                onClick={() => setWallpaper(wp.url)}
-                                className={`relative h-24 rounded-2xl overflow-hidden border-2 transition-all group ${wallpaper.includes(wp.id) ? 'border-primary ring-4 ring-primary/20 scale-105' : 'border-transparent opacity-60 hover:opacity-100'
-                                    }`}
-                            >
-                                <Image
-                                    src={wp.url}
-                                    alt="Wallpaper"
-                                    fill
-                                    className="object-cover transition-transform group-hover:scale-110"
-                                />
-                                {wallpaper.includes(wp.id) && (
-                                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                                        <Zap className="w-5 h-5 text-primary-foreground fill-primary" />
+                    <form onSubmit={handleUpdateProfile} className="flex-1 space-y-4">
+                        <AnimatePresence mode="wait">
+                            {isEditing ? (
+                                <motion.div
+                                    key="edit-fields"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="space-y-4"
+                                >
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Nome</label>
+                                            <input
+                                                name="firstName"
+                                                defaultValue={profile?.first_name}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Cognome</label>
+                                            <input
+                                                name="lastName"
+                                                defaultValue={profile?.last_name}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                                required
+                                            />
+                                        </div>
                                     </div>
-                                )}
-                            </button>
-                        ))}
-                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Data di Nascita</label>
+                                        <CustomDateInput
+                                            name="birthDate"
+                                            defaultValue={profile?.birth_date}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Telefono</label>
+                                        <input
+                                            name="phoneNumber"
+                                            defaultValue={profile?.phone_number}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Indirizzo</label>
+                                        <input
+                                            name="address"
+                                            defaultValue={profile?.address}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Email PayPal</label>
+                                        <input
+                                            name="paypalEmail"
+                                            defaultValue={profile?.paypal_email}
+                                            type="email"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-3 pt-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1 block border-b border-white/5 pb-1">Social & Web</label>
+                                        <div className="relative">
+                                            <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-40" />
+                                            <input
+                                                name="linkedinUrl"
+                                                defaultValue={profile?.linkedin_url}
+                                                placeholder="LinkedIn URL"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                        <div className="relative">
+                                            <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-40" />
+                                            <input
+                                                name="githubUrl"
+                                                defaultValue={profile?.github_url}
+                                                placeholder="GitHub URL"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                        <div className="relative">
+                                            <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-40" />
+                                            <input
+                                                name="websiteUrl"
+                                                defaultValue={profile?.website_url}
+                                                placeholder="Portfolio / Website URL"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-2">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <div className="relative flex-shrink-0">
+                                                <input
+                                                    name="jobOffersConsent"
+                                                    type="checkbox"
+                                                    defaultChecked={profile?.job_offers_consent}
+                                                    className="peer sr-only"
+                                                />
+                                                <div className="w-5 h-5 border-2 border-white/10 rounded-lg group-hover:border-primary/50 transition-all peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center">
+                                                    <Check className="w-3.5 h-3.5 text-white scale-0 peer-checked:scale-100 transition-transform" />
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-bold opacity-80">Offerte partner</span>
+                                                <span className="text-[10px] opacity-40">Acconsento a ricevere offerte di lavoro dai partner</span>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div className="pt-4 flex gap-3">
+                                        <button
+                                            type="submit"
+                                            disabled={isSaving}
+                                            className="flex-1 bg-primary text-primary-foreground font-bold py-3 rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                                        >
+                                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                            Salva Modifiche
+                                        </button>
+                                    </div>
+
+                                    {error && (
+                                        <p className="text-xs text-red-500 font-bold text-center animate-pulse">{error}</p>
+                                    )}
+                                    {success && (
+                                        <p className="text-xs text-emerald-500 font-bold text-center">{success}</p>
+                                    )}
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="view-fields"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="grid grid-cols-1 gap-4 text-sm"
+                                >
+                                    <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                        <span className="opacity-60">Nome Completo</span>
+                                        <span className="font-bold">{profile?.full_name || '-'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                        <span className="opacity-60">Telefono</span>
+                                        <span className="font-bold">{profile?.phone_number || '-'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-white/5 group">
+                                        <span className="opacity-60">Nazionalità</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold uppercase">{profile?.nationality || '-'}</span>
+                                            <Lock className="w-3 h-3 opacity-20 group-hover:opacity-40 transition-opacity" />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-white/5 group">
+                                        <span className="opacity-60">Lingua (Tag)</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold px-2 py-0.5 bg-primary/20 rounded-md text-primary">{profile?.locale_tag || '-'}</span>
+                                            <Lock className="w-3 h-3 opacity-20 group-hover:opacity-40 transition-opacity" />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                        <span className="opacity-60">Email PayPal</span>
+                                        <span className="font-bold">{profile?.paypal_email || '-'}</span>
+                                    </div>
+                                    {profile?.cv_url && (
+                                        <a
+                                            href={profile.cv_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-center gap-2 w-full py-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all font-bold mt-2 group"
+                                        >
+                                            <FileText className="w-4 h-4 text-primary" />
+                                            Visualizza CV
+                                            <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                <ExternalLink className="w-3 h-3" />
+                                                <Lock className="w-3 h-3 ml-1 opacity-20" />
+                                            </div>
+                                        </a>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </form>
                 </motion.section>
+
+                <div className="space-y-8">
+                    {/* Theme Selection */}
+                    <motion.section
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="glass-panel p-6 rounded-3xl space-y-6"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                                <Palette className="text-primary w-5 h-5" />
+                            </div>
+                            <h3 className="text-xl font-bold">Theme</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-3">
+                            <ThemeButton
+                                active={theme === 'osaka-jade'}
+                                onClick={() => setTheme('osaka-jade')}
+                                title="Osaka Jade"
+                                desc="Industrial emerald and deep charcoal"
+                                color="bg-emerald-500"
+                            />
+                            <ThemeButton
+                                active={theme === 'ayaka'}
+                                onClick={() => setTheme('ayaka')}
+                                title="Ayaka"
+                                desc="Elegant coral and misty quartz"
+                                color="bg-[#DB595C]"
+                            />
+                            <ThemeButton
+                                active={theme === 'purple-moon'}
+                                onClick={() => setTheme('purple-moon')}
+                                title="Purple Moon"
+                                desc="Enchanting violet and cosmic dust"
+                                color="bg-[#A949D9]"
+                            />
+                        </div>
+                    </motion.section>
+
+                    {/* Change Password Section */}
+                    <motion.section
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="glass-panel p-6 rounded-3xl space-y-6"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                                <Key className="text-primary w-5 h-5" />
+                            </div>
+                            <h3 className="text-xl font-bold">Sicurezza</h3>
+                        </div>
+
+                        <form onSubmit={handleUpdatePassword} className="space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Nuova Password</label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-40" />
+                                    <input
+                                        name="newPassword"
+                                        type="password"
+                                        placeholder="••••••••"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Conferma Password</label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-40" />
+                                    <input
+                                        name="confirmPassword"
+                                        type="password"
+                                        placeholder="••••••••"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={passwordSaving}
+                                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2.5 text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {passwordSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
+                                Aggiorna Password
+                            </button>
+
+                            {passwordError && (
+                                <p className="text-[10px] text-red-500 font-bold text-center flex items-center justify-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    {passwordError}
+                                </p>
+                            )}
+                            {passwordSuccess && (
+                                <p className="text-[10px] text-emerald-500 font-bold text-center flex items-center justify-center gap-1">
+                                    <Check className="w-3 h-3" />
+                                    {passwordSuccess}
+                                </p>
+                            )}
+                        </form>
+                    </motion.section>
+                </div>
             </div>
 
             {/* Appearance Settings */}
@@ -325,46 +575,75 @@ export default function ProfilePage() {
                 transition={{ delay: 0.3 }}
                 className="glass-panel p-6 rounded-3xl space-y-8"
             >
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                        <Sparkles className="text-primary w-5 h-5" />
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                            <Sparkles className="text-primary w-5 h-5" />
+                        </div>
+                        <h3 className="text-xl font-bold">Personalizzazione Avanzata</h3>
                     </div>
-                    <h3 className="text-xl font-bold">Advanced Appearance</h3>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-12">
+                <div className="space-y-8">
+                    {/* Wallpaper Selection */}
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label className="font-bold text-sm uppercase tracking-wider opacity-60">Background Blur</label>
-                            <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded text-xs">{blur}px</span>
+                        <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Sfondo Desktop</label>
+                        <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                            {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
+                                <button
+                                    key={wp.id}
+                                    onClick={() => setWallpaper(wp.url)}
+                                    className={`relative h-24 rounded-2xl overflow-hidden border-2 transition-all group ${wallpaper.includes(wp.id) ? 'border-primary ring-4 ring-primary/20 scale-105' : 'border-transparent opacity-60 hover:opacity-100'
+                                        }`}
+                                >
+                                    <Image
+                                        src={wp.url}
+                                        alt="Wallpaper"
+                                        fill
+                                        className="object-cover transition-transform group-hover:scale-110"
+                                    />
+                                    {wallpaper.includes(wp.id) && (
+                                        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                                            <Zap className="w-5 h-5 text-primary-foreground fill-primary" />
+                                        </div>
+                                    )}
+                                </button>
+                            ))}
                         </div>
-                        <input
-                            type="range"
-                            min="0"
-                            max="20"
-                            step="1"
-                            value={blur}
-                            onChange={(e) => setBlur(parseInt(e.target.value))}
-                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-                        />
-                        <p className="text-xs text-muted-foreground">Adjust the depth of field for the desktop wallpaper.</p>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label className="font-bold text-sm uppercase tracking-wider opacity-60">Glass Transparency</label>
-                            <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded text-xs">{Math.round(transparency * 100)}%</span>
+                    <div className="grid md:grid-cols-2 gap-12">
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <label className="font-bold text-sm uppercase tracking-wider opacity-60">Sfocatura Sfondo</label>
+                                <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded text-xs">{blur}px</span>
+                            </div>
+                            <input
+                                type="range"
+                                min="0"
+                                max="20"
+                                step="1"
+                                value={blur}
+                                onChange={(e) => setBlur(parseInt(e.target.value))}
+                                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                            />
                         </div>
-                        <input
-                            type="range"
-                            min="0.1"
-                            max="0.95"
-                            step="0.05"
-                            value={transparency}
-                            onChange={(e) => setTransparency(parseFloat(e.target.value))}
-                            className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
-                        />
-                        <p className="text-xs text-muted-foreground">Regulate the opacity of all interface panels.</p>
+
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <label className="font-bold text-sm uppercase tracking-wider opacity-60">Trasparenza Vetro</label>
+                                <span className="text-primary font-mono bg-primary/10 px-2 py-0.5 rounded text-xs">{Math.round(transparency * 100)}%</span>
+                            </div>
+                            <input
+                                type="range"
+                                min="0.1"
+                                max="0.95"
+                                step="0.05"
+                                value={transparency}
+                                onChange={(e) => setTransparency(parseFloat(e.target.value))}
+                                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                            />
+                        </div>
                     </div>
                 </div>
             </motion.section>
