@@ -29,12 +29,14 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
         .order('created_at', { ascending: false });
 
     // Manually fetch profiles since foreign key cache seems broken in Supabase
-    let tasks = rawTasks;
+    let tasks: any[] = [];
     if (rawTasks && rawTasks.length > 0) {
         const userIds = Array.from(new Set([
             ...rawTasks.map(t => t.assigned_to),
             ...rawTasks.map(t => t.reviewed_by)
         ].filter(Boolean)));
+
+        let enrichedTasks = rawTasks;
 
         if (userIds.length > 0) {
             const { data: profiles } = await supabase
@@ -44,19 +46,39 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
 
             if (profiles) {
                 const profileMap = Object.fromEntries(profiles.map(p => [p.id, p]));
-                tasks = rawTasks.map(task => ({
+                enrichedTasks = rawTasks.map(task => ({
                     ...task,
                     annotator: task.assigned_to ? profileMap[task.assigned_to] : null,
                     reviewer: task.reviewed_by ? profileMap[task.reviewed_by] : null
                 }));
             }
         }
+
+        // Apply logical status sorting
+        const statusPriority: Record<string, number> = {
+            'approved': 1,
+            'completed': 2,
+            'in_progress': 3,
+            'pending': 4
+        };
+
+        tasks = [...enrichedTasks].sort((a, b) => {
+            const priorityA = statusPriority[a.status] || 99;
+            const priorityB = statusPriority[b.status] || 99;
+
+            if (priorityA !== priorityB) {
+                return priorityA - priorityB;
+            }
+
+            // Secondary sort by created_at desc (already sorted by query, but good to maintain)
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
     }
 
     if (tasksError) {
         console.error('Error fetching tasks for project', id, tasksError);
     } else {
-        console.log('Successfully fetched tasks for project', id, 'Count:', tasks?.length);
+        console.log('Successfully fetched and sorted tasks for project', id, 'Count:', tasks?.length);
     }
 
     // Robust parsing for pay_rate to pass as number
