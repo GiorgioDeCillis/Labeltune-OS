@@ -66,6 +66,18 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
         return `${h > 0 ? `${h}h ` : ''}${m > 0 ? `${m}m ` : ''}${s}s`;
     };
 
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleString('it-IT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
     const currentLabels = activeVersion === 'annotator' ? (task.annotator_labels || task.labels) : task.labels;
 
     return (
@@ -142,6 +154,16 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
                             </div>
                         </div>
                     </div>
+                    <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Started At</p>
+                            <p className="text-xs font-medium text-foreground">{formatDate(task.annotator_started_at)}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Finished At</p>
+                            <p className="text-xs font-medium text-foreground">{formatDate(task.annotator_completed_at)}</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Reviewer Info */}
@@ -183,6 +205,16 @@ export function TaskMonitoringView({ task, project, annotator, reviewer }: TaskM
                                 <Star className="w-3.5 h-3.5" />
                                 <span>{task.reviewer_rating?.toFixed(1) || '-'}</span>
                             </div>
+                        </div>
+                    </div>
+                    <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Started At</p>
+                            <p className="text-xs font-medium text-foreground">{formatDate(task.reviewer_started_at)}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Finished At</p>
+                            <p className="text-xs font-medium text-foreground">{formatDate(task.reviewer_completed_at)}</p>
                         </div>
                     </div>
                 </div>

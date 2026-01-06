@@ -39,7 +39,8 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
             annotator_labels: labels,
             status: 'completed',
             annotator_time_spent: timeSpent, // Keep tracking real time spent
-            annotator_earnings: earnings
+            annotator_earnings: earnings,
+            annotator_completed_at: new Date().toISOString()
         })
         .eq('id', taskId);
 
@@ -121,7 +122,7 @@ export async function updateTaskTimer(taskId: string, timeSpent: number) {
     // Get project pay rate for real-time earnings update
     const { data: task } = await supabase
         .from('tasks')
-        .select('project_id, projects(pay_rate, max_task_time)')
+        .select('project_id, annotator_started_at, projects(pay_rate, max_task_time)')
         .eq('id', taskId)
         .single();
 
@@ -138,12 +139,19 @@ export async function updateTaskTimer(taskId: string, timeSpent: number) {
         earnings = (billableTime / 3600) * payRate;
     }
 
+    // Track starting time if not already set
+    const updatePayload: any = {
+        annotator_time_spent: timeSpent,
+        annotator_earnings: earnings
+    };
+
+    if (!task?.annotator_started_at) {
+        updatePayload.annotator_started_at = new Date().toISOString();
+    }
+
     const { error } = await supabase
         .from('tasks')
-        .update({
-            annotator_time_spent: timeSpent,
-            annotator_earnings: earnings
-        })
+        .update(updatePayload)
         .eq('id', taskId)
         .eq('assigned_to', user.id);
 

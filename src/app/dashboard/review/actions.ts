@@ -44,7 +44,8 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
             reviewer_rating: rating,
             review_feedback: feedback,
             reviewer_time_spent: timeSpent,
-            reviewer_earnings: earnings
+            reviewer_earnings: earnings,
+            reviewer_completed_at: new Date().toISOString()
         })
         .eq('id', taskId);
 
@@ -104,7 +105,7 @@ export async function updateReviewTimer(taskId: string, timeSpent: number) {
     // Get project pay rate for real-time earnings update
     const { data: task } = await supabase
         .from('tasks')
-        .select('project_id, projects(pay_rate)')
+        .select('project_id, reviewer_started_at, projects(pay_rate)')
         .eq('id', taskId)
         .single();
 
@@ -118,12 +119,19 @@ export async function updateReviewTimer(taskId: string, timeSpent: number) {
         earnings = (timeSpent / 3600) * payRate;
     }
 
+    // Track starting time if not already set
+    const updatePayload: any = {
+        reviewer_time_spent: timeSpent,
+        reviewer_earnings: earnings
+    };
+
+    if (!task?.reviewer_started_at) {
+        updatePayload.reviewer_started_at = new Date().toISOString();
+    }
+
     const { error } = await supabase
         .from('tasks')
-        .update({
-            reviewer_time_spent: timeSpent,
-            reviewer_earnings: earnings
-        })
+        .update(updatePayload)
         .eq('id', taskId);
 
     if (error) {
