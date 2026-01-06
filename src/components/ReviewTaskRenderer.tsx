@@ -139,14 +139,12 @@ export function ReviewTaskRenderer({
                 setSubmissionResults(result.data as any);
                 showToast('Task approved successfully', 'success');
             } else {
-                // Fallback / legacy just in case
-                showToast('Task approved successfully', 'success');
-                router.refresh();
-                router.push('/dashboard/review');
+                showToast(result.error || 'Failed to approve task', 'error');
+                setIsSubmitting(false);
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            showToast('Failed to approve task', 'error');
+            showToast(e.message || 'Failed to approve task', 'error');
             setIsSubmitting(false);
         }
     };
@@ -159,13 +157,18 @@ export function ReviewTaskRenderer({
         setConfirmAction({ isOpen: false, type: null });
         setIsSubmitting(true);
         try {
-            await rejectTask(taskId, feedback);
-            showToast('Task rejected', 'info');
-            router.refresh();
-            router.push('/dashboard/review');
-        } catch (e) {
+            const result = await rejectTask(taskId, feedback);
+            if (result.success) {
+                showToast('Task rejected', 'info');
+                router.refresh();
+                router.push('/dashboard/review');
+            } else {
+                showToast(result.error || 'Failed to reject task', 'error');
+                setIsSubmitting(false);
+            }
+        } catch (e: any) {
             console.error(e);
-            showToast('Failed to reject task', 'error');
+            showToast(e.message || 'Failed to reject task', 'error');
             setIsSubmitting(false);
         }
     };

@@ -8,18 +8,21 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) redirect('/login');
+    if (!user) return { success: false, error: 'Unauthorized' };
 
-    // Get project pay rate (reviewer pay rate?)
-    // For now using the same project pay rate or a separate reviewer rate if it existed.
-    // The requirement just says "paga oraria del progetto".
-    const { data: task } = await supabase
+    // Get project pay rate
+    const { data: task, error: fetchError } = await supabase
         .from('tasks')
         .select('project_id, projects(pay_rate)')
         .eq('id', taskId)
         .single();
 
-    const projectsData = task?.projects as any;
+    if (fetchError || !task) {
+        console.error('Error fetching task for approval:', fetchError);
+        return { success: false, error: 'Could not find task or project data' };
+    }
+
+    const projectsData = task.projects as any;
     const rawRate = (Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0';
 
     // Robust parsing: extract numbers and handle decimal points
@@ -30,6 +33,7 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
     // Reviewer earnings
     const earnings = (timeSpent / 3600) * payRate;
 
+    // Update the task. We update both review_rating and reviewer_rating for compatibility
     const { error } = await supabase
         .from('tasks')
         .update({
@@ -37,6 +41,7 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
             labels: finalLabels,
             reviewed_by: user.id,
             review_rating: rating,
+            reviewer_rating: rating,
             review_feedback: feedback,
             reviewer_time_spent: timeSpent,
             reviewer_earnings: earnings
@@ -45,11 +50,15 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
 
     if (error) {
         console.error('Error approving task:', error);
-        throw new Error('Failed to approve task');
+        return { success: false, error: `Database error: ${error.message}` };
     }
 
-    revalidatePath('/dashboard/review');
-    revalidatePath(`/dashboard/projects/${task?.project_id}/tasks`);
+    try {
+        revalidatePath('/dashboard/review');
+        revalidatePath(`/dashboard/projects/${task?.project_id}/tasks`);
+    } catch (e) {
+        console.error('Revalidation error:', e);
+    }
 
     return {
         success: true,
@@ -65,17 +74,7 @@ export async function rejectTask(taskId: string, feedback?: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) redirect('/login');
-
-    // Rejecting means sending it back to the pool
-    // Status -> 'pending' (or whatever the initial status is, usually 'pending' or 'active'?) 
-    // Let's check the schema... usually 'pending' means available.
-    // Also clear assigned_to
-
-    // Note: If we want to keep the "bad" labels for history, we should probably archive this task 
-    // and create a new one, OR just clear the labels. 
-    // The requirement says "like a new task to start over".
-    // I'll reset it completely for MVP.
+    if (!user) return { success: false, error: 'Unauthorized' };
 
     const { error } = await supabase
         .from('tasks')
@@ -83,13 +82,13 @@ export async function rejectTask(taskId: string, feedback?: string) {
             status: 'pending',
             assigned_to: null,
             review_feedback: feedback,
-            labels: null // Clear previous work? Or keep it as reference? User said "start over". Clearing is safer to force rework.
+            labels: null
         })
         .eq('id', taskId);
 
     if (error) {
         console.error('Error rejecting task:', error);
-        throw new Error('Failed to reject task');
+        return { success: false, error: `Database error: ${error.message}` };
     }
 
     revalidatePath('/dashboard/review');
