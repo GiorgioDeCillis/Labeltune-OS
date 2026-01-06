@@ -243,7 +243,7 @@ export default function ProfilePage() {
                 <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/10 blur-[100px] rounded-full" />
             </motion.div>
 
-            <div className="grid md:grid-cols-2 gap-8 items-start">
+            <div className="grid md:grid-cols-2 gap-8">
                 {/* User Info Section */}
                 <motion.section
                     initial={{ opacity: 0, x: -20 }}
@@ -465,7 +465,7 @@ export default function ProfilePage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="glass-panel p-6 rounded-3xl space-y-6"
+                    className="glass-panel p-6 rounded-3xl space-y-6 flex flex-col"
                 >
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-primary/10 rounded-lg">
