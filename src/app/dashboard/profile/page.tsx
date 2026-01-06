@@ -243,7 +243,7 @@ export default function ProfilePage() {
                 <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/10 blur-[100px] rounded-full" />
             </motion.div>
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-2 gap-8 items-start">
                 {/* User Info Section */}
                 <motion.section
                     initial={{ opacity: 0, x: -20 }}
@@ -460,21 +460,91 @@ export default function ProfilePage() {
                     </form>
                 </motion.section>
 
-                <div className="space-y-8">
-                    {/* Theme Selection */}
-                    <motion.section
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="glass-panel p-6 rounded-3xl space-y-6"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <Palette className="text-primary w-5 h-5" />
+                {/* Change Password Section */}
+                <motion.section
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="glass-panel p-6 rounded-3xl space-y-6"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                            <Key className="text-primary w-5 h-5" />
+                        </div>
+                        <h3 className="text-xl font-bold">Sicurezza</h3>
+                    </div>
+
+                    <form onSubmit={handleUpdatePassword} className="space-y-4">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Nuova Password</label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-40" />
+                                <input
+                                    name="newPassword"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                    required
+                                />
                             </div>
-                            <h3 className="text-xl font-bold">Theme</h3>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Conferma Password</label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-40" />
+                                <input
+                                    name="confirmPassword"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                    required
+                                />
+                            </div>
                         </div>
 
+                        <button
+                            type="submit"
+                            disabled={passwordSaving}
+                            className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2.5 text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                            {passwordSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
+                            Aggiorna Password
+                        </button>
+
+                        {passwordError && (
+                            <p className="text-[10px] text-red-500 font-bold text-center flex items-center justify-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {passwordError}
+                            </p>
+                        )}
+                        {passwordSuccess && (
+                            <p className="text-[10px] text-emerald-500 font-bold text-center flex items-center justify-center gap-1">
+                                <Check className="w-3 h-3" />
+                                {passwordSuccess}
+                            </p>
+                        )}
+                    </form>
+                </motion.section>
+            </div>
+
+            {/* Appearance Settings */}
+            <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="glass-panel p-8 rounded-3xl space-y-10"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <Palette className="text-primary w-5 h-5" />
+                    </div>
+                    <h3 className="text-xl font-bold">Impostazioni di Aspetto</h3>
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-12">
+                    {/* Theme Selection */}
+                    <div className="space-y-4">
+                        <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Tema Piattaforma</label>
                         <div className="grid grid-cols-1 gap-3">
                             <ThemeButton
                                 active={theme === 'osaka-jade'}
@@ -498,121 +568,10 @@ export default function ProfilePage() {
                                 color="bg-[#A949D9]"
                             />
                         </div>
-                    </motion.section>
-
-                    {/* Change Password Section */}
-                    <motion.section
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="glass-panel p-6 rounded-3xl space-y-6"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <Key className="text-primary w-5 h-5" />
-                            </div>
-                            <h3 className="text-xl font-bold">Sicurezza</h3>
-                        </div>
-
-                        <form onSubmit={handleUpdatePassword} className="space-y-4">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Nuova Password</label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-40" />
-                                    <input
-                                        name="newPassword"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold uppercase tracking-widest opacity-40 pl-1">Conferma Password</label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-40" />
-                                    <input
-                                        name="confirmPassword"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={passwordSaving}
-                                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2.5 text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {passwordSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
-                                Aggiorna Password
-                            </button>
-
-                            {passwordError && (
-                                <p className="text-[10px] text-red-500 font-bold text-center flex items-center justify-center gap-1">
-                                    <AlertCircle className="w-3 h-3" />
-                                    {passwordError}
-                                </p>
-                            )}
-                            {passwordSuccess && (
-                                <p className="text-[10px] text-emerald-500 font-bold text-center flex items-center justify-center gap-1">
-                                    <Check className="w-3 h-3" />
-                                    {passwordSuccess}
-                                </p>
-                            )}
-                        </form>
-                    </motion.section>
-                </div>
-            </div>
-
-            {/* Appearance Settings */}
-            <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="glass-panel p-6 rounded-3xl space-y-8"
-            >
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <Sparkles className="text-primary w-5 h-5" />
-                        </div>
-                        <h3 className="text-xl font-bold">Personalizzazione Avanzata</h3>
-                    </div>
-                </div>
-
-                <div className="space-y-8">
-                    {/* Wallpaper Selection */}
-                    <div className="space-y-4">
-                        <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Sfondo Desktop</label>
-                        <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-                            {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
-                                <button
-                                    key={wp.id}
-                                    onClick={() => setWallpaper(wp.url)}
-                                    className={`relative h-24 rounded-2xl overflow-hidden border-2 transition-all group ${wallpaper.includes(wp.id) ? 'border-primary ring-4 ring-primary/20 scale-105' : 'border-transparent opacity-60 hover:opacity-100'
-                                        }`}
-                                >
-                                    <Image
-                                        src={wp.url}
-                                        alt="Wallpaper"
-                                        fill
-                                        className="object-cover transition-transform group-hover:scale-110"
-                                    />
-                                    {wallpaper.includes(wp.id) && (
-                                        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                                            <Zap className="w-5 h-5 text-primary-foreground fill-primary" />
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-12">
+                    {/* Glass Effects */}
+                    <div className="space-y-10">
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <label className="font-bold text-sm uppercase tracking-wider opacity-60">Sfocatura Sfondo</label>
@@ -644,6 +603,33 @@ export default function ProfilePage() {
                                 className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
                             />
                         </div>
+                    </div>
+                </div>
+
+                {/* Wallpaper Selection */}
+                <div className="space-y-4 pt-6 border-t border-white/5">
+                    <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Sfondo Desktop</label>
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                        {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
+                            <button
+                                key={wp.id}
+                                onClick={() => setWallpaper(wp.url)}
+                                className={`relative h-24 rounded-2xl overflow-hidden border-2 transition-all group ${wallpaper.includes(wp.id) ? 'border-primary ring-4 ring-primary/20 scale-105' : 'border-transparent opacity-60 hover:opacity-100'
+                                    }`}
+                            >
+                                <Image
+                                    src={wp.url}
+                                    alt="Wallpaper"
+                                    fill
+                                    className="object-cover transition-transform group-hover:scale-110"
+                                />
+                                {wallpaper.includes(wp.id) && (
+                                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                                        <Zap className="w-5 h-5 text-primary-foreground fill-primary" />
+                                    </div>
+                                )}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </motion.section>
