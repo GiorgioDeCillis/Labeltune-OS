@@ -477,13 +477,31 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
             barRadius: 3,
             height: 80,
             normalize: true,
-            minPxPerSec: zoom,
+            minPxPerSec: Math.max(20, zoom), // Ensure a minimum sensible px/sec to avoid disappearance
             plugins: [
                 Timeline.create({
-                    height: 20,
+                    height: 25,
                     style: {
                         color: '#4f4f4f',
                         fontSize: '10px',
+                    },
+                    timeInterval: (pxPerSec: number) => {
+                        if (pxPerSec >= 500) return 0.1
+                        if (pxPerSec >= 200) return 0.5
+                        if (pxPerSec >= 100) return 1
+                        return 2
+                    },
+                    primaryLabelInterval: (pxPerSec: number) => {
+                        if (pxPerSec >= 500) return 1
+                        if (pxPerSec >= 200) return 2
+                        if (pxPerSec >= 100) return 5
+                        return 10
+                    },
+                    secondaryLabelInterval: (pxPerSec: number) => {
+                        if (pxPerSec >= 500) return 0.1
+                        if (pxPerSec >= 200) return 0.5
+                        if (pxPerSec >= 100) return 1
+                        return 2
                     },
                     formatTime: (seconds: number) => {
                         const m = Math.floor(seconds / 60);
@@ -569,10 +587,11 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
 
             mediaRecorder.start();
             setIsRecording(true);
+            const startTime = Date.now();
             setDuration(0);
             timerRef.current = setInterval(() => {
-                setDuration(prev => prev + 1);
-            }, 1000);
+                setDuration(Date.now() - startTime);
+            }, 50);
         } catch (err) {
             console.error("Error accessing microphone:", err);
             alert("Please allow microphone access to record audio.");
@@ -606,10 +625,12 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
         }
     };
 
-    const formatDuration = (sec: number) => {
-        const m = Math.floor(sec / 60);
-        const s = sec % 60;
-        return `${m}:${s.toString().padStart(2, '0')}`;
+    const formatDuration = (ms: number) => {
+        const totalSeconds = ms / 1000;
+        const m = Math.floor(totalSeconds / 60);
+        const s = Math.floor(totalSeconds % 60);
+        const milli = Math.floor(ms % 1000);
+        return `${m}:${s.toString().padStart(2, '0')}.${milli.toString().padStart(3, '0')}`;
     };
 
     return (
