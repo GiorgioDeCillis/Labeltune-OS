@@ -34,9 +34,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
         { href: '/dashboard/courses', label: 'Courses', icon: GraduationCap },
     ];
 
-    const reviewLinks = [
-        { href: '/dashboard/review', label: 'Review Queue', icon: CheckCircle },
-    ];
+    const reviewLinks: { href: string; label: string; icon: any }[] = [];
 
     const workerLinks = [
         { href: '/dashboard/history', label: 'History', icon: CheckCircle },

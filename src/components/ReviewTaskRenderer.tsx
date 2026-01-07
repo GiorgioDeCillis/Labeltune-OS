@@ -123,7 +123,7 @@ export function ReviewTaskRenderer({
         if (submissionResults?.projectId) {
             await startReviewing(submissionResults.projectId);
         } else {
-            router.push('/dashboard/review');
+            router.push('/dashboard');
         }
     }
 
@@ -158,7 +158,7 @@ export function ReviewTaskRenderer({
             if (result.success) {
                 showToast('Task rejected', 'info');
                 router.refresh();
-                router.push('/dashboard/review');
+                router.push('/dashboard');
             } else {
                 showToast(result.error || 'Failed to reject task', 'error');
                 setIsSubmitting(false);
