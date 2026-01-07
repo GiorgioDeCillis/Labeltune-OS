@@ -18,6 +18,7 @@ interface Project {
     pay_rate: string;
     created_at: string;
     category?: string;
+    max_task_time?: number;
 }
 
 export default function WorkerDashboardClient({ user, profile }: { user: any, profile: any }) {
@@ -178,6 +179,18 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
 
     const activeProject = projects[0];
 
+    const formatDuration = (val: number | string | undefined | null) => {
+        if (!val) return 'N/A';
+        const numVal = Number(val);
+        if (!isNaN(numVal)) {
+            const hrs = Math.floor(numVal / 3600);
+            const mins = Math.floor((numVal % 3600) / 60);
+            if (hrs > 0) return `${hrs}h ${mins}m`;
+            return `${mins}m`;
+        }
+        return val as string;
+    };
+
     return (
         <div className="space-y-12">
             <ProjectQueueModal
@@ -245,11 +258,11 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                         <div className="flex items-center gap-4 text-sm font-medium">
                                             <div className="flex items-center gap-2 text-white/40">
                                                 <Briefcase className="w-4 h-4" />
-                                                <span>Data Science</span>
+                                                <span>{profile?.locale_tag || 'General'}</span>
                                             </div>
                                             <div className="flex items-center gap-2 text-white/40">
                                                 <Clock className="w-4 h-4" />
-                                                <span>Started {new Date(activeProject.created_at).toLocaleDateString()}</span>
+                                                <span>{formatDuration(activeProject.max_task_time)} per task</span>
                                                 <span className="mx-2 text-white/20">|</span>
                                                 {onboardingInfo.assessmentStatus === 'Completed' ? (
                                                     reviewerInfo.isReviewer && reviewerInfo.hasTasksToReview ? (
