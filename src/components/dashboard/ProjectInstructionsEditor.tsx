@@ -196,6 +196,7 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
                 await page.render({
                     canvasContext: context,
                     viewport: viewport,
+                    canvas: canvas as any, // Cast to any to avoid potential type mismatches with node vs browser types
                 }).promise;
 
                 // Convert to base64 image (JPEG is smaller than PNG for photos/scans)
