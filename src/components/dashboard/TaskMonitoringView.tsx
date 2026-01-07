@@ -50,9 +50,10 @@ interface TaskMonitoringViewProps {
     annotator: any;
     reviewer: any;
     currentUserRole?: string;
+    backUrl?: string; // Optional back URL override
 }
 
-export function TaskMonitoringView({ task, project, annotator, reviewer, currentUserRole }: TaskMonitoringViewProps) {
+export function TaskMonitoringView({ task, project, annotator, reviewer, currentUserRole, backUrl }: TaskMonitoringViewProps) {
     const router = useRouter();
     const { showToast } = useToast();
     const [activeVersion, setActiveVersion] = useState<'annotator' | 'reviewer'>(
@@ -101,7 +102,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Link
-                        href={currentUserRole === 'annotator' ? '/dashboard/history' : `/dashboard/projects/${project.id}/tasks`}
+                        href={backUrl || (currentUserRole === 'annotator' ? '/dashboard/history' : `/dashboard/projects/${project.id}/tasks`)}
                         className="p-2 hover:bg-white/5 rounded-full transition-colors"
                     >
                         <ChevronLeft className="w-5 h-5 text-muted-foreground" />

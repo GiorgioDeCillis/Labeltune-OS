@@ -8,6 +8,7 @@ import { TaskTimerHeader } from '@/components/TaskTimerHeader';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
 import { CopyableTaskId } from '@/components/CopyableTaskId';
 import { CopyableId } from '@/components/CopyableId';
+import { TaskMonitoringView } from '@/components/dashboard/TaskMonitoringView';
 
 export default async function ReviewTaskPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -40,7 +41,54 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
 
     // Ideally check permissions here
 
+    // Fetch reviewer profile if different or to populate Monitoring View
+    let reviewerProfile = null;
+    if (task.reviewed_by) {
+        // If current user is reviewer, we can use their data, or fetch profile logic identical for robustness
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', task.reviewed_by)
+            .single();
+        reviewerProfile = profile;
+    }
+
+    // Additional check for annotator avatar if not fetched above (HistoryClient fetches *, but here we manually select)
+    if (task.assigned_to && !task.profiles?.avatar_url) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('avatar_url')
+            .eq('id', task.assigned_to)
+            .single();
+
+        if (profile && task.profiles) {
+            task.profiles.avatar_url = profile.avatar_url;
+        }
+    }
+
     const templateSchema = (task.projects?.template_schema as TaskComponent[]) || [];
+
+    // If task is finalized, show Monitoring View (Read Only with Preview Header)
+    if (['approved', 'completed', 'rejected'].includes(task.status)) {
+        // We need to construct the annotator object expected by Monitoring View
+        const annotatorObj = task.profiles ? {
+            full_name: task.profiles.full_name,
+            avatar_url: task.profiles.avatar_url
+        } : null;
+
+        return (
+            <div className="max-w-6xl mx-auto space-y-6 h-full flex flex-col pt-6">
+                <TaskMonitoringView
+                    task={task}
+                    project={task.projects}
+                    annotator={annotatorObj}
+                    reviewer={reviewerProfile}
+                    currentUserRole="reviewer" // This ensures Reviewer Metrics are shown
+                    backUrl="/dashboard/history"
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-6xl mx-auto space-y-6 h-full flex flex-col">
