@@ -275,8 +275,9 @@ export async function deleteProjectDraft(projectId: string) {
         throw new Error('Can only delete draft projects');
     }
 
-    // 3. Delete linked tasks first (if any were created)
+    // 3. Delete linked tasks and unlink courses first
     await supabase.from('tasks').delete().eq('project_id', projectId);
+    await supabase.from('courses').update({ project_id: null }).eq('project_id', projectId);
 
     // 4. Delete Project
     const { error } = await supabase

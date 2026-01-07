@@ -58,30 +58,32 @@ export default async function ProjectsPage() {
                                             }`}>
                                             <Folder className="w-6 h-6" />
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            {isDraft && isInternal && (
-                                                <DeleteDraftButton projectId={project.id} />
-                                            )}
-                                            <span className={`text-xs px-2 py-1 rounded-full border ${project.status === 'active' ? 'border-green-500/30 text-green-400' :
-                                                isDraft ? 'border-yellow-500/30 text-yellow-400' : 'border-white/10 text-muted-foreground'
-                                                }`}>
-                                                {project.status === 'draft' ? 'Draft' : project.status}
-                                            </span>
-                                        </div>
+                                        <span className={`text-xs px-2 py-1 rounded-full border ${project.status === 'active' ? 'border-green-500/30 text-green-400' :
+                                            isDraft ? 'border-yellow-500/30 text-yellow-400' : 'border-white/10 text-muted-foreground'
+                                            }`}>
+                                            {project.status === 'draft' ? 'Draft' : project.status}
+                                        </span>
                                     </div>
-                                    <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{project.name}</h3>
-                                    <p className="text-muted-foreground text-sm mb-6 line-clamp-2 flex-1">{project.description}</p>
+                                </div>
+                                <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{project.name}</h3>
+                                <p className="text-muted-foreground text-sm mb-6 line-clamp-2 flex-1">{project.description}</p>
 
-                                    <div className="pt-4 border-t border-white/5 flex items-center text-xs text-muted-foreground gap-2">
+                                <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                                    <div className="flex items-center text-xs text-muted-foreground gap-2">
                                         <Calendar className="w-3 h-3" />
                                         {new Date(project.created_at).toLocaleDateString()}
                                     </div>
+                                    {isDraft && isInternal && (
+                                        <DeleteDraftButton projectId={project.id} />
+                                    )}
                                 </div>
+                            </div>
                             </Link>
-                        );
+            );
                     })}
-                </div>
-            )}
         </div>
+    )
+}
+        </div >
     );
 }

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+
 import { Trash2, Loader2 } from 'lucide-react';
 import { deleteProjectDraft } from './actions';
-import { useTransition } from 'react';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { useToast } from '@/components/Toast';
 
 interface DeleteDraftButtonProps {
     projectId: string;
@@ -11,35 +13,52 @@ interface DeleteDraftButtonProps {
 
 export function DeleteDraftButton({ projectId }: DeleteDraftButtonProps) {
     const [isPending, startTransition] = useTransition();
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const { showToast } = useToast();
 
-    const handleDelete = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (confirm('Sei sicuro di voler eliminare questa bozza?')) {
-            startTransition(async () => {
-                try {
-                    await deleteProjectDraft(projectId);
-                } catch (error) {
-                    console.error('Failed to delete draft:', error);
-                    alert('Errore durante l\'eliminazione della bozza');
-                }
-            });
-        }
+    const handleDelete = async () => {
+        setIsConfirmOpen(false);
+        startTransition(async () => {
+            try {
+                await deleteProjectDraft(projectId);
+                showToast('Bozza eliminata con successo', 'success');
+            } catch (error) {
+                console.error('Failed to delete draft:', error);
+                showToast('Errore durante l\'eliminazione della bozza', 'error');
+            }
+        });
     };
 
     return (
-        <button
-            onClick={handleDelete}
-            disabled={isPending}
-            className="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center border border-red-500/20 hover:border-red-500/40"
-            title="Elimina bozza"
-        >
-            {isPending ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-                <Trash2 className="w-5 h-5" />
-            )}
-        </button>
+        <>
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsConfirmOpen(true);
+                }}
+                disabled={isPending}
+                className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all flex items-center justify-center border border-red-500/10 hover:border-red-500/30"
+                title="Elimina bozza"
+            >
+                {isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                    <Trash2 className="w-4 h-4" />
+                )}
+            </button>
+
+            <ConfirmDialog
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={handleDelete}
+                title="Elimina Bozza"
+                description="Sei sicuro di voler eliminare questa bozza? L'azione non può essere annullata."
+                confirmText="Elimina"
+                cancelText="Annulla"
+                type="danger"
+                isProcessing={isPending}
+            />
+        </>
     );
 }
