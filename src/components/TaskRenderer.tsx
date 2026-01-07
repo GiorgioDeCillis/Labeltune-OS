@@ -250,6 +250,71 @@ export function TaskRenderer({
     // Mock data for objects
     const taskData = initialData || {};
 
+    // Validation Logic
+    const validateTask = (components: TaskComponent[], data: any): boolean => {
+        for (const component of components) {
+            // Check children recursively
+            if (component.children) {
+                if (!validateTask(component.children, data)) return false;
+            }
+
+            // Skip if not required
+            if (!component.required) continue;
+
+            // Check if value exists
+            const value = data[component.name] || data[component.id];
+
+            // Specific validation by type
+            if (component.type === 'RubricScorer') {
+                if (!component.rubricCriteria) continue;
+                // Check if all criteria have a score
+                const scores = value || {};
+                const allScored = component.rubricCriteria.every(
+                    (criterion) => scores[criterion.id] && scores[criterion.id] !== 'none' // assuming 'none' means zero points but still scored? Or is it explicit 'none'?
+                    // Actually, based on Renderers.tsx, 'none' IS a valid score (0 pts).
+                    // So we just need to check if the key exists in the object.
+                    // But wait, if they haven't touched it, it's undefined.
+                );
+                // Let's refine: In Renderers, handleScore sets the value.
+                // So we need to check if every criterion ID is present in the value object.
+                const isComplete = component.rubricCriteria.every(c => scores[c.id] !== undefined);
+                if (!isComplete) return false;
+
+            } else if (component.type === 'Checklist' || component.type === 'AccordionChoices') {
+                // Determine if valid based on if it's an object (checklist) or array (choices)
+                // Checklist: value is { "item_val": true, ... }
+                // AccordionChoices: value is string or string[]
+
+                if (component.type === 'Checklist') {
+                    // Check if at least one is true
+                    const checked = value || {};
+                    const hasChecked = Object.values(checked).some(v => v === true);
+                    if (!hasChecked) return false;
+                } else {
+                    // AccordionChoices / Choices
+                    const selected = Array.isArray(value) ? value : (value ? [value] : []);
+                    if (selected.length === 0) return false;
+                }
+
+            } else if (component.type === 'AudioRecorder') {
+                if (!value) return false;
+            } else {
+                // Standard checks (Text, Rating, etc.)
+                if (value === undefined || value === null || value === '') return false;
+                if (Array.isArray(value) && value.length === 0) return false;
+            }
+        }
+        return true;
+    };
+
+    // Memoize validation status to avoid expensive recalculations on every render
+    // although for small forms it doesn't matter much.
+    // We need to re-validate whenever formData changes.
+    const isTaskValid = React.useMemo(() => {
+        return validateTask(schema, formData);
+    }, [schema, formData]);
+
+
     return (
         <div className="relative pb-32">
             {/* Blocking Expiration Modal */}
@@ -384,8 +449,9 @@ export function TaskRenderer({
                     </button>
                     <button
                         onClick={confirmSubmit}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !isTaskValid}
                         className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        title={!isTaskValid ? "Please fill all required fields" : ""}
                     >
                         {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                         Submit & Next
