@@ -339,6 +339,7 @@ export default function OnboardingPage() {
                                                     await page.render({
                                                         canvasContext: context,
                                                         viewport: viewport,
+                                                        canvas: canvas as any,
                                                     }).promise;
 
                                                     const base64Image = canvas.toDataURL('image/jpeg', 0.7);
@@ -368,10 +369,10 @@ export default function OnboardingPage() {
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                         />
                                         <div className={`w-full border-2 border-dashed rounded-2xl p-8 transition-all text-center ${cvValidationStatus === 'valid' ? 'bg-emerald-500/10 border-emerald-500/50' :
-                                                cvValidationStatus === 'invalid' ? 'bg-red-500/10 border-red-500/50' :
-                                                    cvValidationStatus === 'validating' ? 'bg-blue-500/10 border-blue-500/50' :
-                                                        fieldErrors.cv ? 'bg-red-500/5 border-red-500/30' :
-                                                            'bg-white/5 border-white/10 group-hover/file:border-primary/50 group-hover/file:bg-primary/5'
+                                            cvValidationStatus === 'invalid' ? 'bg-red-500/10 border-red-500/50' :
+                                                cvValidationStatus === 'validating' ? 'bg-blue-500/10 border-blue-500/50' :
+                                                    fieldErrors.cv ? 'bg-red-500/5 border-red-500/30' :
+                                                        'bg-white/5 border-white/10 group-hover/file:border-primary/50 group-hover/file:bg-primary/5'
                                             }`}>
                                             <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 group-hover/file:scale-110 transition-transform">
                                                 {cvValidationStatus === 'validating' ? (
@@ -387,9 +388,9 @@ export default function OnboardingPage() {
                                                 )}
                                             </div>
                                             <span className={`text-sm font-bold block truncate max-w-xs mx-auto ${cvValidationStatus === 'valid' ? 'text-emerald-400' :
-                                                    cvValidationStatus === 'invalid' ? 'text-red-400' :
-                                                        cvValidationStatus === 'validating' ? 'text-blue-400' :
-                                                            fieldErrors.cv ? 'text-red-500' : ''
+                                                cvValidationStatus === 'invalid' ? 'text-red-400' :
+                                                    cvValidationStatus === 'validating' ? 'text-blue-400' :
+                                                        fieldErrors.cv ? 'text-red-500' : ''
                                                 }`}>
                                                 {cvValidationStatus === 'validating' ? 'Validazione in corso...' :
                                                     cvValidationStatus === 'valid' ? cvFile?.name :
@@ -399,8 +400,8 @@ export default function OnboardingPage() {
                                                                     'Clicca o trascina il tuo CV'}
                                             </span>
                                             <p className={`text-[10px] uppercase tracking-widest mt-1 ${cvValidationStatus === 'valid' ? 'text-emerald-400/70' :
-                                                    cvValidationStatus === 'invalid' ? 'text-red-400/70' :
-                                                        'opacity-40'
+                                                cvValidationStatus === 'invalid' ? 'text-red-400/70' :
+                                                    'opacity-40'
                                                 }`}>
                                                 {cvValidationStatus === 'validating' ? 'AI sta analizzando il documento...' :
                                                     cvValidationStatus === 'valid' ? `✓ ${cvValidationReason}` :
