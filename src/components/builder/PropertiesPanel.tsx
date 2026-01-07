@@ -110,27 +110,28 @@ export function PropertiesPanel({ component, onChange }: {
                             className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono"
                         />
                     </div>
+                </div>
             )}
 
-                    {(component.type === 'Labels' || component.type === 'RectangleLabels') && (
-                        <div className="space-y-2 pt-4 border-t border-white/5">
-                            <label className="text-xs font-bold text-muted-foreground">Labels (Value:Color per line)</label>
-                            <textarea
-                                value={component.labels?.map(l => `${l.value}:${l.background || '#000000'}`).join('\n') || ''}
-                                onChange={(e) => {
-                                    const lines = e.target.value.split('\n');
-                                    const labels = lines.map(line => {
-                                        const [value, color] = line.split(':');
-                                        return { value: value?.trim(), background: (color || '#000000')?.trim() };
-                                    });
-                                    onChange({ labels });
-                                }}
-                                rows={5}
-                                placeholder="Car:#ff0000"
-                                className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono"
-                            />
-                        </div>
-                    )}
+            {(component.type === 'Labels' || component.type === 'RectangleLabels') && (
+                <div className="space-y-2 pt-4 border-t border-white/5">
+                    <label className="text-xs font-bold text-muted-foreground">Labels (Value:Color per line)</label>
+                    <textarea
+                        value={component.labels?.map(l => `${l.value}:${l.background || '#000000'}`).join('\n') || ''}
+                        onChange={(e) => {
+                            const lines = e.target.value.split('\n');
+                            const labels = lines.map(line => {
+                                const [value, color] = line.split(':');
+                                return { value: value?.trim(), background: (color || '#000000')?.trim() };
+                            });
+                            onChange({ labels });
+                        }}
+                        rows={5}
+                        placeholder="Car:#ff0000"
+                        className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono"
+                    />
                 </div>
-            );
+            )}
+        </div>
+    );
 }

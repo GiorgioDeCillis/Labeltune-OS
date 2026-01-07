@@ -899,7 +899,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
 
 // --- Pogo Rubrics Workflow Components ---
 
-import { Pin, ChevronDown, ChevronUp, AlertTriangle, GripVertical, Check, X, Minus } from 'lucide-react';
+import { Pin, ChevronDown, ChevronUp, AlertTriangle, GripVertical, X, Minus } from 'lucide-react';
 
 export function InstructionBlock({ component, data }: { component: TaskComponent, data?: any }) {
     const [isCollapsed, setIsCollapsed] = React.useState(false);
