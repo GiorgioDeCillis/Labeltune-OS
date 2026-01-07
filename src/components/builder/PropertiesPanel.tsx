@@ -75,7 +75,7 @@ export function PropertiesPanel({ component, onChange }: {
                 <span className="text-sm">Required field</span>
             </label>
 
-            {(component.type === 'Choices' || component.type === 'Checklist' || component.type === 'AccordionChoices') && (
+            {(component.type === 'Choices' || component.type === 'Checklist' || component.type === 'AccordionChoices' || component.type === 'Rating') && (
                 <div className="space-y-4 pt-4 border-t border-white/5">
                     {component.type === 'AccordionChoices' && (
                         <label className="flex items-center gap-2 cursor-pointer group">
@@ -122,7 +122,7 @@ export function PropertiesPanel({ component, onChange }: {
                         </div>
                     )}
 
-                    {(component.type === 'Choices' || component.type === 'Checklist') && (
+                    {(component.type === 'Choices' || component.type === 'Checklist' || component.type === 'Rating') && (
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-muted-foreground">
                                 Smart Paste <span className="font-normal text-primary/70">(one option per line)</span>

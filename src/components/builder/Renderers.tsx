@@ -328,28 +328,33 @@ export function RatingControl({ component, value, onChange, readOnly }: {
     onChange: (val: any) => void,
     readOnly?: boolean
 }) {
+    // Use options if defined, otherwise default to 1-5
+    const ratingOptions = component.options?.length
+        ? component.options
+        : [1, 2, 3, 4, 5].map(n => ({ label: String(n), value: String(n) }));
+
     return (
         <div className="space-y-3">
             <div>
-                <label className="text-sm font-bold block mb-1">{component.title}</label>
+                <label className="text-sm font-bold block mb-1">{component.title}{component.required && <span className="text-red-500 ml-1">*</span>}</label>
                 {component.description && (
                     <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
                     </div>
                 )}
             </div>
-            <div className="flex gap-2">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+            <div className="flex gap-2 flex-wrap">
+                {ratingOptions.map((opt) => (
                     <button
-                        key={num}
-                        onClick={() => !readOnly && onChange(num)}
+                        key={opt.value}
+                        onClick={() => !readOnly && onChange(opt.value)}
                         disabled={readOnly}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all ${value === num
+                        className={`min-w-8 h-8 px-2 rounded-full flex items-center justify-center font-bold text-sm transition-all ${value === opt.value
                             ? 'bg-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.5)] scale-110'
                             : 'bg-white/10 hover:bg-white/20 text-muted-foreground'
                             } ${readOnly ? 'pointer-events-none' : ''}`}
                     >
-                        {num}
+                        {opt.label}
                     </button>
                 ))}
             </div>
