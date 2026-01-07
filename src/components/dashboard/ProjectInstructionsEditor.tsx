@@ -431,7 +431,7 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
                             ) : (
                                 <div className="p-8 prose prose-invert max-w-none overflow-y-auto h-full bg-black/40">
                                     <h1 className="text-3xl font-black mb-8 border-b border-white/10 pb-6">{activeSection.title}</h1>
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]} className="prose prose-invert max-w-none">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                         {activeSection.content || '_No content yet._'}
                                     </ReactMarkdown>
                                 </div>
