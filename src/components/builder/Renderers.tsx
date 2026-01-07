@@ -2,6 +2,8 @@ import React from 'react';
 import { TaskComponent } from './types';
 import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot } from 'lucide-react';
 import { getDefaultAvatar } from '@/utils/avatar';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // --- Objects ---
 
@@ -177,6 +179,27 @@ export function HeaderComponent({ component }: { component: TaskComponent }) {
         <h3 className="text-xl font-bold mb-4 border-b border-white/10 pb-2">
             {component.text || component.value || 'Header'}
         </h3>
+    );
+}
+
+export function HyperTextObject({ component, data }: { component: TaskComponent, data: any }) {
+    const content = component.value?.startsWith('$') ? data[component.value.substring(1)] : (component.text || component.content);
+
+    return (
+        <div className="prose prose-invert max-w-none text-foreground/90">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {content || ''}
+            </ReactMarkdown>
+        </div>
+    );
+}
+
+export function ViewLayout({ component, children }: { component: TaskComponent, children?: React.ReactNode }) {
+    // Basic View container. Label Studio allows styling here, we'll use a simple div for now.
+    return (
+        <div className="space-y-4 w-full">
+            {children}
+        </div>
     );
 }
 

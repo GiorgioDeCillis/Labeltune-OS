@@ -26,7 +26,9 @@ import {
     RubricScorerControl,
     RankingControl,
     FeedbackControl,
-    RubricTable
+    RubricTable,
+    HyperTextObject,
+    ViewLayout
 } from '@/components/builder/Renderers';
 
 import { useToast } from '@/components/Toast';
@@ -184,37 +186,7 @@ export function ReviewTaskRenderer({
             )}
 
             <div className="space-y-8 pr-2">
-                {schema.map((component) => {
-                    // Objects
-                    if (component.type === 'Image') return <ImageObject key={component.id} component={component} data={taskData} />;
-                    if (component.type === 'Text') return <TextObject key={component.id} component={component} data={taskData} />;
-                    if (component.type === 'Audio') return <AudioObject key={component.id} component={component} data={taskData} />;
-                    if (component.type === 'Header') return <HeaderComponent key={component.id} component={component} />;
-                    if (component.type === 'Video') return <VideoObject key={component.id} component={component} data={taskData} />;
-                    if (component.type === 'TimeSeries') return <TimeSeriesObject key={component.id} component={component} data={taskData} />;
-                    if (component.type === 'PDF') return <PDFObject key={component.id} component={component} data={taskData} />;
-                    if (component.type === 'MultiMessage') return <MultiMessageObject key={component.id} component={component} data={taskData} />;
-
-                    // Pogo Workflow Components
-                    if (component.type === 'InstructionBlock') return <InstructionBlock key={component.id} component={component} data={taskData} />;
-                    if (component.type === 'RequirementPanel') return <RequirementPanel key={component.id} component={component} />;
-                    if (component.type === 'SideBySide') return <SideBySideLayout key={component.id} component={component} data={taskData} />;
-                    if (component.type === 'RubricTable') return <RubricTable key={component.id} component={component} />;
-
-                    // Controls
-                    const value = formData[component.name] || formData[component.id];
-                    const onChange = (val: any) => handleChange(component.name || component.id, val);
-
-                    if (component.type === 'Choices') return <ChoicesControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
-                    if (component.type === 'Rating') return <RatingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
-                    if (component.type === 'TextArea') return <TextAreaControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
-                    if (component.type === 'Labels' || component.type === 'RectangleLabels') return <ImageLabelsControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
-                    if (component.type === 'RubricScorer') return <RubricScorerControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
-                    if (component.type === 'Ranking') return <RankingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
-                    if (component.type === 'Feedback') return <FeedbackControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
-
-                    return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
-                })}
+                {schema.map((component) => renderComponent(component, taskData, formData, handleChange, isReadOnly))}
             </div>
 
             <div className="pt-6 border-t border-white/5 space-y-4 mt-8 mb-20">
@@ -299,4 +271,52 @@ export function ReviewTaskRenderer({
             />
         </div>
     );
+}
+// Helper for recursive rendering
+function renderComponent(
+    component: TaskComponent,
+    taskData: any,
+    formData: any,
+    handleChange: (id: string, value: any) => void,
+    isReadOnly: boolean
+) {
+    // Objects
+    if (component.type === 'Image') return <ImageObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'Text') return <TextObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'Audio') return <AudioObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'Header') return <HeaderComponent key={component.id} component={component} />;
+    if (component.type === 'HyperText') return <HyperTextObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'Video') return <VideoObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'TimeSeries') return <TimeSeriesObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'PDF') return <PDFObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'MultiMessage') return <MultiMessageObject key={component.id} component={component} data={taskData} />;
+
+    // Layout
+    if (component.type === 'View') {
+        return (
+            <ViewLayout key={component.id} component={component}>
+                {component.children?.map(child => renderComponent(child, taskData, formData, handleChange, isReadOnly))}
+            </ViewLayout>
+        );
+    }
+
+    // Pogo Workflow Components
+    if (component.type === 'InstructionBlock') return <InstructionBlock key={component.id} component={component} data={taskData} />;
+    if (component.type === 'RequirementPanel') return <RequirementPanel key={component.id} component={component} />;
+    if (component.type === 'SideBySide') return <SideBySideLayout key={component.id} component={component} data={taskData} />;
+    if (component.type === 'RubricTable') return <RubricTable key={component.id} component={component} />;
+
+    // Controls
+    const value = formData[component.name] || formData[component.id];
+    const onChange = (val: any) => handleChange(component.name || component.id, val);
+
+    if (component.type === 'Choices') return <ChoicesControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+    if (component.type === 'Rating') return <RatingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+    if (component.type === 'TextArea') return <TextAreaControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+    if (component.type === 'Labels' || component.type === 'RectangleLabels') return <ImageLabelsControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+    if (component.type === 'RubricScorer') return <RubricScorerControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+    if (component.type === 'Ranking') return <RankingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+    if (component.type === 'Feedback') return <FeedbackControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+
+    return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
 }
