@@ -113,6 +113,9 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const { showToast } = useToast();
     const [loadingStatus, setLoadingStatus] = useState<string>('');
+    const [isImproveModalOpen, setIsImproveModalOpen] = useState(false);
+    const [improvePrompt, setImprovePrompt] = useState('');
+    const [isImproving, setIsImproving] = useState(false);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -268,6 +271,43 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
         }
     };
 
+    const handleImproveInstructions = async () => {
+        if (!improvePrompt.trim()) return;
+
+        setIsImproving(true);
+        setLoadingStatus('AI is improving your instructions...');
+
+        try {
+            const response = await fetch('/api/instructions/improve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sections,
+                    prompt: improvePrompt
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to improve instructions');
+            }
+
+            const data = await response.json();
+
+            if (data.sections && Array.isArray(data.sections)) {
+                onChange(data.sections);
+                showToast('Instructions improved successfully!', 'success');
+                setIsImproveModalOpen(false);
+                setImprovePrompt('');
+            }
+        } catch (error) {
+            console.error('Improvement failed', error);
+            showToast('Failed to improve instructions. Please try again.', 'error');
+        } finally {
+            setIsImproving(false);
+            setLoadingStatus('');
+        }
+    };
+
     const handleExportPDF = () => {
         const printWindow = window.open('', '_blank');
         if (!printWindow) return;
@@ -325,11 +365,58 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
 
                         <div className="flex flex-col items-center gap-2 w-full">
                             <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                            <span className="text-sm font-mono text-primary/80">{loadingStatus || 'Initializing...'}</span>
+                            <span className="text-sm font-mono text-primary/80">{loadingStatus || 'Processing...'}</span>
                         </div>
                     </div>
                 </div>
             )}
+
+            {isImproveModalOpen && (
+                <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md rounded-xl flex flex-col items-center justify-center text-white animate-in fade-in duration-200">
+                    <div className="bg-[#111] p-8 rounded-2xl border border-white/10 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400">
+                                <Wand2 className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold">Improve Instructions with AI</h3>
+                                <p className="text-muted-foreground text-sm">Translate, reorganize, or refine your content</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold uppercase text-muted-foreground mb-2 block">How should AI improve this?</label>
+                                <textarea
+                                    value={improvePrompt}
+                                    onChange={(e) => setImprovePrompt(e.target.value)}
+                                    placeholder="e.g., 'Translate everything to Spanish', 'Make the tone more professional', 'Add emojis to headers'..."
+                                    className="w-full h-32 bg-black/40 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-emerald-500/50 transition-colors resize-none"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    onClick={() => setIsImproveModalOpen(false)}
+                                    className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleImproveInstructions}
+                                    disabled={!improvePrompt.trim() || isImproving}
+                                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isImproving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                                    {isImproving ? 'Improving...' : 'Improve Now'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
 
             <input
                 type="file"
@@ -346,8 +433,16 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
                 </div>
                 <div className="flex gap-3">
                     <button
+                        onClick={() => setIsImproveModalOpen(true)}
+                        disabled={isImporting || isImproving || sections.length === 0}
+                        className="px-4 py-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-200 border border-emerald-500/30 rounded-xl text-sm font-bold transition-all flex items-center gap-2 group"
+                    >
+                        <Wand2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                        Improve with AI
+                    </button>
+                    <button
                         onClick={handleImportPDFClick}
-                        disabled={isImporting}
+                        disabled={isImporting || isImproving}
                         className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 text-purple-200 border border-purple-500/30 rounded-xl text-sm font-bold transition-all flex items-center gap-2 group"
                     >
                         {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />}
