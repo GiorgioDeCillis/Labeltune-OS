@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, FileText, Download, ChevronRight } from 'lucide-react';
+import { X, FileText, Download, ChevronRight, Search } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { InstructionSection } from '@/app/dashboard/projects/new/steps/InstructionsStep';
@@ -15,6 +15,7 @@ interface GuidelinesViewerProps {
 
 export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesViewerProps) {
     const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -39,8 +40,13 @@ export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesView
         sections = guidelines;
     }
 
-    if (activeSectionId === null && sections.length > 0) {
-        setActiveSectionId(sections[0].id);
+    const filteredSections = sections.filter(s =>
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.content.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    if (activeSectionId === null && filteredSections.length > 0) {
+        setActiveSectionId(filteredSections[0].id);
     }
 
     const activeSection = sections.find(s => s.id === activeSectionId);
@@ -114,21 +120,39 @@ export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesView
                 {/* Content Area */}
                 <div className="flex-1 flex overflow-hidden">
                     {/* Sidebar */}
-                    <div className="w-64 border-r border-white/5 bg-white/2 flex flex-col overflow-y-auto">
-                        <div className="p-4 space-y-1">
-                            {sections.map(s => (
-                                <button
-                                    key={s.id}
-                                    onClick={() => setActiveSectionId(s.id)}
-                                    className={`w-full p-3 rounded-xl text-left text-sm font-medium transition-all flex items-center justify-between group ${activeSectionId === s.id
-                                        ? 'bg-primary/10 text-primary border-primary/20'
-                                        : 'text-muted-foreground hover:bg-white/5 hover:text-white'
-                                        }`}
-                                >
-                                    <span className="truncate">{s.title}</span>
-                                    <ChevronRight className={`w-4 h-4 transition-transform ${activeSectionId === s.id ? 'translate-x-0' : '-translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`} />
-                                </button>
-                            ))}
+                    <div className="w-80 border-r border-white/5 bg-white/2 flex flex-col overflow-hidden">
+                        <div className="p-4 border-b border-white/5">
+                            <div className="relative group">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                                <input
+                                    type="text"
+                                    placeholder="Search in instructions..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-1">
+                            {filteredSections.length > 0 ? (
+                                filteredSections.map(s => (
+                                    <button
+                                        key={s.id}
+                                        onClick={() => setActiveSectionId(s.id)}
+                                        className={`w-full p-3 rounded-xl text-left text-sm font-medium transition-all flex items-center justify-between group ${activeSectionId === s.id
+                                            ? 'bg-primary/10 text-primary border-primary/20'
+                                            : 'text-muted-foreground hover:bg-white/5 hover:text-white'
+                                            }`}
+                                    >
+                                        <span className="truncate">{s.title}</span>
+                                        <ChevronRight className={`w-4 h-4 transition-transform ${activeSectionId === s.id ? 'translate-x-0' : '-translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`} />
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="py-10 text-center text-muted-foreground text-sm">
+                                    No results found for "{searchQuery}"
+                                </div>
+                            )}
                         </div>
                     </div>
 
