@@ -205,10 +205,14 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                         {/* Deliverable Rate */}
                         <div>
                             <div className="flex items-center gap-2 text-3xl font-bold">
-                                {project.pay_rate || '$15.00 / hr'}
+                                {project.payment_mode === 'task'
+                                    ? `${project.pay_per_task || '—'} / task`
+                                    : (project.pay_rate || '$15.00 / hr')}
                             </div>
                             <div className="flex items-center gap-2 mt-2">
-                                <p className="text-sm text-white/50">Deliverable rate</p>
+                                <p className="text-sm text-white/50">
+                                    {project.payment_mode === 'task' ? 'Pay per task' : 'Deliverable rate'}
+                                </p>
                                 <AlertCircle className="w-3 h-3 text-white/30" />
                             </div>
                         </div>

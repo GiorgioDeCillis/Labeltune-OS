@@ -19,6 +19,8 @@ interface Project {
     created_at: string;
     category?: string;
     max_task_time?: number;
+    payment_mode?: 'hourly' | 'task';
+    pay_per_task?: string;
 }
 
 export default function WorkerDashboardClient({ user, profile }: { user: any, profile: any }) {
@@ -309,9 +311,13 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                 <span className="text-xs text-white/40 font-bold uppercase tracking-widest">Rate</span>
                                                 <div className="flex items-baseline gap-1">
                                                     <span className="text-3xl font-bold text-white">
-                                                        {activeProject.pay_rate?.split('/')[0] || '$15.00'}
+                                                        {activeProject.payment_mode === 'task'
+                                                            ? (activeProject.pay_per_task ? `${activeProject.pay_per_task}` : '—')
+                                                            : (activeProject.pay_rate?.split('/')[0] || '$15.00')}
                                                     </span>
-                                                    <span className="text-sm text-white/40">/ hr</span>
+                                                    <span className="text-sm text-white/40">
+                                                        {activeProject.payment_mode === 'task' ? '/ task' : '/ hr'}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>

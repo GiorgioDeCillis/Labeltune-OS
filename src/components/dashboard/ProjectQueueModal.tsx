@@ -13,6 +13,8 @@ interface Project {
     status: string;
     pay_rate: string;
     created_at: string;
+    payment_mode?: 'hourly' | 'task';
+    pay_per_task?: string;
 }
 
 interface ProjectQueueModalProps {
@@ -120,7 +122,11 @@ export default function ProjectQueueModal({ isOpen, onClose, userId }: ProjectQu
                                                         <h3 className="text-lg font-bold truncate pr-4">{project.name}</h3>
                                                         <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
                                                             <Wallet className="w-4 h-4 text-emerald-400" />
-                                                            <span className="font-mono font-bold">{project.pay_rate || '$15.00/hr'}</span>
+                                                            <span className="font-mono font-bold">
+                                                                {project.payment_mode === 'task'
+                                                                    ? `${project.pay_per_task || '—'}/task`
+                                                                    : (project.pay_rate || '$15.00/hr')}
+                                                            </span>
                                                         </div>
                                                     </div>
 
