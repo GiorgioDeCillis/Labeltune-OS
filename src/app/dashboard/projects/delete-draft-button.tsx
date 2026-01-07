@@ -6,6 +6,7 @@ import { Trash2, Loader2 } from 'lucide-react';
 import { deleteProjectDraft } from './actions';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useToast } from '@/components/Toast';
+import { useRouter } from 'next/navigation';
 
 interface DeleteDraftButtonProps {
     projectId: string;
@@ -15,6 +16,7 @@ export function DeleteDraftButton({ projectId }: DeleteDraftButtonProps) {
     const [isPending, startTransition] = useTransition();
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const { showToast } = useToast();
+    const router = useRouter();
 
     const handleDelete = async () => {
         setIsConfirmOpen(false);
@@ -22,6 +24,7 @@ export function DeleteDraftButton({ projectId }: DeleteDraftButtonProps) {
             try {
                 await deleteProjectDraft(projectId);
                 showToast('Bozza eliminata con successo', 'success');
+                router.refresh();
             } catch (error) {
                 console.error('Failed to delete draft:', error);
                 showToast('Errore durante l\'eliminazione della bozza', 'error');

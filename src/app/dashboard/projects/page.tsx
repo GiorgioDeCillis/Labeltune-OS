@@ -50,34 +50,41 @@ export default async function ProjectsPage() {
                         const href = isDraft ? `/dashboard/projects/new?draftId=${project.id}` : `/dashboard/projects/${project.id}`;
 
                         return (
-                            <Link key={project.id} href={href}>
-                                <div className="glass-panel p-6 rounded-xl hover:border-primary/50 transition-all group cursor-pointer h-full flex flex-col">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className={`p-3 rounded-lg ${project.status === 'active' ? 'bg-green-500/10 text-green-500' :
-                                            isDraft ? 'bg-yellow-500/10 text-yellow-500' : 'bg-white/5 text-muted-foreground'
-                                            }`}>
-                                            <Folder className="w-6 h-6" />
+                            <div key={project.id} className="relative group">
+                                <Link href={href}>
+                                    <div className="glass-panel p-6 rounded-xl hover:border-primary/50 transition-all cursor-pointer h-full flex flex-col">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className={`p-3 rounded-lg ${project.status === 'active' ? 'bg-green-500/10 text-green-500' :
+                                                isDraft ? 'bg-yellow-500/10 text-yellow-500' : 'bg-white/5 text-muted-foreground'
+                                                }`}>
+                                                <Folder className="w-6 h-6" />
+                                            </div>
+                                            <span className={`text-xs px-2 py-1 rounded-full border ${project.status === 'active' ? 'border-green-500/30 text-green-400' :
+                                                isDraft ? 'border-yellow-500/30 text-yellow-400' : 'border-white/10 text-muted-foreground'
+                                                }`}>
+                                                {project.status === 'draft' ? 'Draft' : project.status}
+                                            </span>
                                         </div>
-                                        <span className={`text-xs px-2 py-1 rounded-full border ${project.status === 'active' ? 'border-green-500/30 text-green-400' :
-                                            isDraft ? 'border-yellow-500/30 text-yellow-400' : 'border-white/10 text-muted-foreground'
-                                            }`}>
-                                            {project.status === 'draft' ? 'Draft' : project.status}
-                                        </span>
-                                    </div>
-                                    <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{project.name}</h3>
-                                    <p className="text-muted-foreground text-sm mb-6 line-clamp-2 flex-1">{project.description}</p>
+                                        <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{project.name}</h3>
+                                        <p className="text-muted-foreground text-sm mb-6 line-clamp-2 flex-1">{project.description}</p>
 
-                                    <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                                        <div className="flex items-center text-xs text-muted-foreground gap-2">
-                                            <Calendar className="w-3 h-3" />
-                                            {new Date(project.created_at).toLocaleDateString()}
+                                        <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                                            <div className="flex items-center text-xs text-muted-foreground gap-2">
+                                                <Calendar className="w-3 h-3" />
+                                                {new Date(project.created_at).toLocaleDateString()}
+                                            </div>
+                                            {/* Spacer for the absolute button */}
+                                            {isDraft && isInternal && <div className="w-8 h-8" />}
                                         </div>
-                                        {isDraft && isInternal && (
-                                            <DeleteDraftButton projectId={project.id} />
-                                        )}
                                     </div>
-                                </div>
-                            </Link>
+                                </Link>
+
+                                {isDraft && isInternal && (
+                                    <div className="absolute bottom-5 right-5 z-10">
+                                        <DeleteDraftButton projectId={project.id} />
+                                    </div>
+                                )}
+                            </div>
                         );
                     })}
                 </div>
