@@ -1,7 +1,8 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { TaskComponent } from './types';
-import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot, Mic, Square, Play, Pause, SkipBack, SkipForward, Search } from 'lucide-react';
+import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot, Mic, Square, Play, Pause, SkipBack, SkipForward, Search, Loader2 } from 'lucide-react';
+
 import { getDefaultAvatar } from '@/utils/avatar';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
