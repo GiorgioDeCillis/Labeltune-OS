@@ -15,54 +15,66 @@ export async function POST(req: Request) {
             );
         }
 
-        const { text } = await req.json();
+        const body = await req.json();
+        const { image } = body; // Base64 image string
 
-        if (!text || typeof text !== 'string') {
+        if (!image || typeof image !== 'string') {
             return NextResponse.json(
-                { error: 'Invalid request: "text" field is required' },
+                { error: 'Invalid request: "image" field (base64) is required' },
                 { status: 400 }
             );
         }
-
-        // Limit input size to avoid excessive token usage/cost
-        // 100k chars is roughly 25k tokens, well within gpt-4o-mini limits but safe sanity check
-        const truncatedText = text.slice(0, 100000);
 
         const completion = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
                 {
                     role: 'system',
-                    content: `You are an expert technical writer and document parser. 
-                    Your task is to extract project instructions from raw text that was extracted from a PDF.
+                    content: `You are an expert technical writer and document digitizer.
                     
-                    The raw text may contain artifacts like watermarks (e.g., "CONFIDENTIAL", "DRAFT", "DO NOT DISTRIBUTE"), headers, footers, or page numbers mixed in with the real content.
+                    Your task is to transcribe the content of the provided document page into structured data.
                     
-                    You must:
-                    1. IGNORE all watermarks, headers, footers, and page numbers.
-                    2. Identify logical sections in the instructions (e.g., "Overview", "Labeling Guide", "Examples").
-                    3. For each section, extract the Title and the Content.
-                    4. Format the Content as clean, well-formatted Markdown.
-                    5. Return the result as a JSON object containing an array of sections.
-
-                    The output format must be exactly:
+                    CRITICAL RULES:
+                    1. **IGNORE WATERMARKS**: The document may have diagonal watermarks (e.g., "CONFIDENTIAL", "DRAFT", logos). IGNORE them completely. Treat the text as if the watermark is not there.
+                    2. **PRESERVE FORMATTING**: Keep bolding, lists, and headers. Use Markdown.
+                    3. **PRESERVE EMOJIS**: If there are emojis in the text, keep them.
+                    4. **DESCRIBE IMAGES**: If there is a diagram, screenshot, or important image, add a placeholder in italics: *[Image: Description of the image]*.
+                    5. **STRUCTURE**: Identify if this page contains a new section or continues a previous one.
+                    
+                    The output must be a JSON object:
                     {
                         "sections": [
                             {
-                                "title": "Section Title",
-                                "content": "Markdown content here..."
+                                "title": "Section Title (or 'Continued' if it's just text flow)",
+                                "content": "Markdown content..."
                             }
                         ]
                     }
+                    
+                    If the page contains multiple short sections, include them all in the array.
+                    If the page is just a Table of Contents or a Cover Page with no real instructions, return an empty array or a "Project Overview" section.
                     `
                 },
                 {
                     role: 'user',
-                    content: `Here is the raw text from the document:\n\n${truncatedText}`
+                    content: [
+                        {
+                            type: "text",
+                            text: "Transcribe this page."
+                        },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: image, // base64 data url
+                                detail: "high"
+                            }
+                        }
+                    ]
                 }
             ],
             response_format: { type: 'json_object' },
-            temperature: 0.1, // Low temperature for consistent, factual extraction
+            max_tokens: 4000,
+            temperature: 0.1,
         });
 
         const content = completion.choices[0].message.content;
@@ -74,10 +86,10 @@ export async function POST(req: Request) {
         const parsed = JSON.parse(content);
 
         // Ensure every section has a unique ID
-        const sectionsWithIds = parsed.sections.map((section: any) => ({
+        const sectionsWithIds = parsed.sections?.map((section: any) => ({
             ...section,
             id: crypto.randomUUID(),
-        }));
+        })) || [];
 
         return NextResponse.json({ sections: sectionsWithIds });
 
