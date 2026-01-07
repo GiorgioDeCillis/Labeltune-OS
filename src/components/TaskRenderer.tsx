@@ -286,10 +286,25 @@ export function TaskRenderer({
                 // AccordionChoices: value is string or string[]
 
                 if (component.type === 'Checklist') {
-                    // Check if at least one is true
+                    // Check if ALL items are checked (since we are in the required check block)
                     const checked = value || {};
-                    const hasChecked = Object.values(checked).some(v => v === true);
-                    if (!hasChecked) return false;
+                    const opts = component.options || [];
+                    console.log('DEBUG CHECKLIST VALIDATION:', {
+                        id: component.id,
+                        totalOptions: opts.length,
+                        checkedState: checked
+                    });
+
+                    if (opts.length > 0) {
+                        const allChecked = opts.every(opt => checked[opt.value] === true);
+                        console.log('DEBUG CHECKLIST RESULT:', { allChecked });
+                        if (!allChecked) return false;
+                    } else {
+                        // Fallback: Check if at least one is true
+                        console.warn('Checklist Validation: No options found in schema for component:', component.id);
+                        const hasChecked = Object.values(checked).some(v => v === true);
+                        if (!hasChecked) return false;
+                    }
                 } else {
                     // AccordionChoices / Choices
                     const selected = Array.isArray(value) ? value : (value ? [value] : []);
