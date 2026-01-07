@@ -21,8 +21,9 @@ interface TaskHistory {
     project_id: string;
     project_name: string;
     status: string;
-    annotator_time_spent: number;
-    annotator_earnings: number;
+    role: 'attempter' | 'reviewer';
+    time_spent: number;
+    earnings: number;
     review_rating: number | null;
     review_feedback: string | null;
     created_at: string;
@@ -51,26 +52,28 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                     *,
                     projects (name)
                 `)
-                .eq('assigned_to', user.id)
+                .or(`assigned_to.eq.${user.id},reviewed_by.eq.${user.id}`)
                 .in('status', ['submitted', 'completed', 'approved', 'rejected'])
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
 
-            const formattedTasks = data.map((t: any) => ({
-                id: t.id,
-                project_id: t.project_id,
-                project_name: t.projects?.name || 'Unknown Project',
-                status: t.status,
-                annotator_time_spent: t.annotator_time_spent || 0,
-                annotator_earnings: t.annotator_earnings || 0,
-                review_rating: t.review_rating,
-                review_feedback: t.review_feedback,
-                reviewer_rating: t.reviewer_rating,
-                reviewer_feedback: t.reviewer_feedback,
-                created_at: t.created_at,
-                completed_at: t.updated_at
-            }));
+            const formattedTasks = data.map((t: any) => {
+                const isReviewer = t.reviewed_by === user.id;
+                return {
+                    id: t.id,
+                    project_id: t.project_id,
+                    project_name: t.projects?.name || 'Unknown Project',
+                    status: t.status,
+                    role: isReviewer ? 'reviewer' : 'attempter',
+                    time_spent: isReviewer ? (t.reviewer_time_spent || 0) : (t.annotator_time_spent || 0),
+                    earnings: isReviewer ? (t.reviewer_earnings || 0) : (t.annotator_earnings || 0),
+                    review_rating: t.review_rating,
+                    review_feedback: t.review_feedback,
+                    created_at: t.created_at,
+                    completed_at: t.updated_at
+                };
+            });
 
             setTasks(formattedTasks);
         } catch (error) {
@@ -87,7 +90,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
 
     const stats = {
         totalCompleted: tasks.filter(t => t.status === 'submitted' || t.status === 'completed' || t.status === 'approved').length,
-        totalEarnings: tasks.reduce((acc, t) => acc + t.annotator_earnings, 0),
+        totalEarnings: tasks.reduce((acc, t) => acc + t.earnings, 0),
         avgRating: tasks.filter(t => t.review_rating !== null).length > 0
             ? tasks.filter(t => t.review_rating !== null).reduce((acc, t) => acc + (t.review_rating || 0), 0) / tasks.filter(t => t.review_rating !== null).length
             : null
@@ -192,9 +195,12 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                                                 <span className="text-sm font-bold text-white group-hover:text-primary transition-colors">
                                                     {task.project_name}
                                                 </span>
-                                                <Link href={`/dashboard/projects/${task.project_id}/tasks/${task.id}`} className="hover:text-primary transition-colors">
-                                                    <span className="text-[10px] font-mono text-white/40">#{task.id}</span>
-                                                </Link>
+                                                <div className="flex items-center gap-2">
+                                                    <RoleBadge role={task.role} />
+                                                    <Link href={task.role === 'reviewer' ? `/dashboard/review/${task.id}` : `/dashboard/projects/${task.project_id}/tasks/${task.id}`} className="hover:text-primary transition-colors">
+                                                        <span className="text-[10px] font-mono text-white/40">#{task.id}</span>
+                                                    </Link>
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -203,12 +209,12 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center gap-1.5 text-xs text-white/60">
                                                 <Clock className="w-3 h-3" />
-                                                {formatTime(task.annotator_time_spent)}
+                                                {formatTime(task.time_spent)}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <span className="text-sm font-bold text-emerald-400">
-                                                ${task.annotator_earnings.toFixed(2)}
+                                                ${task.earnings.toFixed(2)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
@@ -321,11 +327,11 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                                 <div className="flex flex-col gap-2 pt-2 border-t border-white/5">
                                     <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest">
                                         <span className="text-white/40">Earnings Earned</span>
-                                        <span className="text-emerald-400">${selectedTask.annotator_earnings.toFixed(2)}</span>
+                                        <span className="text-emerald-400">${selectedTask.earnings.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest">
                                         <span className="text-white/40">Time Spent</span>
-                                        <span className="text-white/80">{formatTime(selectedTask.annotator_time_spent)}</span>
+                                        <span className="text-white/80">{formatTime(selectedTask.time_spent)}</span>
                                     </div>
                                 </div>
 
@@ -357,6 +363,21 @@ function StatusBadge({ status }: { status: string }) {
     return (
         <span className={`px-2.5 py-1 rounded-full border ${config.bg} ${config.color} ${config.border} text-[10px] font-bold uppercase tracking-wider`}>
             {config.label}
+        </span>
+    );
+}
+
+function RoleBadge({ role }: { role: 'attempter' | 'reviewer' }) {
+    if (role === 'reviewer') {
+        return (
+            <span className="px-1.5 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[9px] font-bold uppercase tracking-wider">
+                Reviewer
+            </span>
+        );
+    }
+    return (
+        <span className="px-1.5 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-bold uppercase tracking-wider">
+            Attempter
         </span>
     );
 }
