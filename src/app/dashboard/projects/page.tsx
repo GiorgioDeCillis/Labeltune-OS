@@ -64,26 +64,24 @@ export default async function ProjectsPage() {
                                             {project.status === 'draft' ? 'Draft' : project.status}
                                         </span>
                                     </div>
-                                </div>
-                                <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{project.name}</h3>
-                                <p className="text-muted-foreground text-sm mb-6 line-clamp-2 flex-1">{project.description}</p>
+                                    <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{project.name}</h3>
+                                    <p className="text-muted-foreground text-sm mb-6 line-clamp-2 flex-1">{project.description}</p>
 
-                                <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                                    <div className="flex items-center text-xs text-muted-foreground gap-2">
-                                        <Calendar className="w-3 h-3" />
-                                        {new Date(project.created_at).toLocaleDateString()}
+                                    <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                                        <div className="flex items-center text-xs text-muted-foreground gap-2">
+                                            <Calendar className="w-3 h-3" />
+                                            {new Date(project.created_at).toLocaleDateString()}
+                                        </div>
+                                        {isDraft && isInternal && (
+                                            <DeleteDraftButton projectId={project.id} />
+                                        )}
                                     </div>
-                                    {isDraft && isInternal && (
-                                        <DeleteDraftButton projectId={project.id} />
-                                    )}
                                 </div>
-                            </div>
                             </Link>
-            );
+                        );
                     })}
+                </div>
+            )}
         </div>
-    )
-}
-        </div >
     );
 }
