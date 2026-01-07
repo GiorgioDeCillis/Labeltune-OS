@@ -625,10 +625,11 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
         }
     };
 
-    const formatDuration = (ms: number) => {
+    const formatDuration = (ms: number, showMs = true) => {
         const totalSeconds = ms / 1000;
         const m = Math.floor(totalSeconds / 60);
         const s = Math.floor(totalSeconds % 60);
+        if (!showMs) return `${m}:${s.toString().padStart(2, '0')}`;
         const milli = Math.floor(ms % 1000);
         return `${m}:${s.toString().padStart(2, '0')}.${milli.toString().padStart(3, '0')}`;
     };
@@ -662,7 +663,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                     <div className="flex flex-col items-center justify-center gap-6 py-6">
                         <div className="flex items-center gap-3">
                             <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                            <span className="text-2xl font-mono font-bold">{formatDuration(duration)}</span>
+                            <span className="text-2xl font-mono font-bold">{formatDuration(duration, false)}</span>
                         </div>
                         <button
                             onClick={stopRecording}
