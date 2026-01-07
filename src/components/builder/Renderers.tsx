@@ -525,9 +525,9 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                 } as any),
                 Minimap.create({
                     height: 15,
-                    waveColor: '#2a2a2a',
-                    progressColor: '#555555',
-                    overlayColor: 'rgba(255, 255, 255, 0.05)',
+                    waveColor: 'rgba(255, 255, 255, 0.1)',
+                    progressColor: 'rgba(255, 255, 255, 0.3)',
+                    overlayColor: 'rgba(255, 255, 255, 0.08)',
                 }),
             ],
         });
@@ -691,7 +691,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                             )}
                         </div>
 
-                        <div className="relative bg-black/40 rounded-lg p-4 border border-white/5">
+                        <div className="relative bg-white/5 rounded-xl p-4 border border-white/10 backdrop-blur-sm overflow-hidden">
                             <div ref={waveformRef} className="w-full" />
                         </div>
 
