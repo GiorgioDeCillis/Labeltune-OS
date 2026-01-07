@@ -328,7 +328,7 @@ export default function OnboardingPage() {
                                                     const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
                                                     const page = await pdf.getPage(1);
 
-                                                    const viewport = page.getViewport({ scale: 1.5 });
+                                                    const viewport = page.getViewport({ scale: 1.0 });
                                                     const canvas = document.createElement('canvas');
                                                     const context = canvas.getContext('2d');
                                                     canvas.height = viewport.height;
@@ -342,7 +342,7 @@ export default function OnboardingPage() {
                                                         canvas: canvas as any,
                                                     }).promise;
 
-                                                    const base64Image = canvas.toDataURL('image/jpeg', 0.7);
+                                                    const base64Image = canvas.toDataURL('image/jpeg', 0.5);
 
                                                     // Validate with AI
                                                     const response = await fetch('/api/cv/validate', {
@@ -352,6 +352,11 @@ export default function OnboardingPage() {
                                                     });
 
                                                     const data = await response.json();
+
+                                                    if (!response.ok) {
+                                                        console.error('CV validation API error:', data);
+                                                        throw new Error(data.error || 'API error');
+                                                    }
 
                                                     if (data.isValid) {
                                                         setCvValidationStatus('valid');
@@ -392,7 +397,7 @@ export default function OnboardingPage() {
                                                     cvValidationStatus === 'validating' ? 'text-blue-400' :
                                                         fieldErrors.cv ? 'text-red-500' : ''
                                                 }`}>
-                                                {cvValidationStatus === 'validating' ? 'Validazione in corso...' :
+                                                {cvValidationStatus === 'validating' ? 'Verifica del CV in corso...' :
                                                     cvValidationStatus === 'valid' ? cvFile?.name :
                                                         cvValidationStatus === 'invalid' ? 'CV non valido' :
                                                             cvFile ? cvFile.name :
@@ -403,7 +408,7 @@ export default function OnboardingPage() {
                                                 cvValidationStatus === 'invalid' ? 'text-red-400/70' :
                                                     'opacity-40'
                                                 }`}>
-                                                {cvValidationStatus === 'validating' ? 'AI sta analizzando il documento...' :
+                                                {cvValidationStatus === 'validating' ? 'Stiamo verificando il tuo documento...' :
                                                     cvValidationStatus === 'valid' ? `✓ ${cvValidationReason}` :
                                                         cvValidationStatus === 'invalid' ? cvValidationReason :
                                                             cvFile ? `${(cvFile.size / 1024 / 1024).toFixed(2)} MB` :

@@ -89,10 +89,14 @@ Be strict but fair. If it looks like a genuine attempt at a CV but is poorly for
             reason: parsed.reason || (parsed.isValid ? 'CV valido' : 'Documento non riconosciuto come CV')
         });
 
-    } catch (error) {
-        console.error('Error validating CV:', error);
+    } catch (error: any) {
+        console.error('Error validating CV:', error?.message || error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
         return NextResponse.json(
-            { error: 'Failed to validate CV' },
+            {
+                error: 'Failed to validate CV',
+                details: error?.message || 'Unknown error'
+            },
             { status: 500 }
         );
     }
