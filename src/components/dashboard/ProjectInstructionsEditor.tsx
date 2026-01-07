@@ -1,47 +1,12 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Plus, Trash2, GripVertical, FileText, Download, Eye, Upload, Loader2, Wand2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
     DndContext,
-// ... imports
-
-// ...
-
-// In handleFileChange loop:
-                if (data.sections && Array.isArray(data.sections)) {
-    data.sections.forEach((newSec: any) => {
-        // Filter empty sections
-        if (!newSec.content || newSec.content.trim().length === 0) return;
-
-        const lastSec = accumulatedSections[accumulatedSections.length - 1];
-        const cleanTitle = newSec.title ? newSec.title.trim() : '';
-
-        // Check for continuation or duplicate title (continuation of same section)
-        const isContinued = cleanTitle.toLowerCase() === 'continued' || !cleanTitle;
-        const isSameTitle = lastSec && lastSec.title && cleanTitle && lastSec.title.toLowerCase() === cleanTitle.toLowerCase();
-
-        if (lastSec && (isContinued || isSameTitle)) {
-            // Smart merge: if the new content keeps flowing, just append
-            lastSec.content += '\n\n' + newSec.content;
-        } else {
-            // Deduplicate content if it exactly matches the previous section's end (e.g. header repetition)
-            // Simple check: if content is exactly the same, skip.
-            if (lastSec && lastSec.content.trim() === newSec.content.trim()) return;
-
-            accumulatedSections.push({
-                id: crypto.randomUUID(),
-                title: cleanTitle || `Page ${i} Content`,
-                content: newSec.content || '',
-            });
-        }
-    });
-}
-// ...
-
-// In render:
-<ReactMarkdown remarkPlugins={[remarkGfm]} className="prose prose-invert max-w-none">
-    {activeSection.content || '_No content yet._'}
-</ReactMarkdown>
-closestCenter,
+    closestCenter,
     KeyboardSensor,
     PointerSensor,
     useSensor,
