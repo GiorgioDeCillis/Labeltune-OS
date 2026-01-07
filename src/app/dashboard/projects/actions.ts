@@ -642,17 +642,28 @@ export async function startReviewing(projectId: string) {
 
     if (!user) redirect('/login');
 
-    // 1. Check if user is a reviewer for this project
-    const { data: assignment } = await supabase
-        .from('project_assignees')
-        .select('status, is_reviewer')
-        .eq('project_id', projectId)
-        .eq('user_id', user.id)
-        .eq('status', 'active')
+    // Verify user role
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
         .single();
 
-    if (!assignment || !assignment.is_reviewer) {
-        redirect(`/dashboard/projects/${projectId}?error=You are not a reviewer for this project`);
+    const isInternal = profile?.role === 'pm' || profile?.role === 'admin';
+
+    // 1. Check if user is a reviewer for this project (skip for Admin/PM)
+    if (!isInternal) {
+        const { data: assignment } = await supabase
+            .from('project_assignees')
+            .select('status, is_reviewer')
+            .eq('project_id', projectId)
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .single();
+
+        if (!assignment || !assignment.is_reviewer) {
+            redirect(`/dashboard/projects/${projectId}?error=You are not a reviewer for this project`);
+        }
     }
 
     // 2. Find a task waiting for review (status = 'submitted')

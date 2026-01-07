@@ -31,7 +31,7 @@ import {
 
 import { useToast } from '@/components/Toast';
 
-import { startTasking } from '@/app/dashboard/projects/actions';
+import { startReviewing } from '@/app/dashboard/projects/actions';
 import { TaskSubmissionSuccess } from '@/components/dashboard/TaskSubmissionSuccess';
 
 export function ReviewTaskRenderer({
@@ -124,7 +124,7 @@ export function ReviewTaskRenderer({
 
     const handleNextTask = async () => {
         if (submissionResults?.projectId) {
-            await startTasking(submissionResults.projectId);
+            await startReviewing(submissionResults.projectId);
         } else {
             router.push('/dashboard/review');
         }
