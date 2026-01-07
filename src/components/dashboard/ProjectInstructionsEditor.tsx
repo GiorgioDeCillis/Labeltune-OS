@@ -275,7 +275,7 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
         if (!improvePrompt.trim()) return;
 
         setIsImproving(true);
-        setLoadingStatus('AI is improving your instructions...');
+        setLoadingStatus('AI is working its magic (this may take a minute)...');
 
         try {
             const response = await fetch('/api/instructions/improve', {
