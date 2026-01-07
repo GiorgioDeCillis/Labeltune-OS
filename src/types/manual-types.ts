@@ -35,7 +35,7 @@ export interface Project {
     pay_rate?: string;
     max_task_time?: number;
     total_tasks?: number;
-    total_tasks?: number;
+
     extra_time_after_max?: number;
     review_task_time?: number;
     review_extra_time?: number;
