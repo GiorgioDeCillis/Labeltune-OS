@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+// Ensure this runs on Node.js runtime for OpenAI SDK
+export const runtime = 'nodejs';
+
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
+
+// Handle preflight CORS requests
+export async function OPTIONS() {
+    return NextResponse.json({}, { status: 200 });
+}
 
 export async function POST(req: Request) {
     try {
