@@ -534,6 +534,18 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
 
         wavesurferRef.current.load(recordingUrl);
 
+        // Override Hover plugin's internal formatTime to support milliseconds
+        // (v7 Hover.create doesn't support formatTime in options)
+        const hoverPlugin = (wavesurferRef.current as any).plugins.find((p: any) => p instanceof Hover);
+        if (hoverPlugin) {
+            hoverPlugin.formatTime = (seconds: number) => {
+                const m = Math.floor(seconds / 60);
+                const s = Math.floor(seconds % 60);
+                const ms = Math.floor((seconds % 1) * 1000);
+                return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+            };
+        }
+
         wavesurferRef.current.on('play', () => setIsPlaying(true));
         wavesurferRef.current.on('pause', () => setIsPlaying(false));
         wavesurferRef.current.on('finish', () => setIsPlaying(false));
