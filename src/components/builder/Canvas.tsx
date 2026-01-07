@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TaskComponent } from './types';
-import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic, ChevronRight } from 'lucide-react';
 
 export function Canvas({ components, selectedId, onSelect, onDelete }: {
     components: TaskComponent[],
