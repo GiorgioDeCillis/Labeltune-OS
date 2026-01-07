@@ -570,9 +570,15 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
             if (!waveformRef.current || !wavesurferRef.current) return;
             const rect = waveformRef.current.getBoundingClientRect();
             const x = e.clientX - rect.left;
+
+            // Account for scroll position and total width when calculating time
+            // This ensures accuracy even when zoomed/scrolled or stretched to fit
             const duration = wavesurferRef.current.getDuration();
             if (duration > 0) {
-                const time = (x / rect.width) * duration;
+                const scrollWidth = wavesurferRef.current.getWrapper().scrollWidth;
+                const scrollLeft = wavesurferRef.current.getScroll();
+                const time = ((x + scrollLeft) / scrollWidth) * duration;
+
                 hoverLabel.style.display = 'block';
                 hoverLabel.style.left = `${x}px`;
                 hoverLabel.style.top = `0px`;
@@ -825,7 +831,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                         </div>
 
                         <div className="relative bg-white/5 rounded-xl p-4 border border-white/10 backdrop-blur-sm overflow-visible glass-wavesurfer">
-                            <div ref={waveformRef} className="w-full" />
+                            <div ref={waveformRef} className="w-full relative" />
                         </div>
 
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-2">
