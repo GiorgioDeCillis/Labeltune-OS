@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TaskComponent } from './types';
-import { Trash2, Image as ImageIcon, Music, AlignLeft, Type } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic } from 'lucide-react';
 
 export function Canvas({ components, selectedId, onSelect, onDelete }: {
     components: TaskComponent[],
@@ -98,6 +98,13 @@ function SortableComponent({ component, isSelected, onSelect, onDelete }: {
                         <Music className="w-4 h-4" />
                         <div className="flex-1 h-1 bg-white/10 rounded-full"></div>
                         <span className="text-xs">{component.value}</span>
+                    </div>
+                )}
+
+                {component.type === 'AudioRecorder' && (
+                    <div className="h-20 w-full bg-white/5 rounded-xl border border-white/10 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <Mic className="w-6 h-6 opacity-50" />
+                        <span className="text-xs uppercase tracking-widest font-bold">Audio Recorder Component</span>
                     </div>
                 )}
 

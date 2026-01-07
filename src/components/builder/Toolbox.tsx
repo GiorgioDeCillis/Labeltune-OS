@@ -15,7 +15,8 @@ import {
     Video,
     Activity,
     FileText,
-    MessagesSquare
+    MessagesSquare,
+    Mic
 } from 'lucide-react';
 import { TaskComponentType } from './types';
 
@@ -65,6 +66,7 @@ export function Toolbox() {
                 <DraggableTool type="Rating" label="Rating" icon={Star} />
                 <DraggableTool type="Number" label="Number" icon={Hash} />
                 <DraggableTool type="RectangleLabels" label="Rectangle Labels" icon={MousePointer2} />
+                <DraggableTool type="AudioRecorder" label="Audio Recorder" icon={Mic} />
             </div>
 
             <div className="space-y-2">

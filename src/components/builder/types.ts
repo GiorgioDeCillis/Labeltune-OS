@@ -27,7 +27,8 @@ export type TaskComponentType =
     | 'RubricScorer'
     | 'Ranking'
     | 'Feedback'
-    | 'RequirementPanel';
+    | 'RequirementPanel'
+    | 'AudioRecorder';
 
 export interface TaskComponent {
     id: string;

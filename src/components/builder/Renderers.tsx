@@ -1,9 +1,11 @@
-import React from 'react';
+'use client';
+import React, { useState, useRef, useEffect } from 'react';
 import { TaskComponent } from './types';
-import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot } from 'lucide-react';
+import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot, Mic, Square, Play, Pause, SkipBack, SkipForward, Search } from 'lucide-react';
 import { getDefaultAvatar } from '@/utils/avatar';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import WaveSurfer from 'wavesurfer.js';
 
 // --- Objects ---
 
@@ -429,6 +431,274 @@ export function ImageLabelsControl({ component, value, onChange, readOnly }: {
         </div>
     );
 }
+
+export function AudioRecorderControl({ component, value, onChange, readOnly }: {
+    component: TaskComponent,
+    value: any,
+    onChange: (val: any) => void,
+    readOnly?: boolean
+}) {
+    const [isRecording, setIsRecording] = useState(false);
+    const [duration, setDuration] = useState(0);
+    const [recordingUrl, setRecordingUrl] = useState<string | null>(value);
+    const [playbackSpeed, setPlaybackSpeed] = useState(1);
+    const [zoom, setZoom] = useState(10);
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    const waveformRef = useRef<HTMLDivElement>(null);
+    const wavesurferRef = useRef<WaveSurfer | null>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Initial value might be the recording URL
+    useEffect(() => {
+        if (value && typeof value === 'string') {
+            setRecordingUrl(value);
+        }
+    }, [value]);
+
+    // Initialize WaveSurfer
+    useEffect(() => {
+        if (!waveformRef.current || !recordingUrl) return;
+
+        if (wavesurferRef.current) {
+            wavesurferRef.current.destroy();
+        }
+
+        wavesurferRef.current = WaveSurfer.create({
+            container: waveformRef.current,
+            waveColor: '#4f4f4f',
+            progressColor: '#ffffff',
+            cursorColor: '#3b82f6',
+            barWidth: 2,
+            barRadius: 3,
+            height: 80,
+            normalize: true,
+            minPxPerSec: zoom,
+        });
+
+        wavesurferRef.current.load(recordingUrl);
+
+        wavesurferRef.current.on('play', () => setIsPlaying(true));
+        wavesurferRef.current.on('pause', () => setIsPlaying(false));
+        wavesurferRef.current.on('finish', () => setIsPlaying(false));
+
+        return () => {
+            if (wavesurferRef.current) {
+                wavesurferRef.current.destroy();
+            }
+        };
+    }, [recordingUrl]);
+
+    // Update zoom
+    useEffect(() => {
+        if (wavesurferRef.current) {
+            wavesurferRef.current.zoom(zoom);
+        }
+    }, [zoom]);
+
+    // Update speed
+    useEffect(() => {
+        if (wavesurferRef.current) {
+            wavesurferRef.current.setPlaybackRate(playbackSpeed);
+        }
+    }, [playbackSpeed]);
+
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = mediaRecorder;
+            const chunks: BlobPart[] = [];
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    chunks.push(e.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'audio/webm' });
+                const url = URL.createObjectURL(blob);
+                setRecordingUrl(url);
+
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = () => {
+                    const base64data = reader.result;
+                    onChange(base64data);
+                };
+            };
+
+            mediaRecorder.start();
+            setIsRecording(true);
+            setDuration(0);
+            timerRef.current = setInterval(() => {
+                setDuration(prev => prev + 1);
+            }, 1000);
+        } catch (err) {
+            console.error("Error accessing microphone:", err);
+            alert("Please allow microphone access to record audio.");
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+            setIsRecording(false);
+            if (timerRef.current) clearInterval(timerRef.current);
+        }
+    };
+
+    const togglePlayPause = () => {
+        if (wavesurferRef.current) {
+            wavesurferRef.current.playPause();
+        }
+    };
+
+    const skipBack = () => {
+        if (wavesurferRef.current) {
+            wavesurferRef.current.skip(-5);
+        }
+    };
+
+    const skipForward = () => {
+        if (wavesurferRef.current) {
+            wavesurferRef.current.skip(5);
+        }
+    };
+
+    const formatDuration = (sec: number) => {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    };
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-bold block mb-1">{component.title}</label>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
+            </div>
+
+            <div className={`bg-[#121212] border border-white/10 rounded-xl p-6 transition-all ${isRecording ? 'ring-2 ring-red-500/50' : ''}`}>
+                {!recordingUrl && !isRecording && (
+                    <div className="flex flex-col items-center justify-center gap-4 py-8">
+                        <button
+                            onClick={startRecording}
+                            disabled={readOnly}
+                            className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition-all shadow-lg shadow-red-500/20 group disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Mic className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
+                        </button>
+                        <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Start Recording</span>
+                    </div>
+                )}
+
+                {isRecording && (
+                    <div className="flex flex-col items-center justify-center gap-6 py-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                            <span className="text-2xl font-mono font-bold">{formatDuration(duration)}</span>
+                        </div>
+                        <button
+                            onClick={stopRecording}
+                            className="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center transition-all group"
+                        >
+                            <Square className="w-6 h-6 text-white group-hover:scale-110 transition-transform fill-white" />
+                        </button>
+                        <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Stop Recording</span>
+                    </div>
+                )}
+
+                {recordingUrl && !isRecording && (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold uppercase tracking-widest text-white/40">Recording</span>
+                            {!readOnly && (
+                                <button
+                                    onClick={() => {
+                                        setRecordingUrl(null);
+                                        onChange(null);
+                                    }}
+                                    className="text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-400 transition-colors"
+                                >
+                                    Discard & Re-record
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="relative bg-black/40 rounded-lg p-4 border border-white/5">
+                            <div ref={waveformRef} className="w-full" />
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-2">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => wavesurferRef.current?.stop()}
+                                    className="p-3 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-all border border-white/5"
+                                >
+                                    <Square className="w-4 h-4 fill-white" />
+                                </button>
+                                <button
+                                    onClick={skipBack}
+                                    className="p-3 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-all border border-white/5"
+                                >
+                                    <SkipBack className="w-4 h-4 fill-white" />
+                                </button>
+                                <button
+                                    onClick={togglePlayPause}
+                                    className="p-4 rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-all shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+                                >
+                                    {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-1" />}
+                                </button>
+                                <button
+                                    onClick={skipForward}
+                                    className="p-3 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-all border border-white/5"
+                                >
+                                    <SkipForward className="w-4 h-4 fill-white" />
+                                </button>
+                            </div>
+
+                            <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/5 flex-1 max-w-xs">
+                                <Search className="w-4 h-4 text-white/40" />
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="100"
+                                    value={zoom}
+                                    onChange={(e) => setZoom(parseInt(e.target.value))}
+                                    className="flex-1 accent-primary h-1 bg-white/10 rounded-lg cursor-pointer"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
+                                {[0.5, 0.75, 1, 1.5, 2].map((speed) => (
+                                    <button
+                                        key={speed}
+                                        onClick={() => setPlaybackSpeed(speed)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${playbackSpeed === speed
+                                            ? 'bg-white/10 text-white'
+                                            : 'text-white/40 hover:text-white/60'
+                                            }`}
+                                    >
+                                        {speed}x
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 
 // --- Pogo Rubrics Workflow Components ---
 

@@ -30,7 +30,8 @@ import {
     FeedbackControl,
     RubricTable,
     HyperTextObject,
-    ViewLayout
+    ViewLayout,
+    AudioRecorderControl
 } from '@/components/builder/Renderers';
 
 export function TaskRenderer({
@@ -407,6 +408,7 @@ function renderComponent(
     if (component.type === 'RubricScorer') return <RubricScorerControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
     if (component.type === 'Ranking') return <RankingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
     if (component.type === 'Feedback') return <FeedbackControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+    if (component.type === 'AudioRecorder') return <AudioRecorderControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
 
     return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
 }
