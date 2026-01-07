@@ -524,7 +524,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                     overlayColor: 'rgba(255, 255, 255, 0.1)',
                 }),
             ],
-        });
+        } as any);
 
         // Manual Hover Label Logic for total control and millisecond precision
         const formatHoverTime = (seconds: number) => {
