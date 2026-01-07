@@ -232,16 +232,15 @@ export function TaskRenderer({
     };
 
     const handleNextTask = async () => {
-        // Ideally invoke startTasking action but it's server side and redirects
-        // We can use a hidden form or router push if we change action to API
-        // For now let's use router.push to a 'start' endpoint or invoke server action via form logic
-        // But since we are inside a client component event handler, router push to an action URL is tricky.
-        // Actually, we can use a server action directly if we wrap it.
-        if (submissionResults?.projectId) {
-            // Using a hack to invoke the server action purely for the redirect logic
-            // But actions used like this might throw errors if they redirect.
-            // Client side 'startTasking' invocation that does redirect on server works fine.
-            await startTasking(submissionResults.projectId);
+        const targetProjectId = submissionResults?.projectId || projectId;
+
+        if (targetProjectId) {
+            try {
+                await startTasking(targetProjectId);
+            } catch (error) {
+                console.error("Error starting next task:", error);
+                router.push(`/dashboard/projects/${targetProjectId}`);
+            }
         } else {
             router.push('/dashboard');
         }
@@ -356,7 +355,7 @@ export function TaskRenderer({
                                 Dashboard
                             </button>
                             <button
-                                onClick={() => router.push('/dashboard/tasks')}
+                                onClick={handleNextTask}
                                 className="py-4 rounded-xl bg-red-500 hover:bg-red-600 text-white transition-all font-bold shadow-lg shadow-red-500/20"
                             >
                                 Next Task
