@@ -466,7 +466,7 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
                                             { code: 'task', name: 'Pay Per Task' }
                                         ]}
                                         defaultValue={details.payment_mode}
-                                        onChange={(val) => setDetails(prev => ({ ...prev, payment_mode: val }))}
+                                        onChange={(val) => setDetails(prev => ({ ...prev, payment_mode: val as 'hourly' | 'task' }))}
                                     />
                                 </div>
                                 {details.payment_mode === 'hourly' ? (
