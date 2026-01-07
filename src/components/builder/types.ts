@@ -29,7 +29,8 @@ export type TaskComponentType =
     | 'Feedback'
     | 'RequirementPanel'
     | 'AudioRecorder'
-    | 'Checklist';
+    | 'Checklist'
+    | 'AccordionChoices';
 
 export interface TaskComponent {
     id: string;
@@ -52,6 +53,7 @@ export interface TaskComponent {
     required?: boolean;
     description?: string;
     placeholder?: string;
+    multiple?: boolean;
     // Layout
     children?: TaskComponent[]; // For SideBySide or View
     // Complex Configs

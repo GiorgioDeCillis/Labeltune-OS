@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { TaskComponent } from './types';
-import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot, Mic, Square, Play, Pause, SkipBack, SkipForward, Search, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot, Mic, Square, Play, Pause, SkipBack, SkipForward, Search, Loader2, ChevronRight, Check } from 'lucide-react';
 
 import { getDefaultAvatar } from '@/utils/avatar';
 import ReactMarkdown from 'react-markdown';
@@ -1217,6 +1217,128 @@ export function ChecklistControl({ component, value, onChange, readOnly }: {
         </div>
     );
 }
+
+export function AccordionChoicesControl({ component, value, onChange, readOnly }: {
+    component: TaskComponent,
+    value: any,
+    onChange: (val: any) => void,
+    readOnly?: boolean
+}) {
+    const [expandedSections, setExpandedSections] = useState<string[]>([]);
+
+    // value can be a string (single) or string[] (multiple)
+    const selected = Array.isArray(value) ? value : (value ? [value] : []);
+
+    const toggleSection = (id: string) => {
+        setExpandedSections(prev =>
+            prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+        );
+    };
+
+    const toggleSelection = (val: string) => {
+        if (readOnly) return;
+        if (component.multiple) {
+            const newSelection = selected.includes(val)
+                ? selected.filter(s => s !== val)
+                : [...selected, val];
+            onChange(newSelection);
+        } else {
+            onChange(val);
+        }
+    };
+
+    // Parse options into groups
+    const groups: { header: string; options: typeof component.options }[] = [];
+    let currentGroup: typeof groups[0] | null = null;
+
+    component.options?.forEach(opt => {
+        if (opt.label.startsWith('# ')) {
+            currentGroup = { header: opt.label.replace('# ', ''), options: [] };
+            groups.push(currentGroup);
+        } else if (currentGroup) {
+            currentGroup.options?.push(opt);
+        } else {
+            // Options without a group header
+            const defaultGroup = groups.find(g => g.header === '');
+            if (defaultGroup) {
+                defaultGroup.options?.push(opt);
+            } else {
+                groups.push({ header: '', options: [opt] });
+            }
+        }
+    });
+
+    // Auto-expand first section on mount if none expanded
+    useEffect(() => {
+        if (expandedSections.length === 0 && groups.length > 0) {
+            setExpandedSections([groups[0].header]);
+        }
+    }, []);
+
+    return (
+        <div className="space-y-3">
+            <div>
+                <label className="text-sm font-bold block mb-1">
+                    {component.title} {component.required && <span className="text-red-400">*</span>}
+                </label>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
+            </div>
+
+            <div className="space-y-2">
+                {groups.map((group, gIdx) => (
+                    <div key={gIdx} className="border border-white/10 rounded-xl overflow-hidden bg-white/5">
+                        {group.header && (
+                            <button
+                                onClick={() => toggleSection(group.header)}
+                                className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+                            >
+                                <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{group.header}</span>
+                                <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${expandedSections.includes(group.header) ? 'rotate-90' : ''}`} />
+                            </button>
+                        )}
+                        <div className={`transition-all duration-300 ease-in-out ${expandedSections.includes(group.header) || !group.header ? 'max-h-[1000px] border-t border-white/5 opacity-100' : 'max-h-0 opacity-0'}`}>
+                            <div className="p-2 space-y-1">
+                                {group.options?.map((opt) => (
+                                    <label
+                                        key={opt.value}
+                                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${selected.includes(opt.value)
+                                            ? 'bg-primary/20 text-white shadow-[inset_0_0_20px_rgba(var(--primary),0.1)]'
+                                            : 'hover:bg-white/5 text-muted-foreground'
+                                            } ${readOnly ? 'cursor-default' : ''}`}
+                                    >
+                                        <div
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                toggleSelection(opt.value);
+                                            }}
+                                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${selected.includes(opt.value)
+                                                ? 'border-primary bg-primary/20'
+                                                : 'border-white/20'
+                                                }`}
+                                        >
+                                            {selected.includes(opt.value) && (
+                                                <div className={`w-2.5 h-2.5 rounded-full bg-primary ${component.multiple ? 'rounded-sm' : ''}`} />
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium">{opt.label}</p>
+                                            {opt.hint && <p className="text-[10px] opacity-60">{opt.hint}</p>}
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 export function RubricTable({ component }: { component: TaskComponent }) {
     // Expected structure in rubicCriteria for this table:
     // [{ title: "Language", category: "Native Fluency", description: "Response uses native, fluent..." }]

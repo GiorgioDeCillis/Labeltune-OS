@@ -16,7 +16,8 @@ import {
     Activity,
     FileText,
     MessagesSquare,
-    Mic
+    Mic,
+    ListTree
 } from 'lucide-react';
 import { TaskComponentType } from './types';
 
@@ -68,6 +69,7 @@ export function Toolbox() {
                 <DraggableTool type="RectangleLabels" label="Rectangle Labels" icon={MousePointer2} />
                 <DraggableTool type="AudioRecorder" label="Audio Recorder" icon={Mic} />
                 <DraggableTool type="Checklist" label="Self-Check List" icon={CheckSquare} />
+                <DraggableTool type="AccordionChoices" label="Accordion Choices" icon={ListTree} />
             </div>
 
             <div className="space-y-2">

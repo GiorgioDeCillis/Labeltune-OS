@@ -173,6 +173,25 @@ function SortableComponent({ component, isSelected, onSelect, onDelete }: {
                     </div>
                 )}
 
+                {component.type === 'AccordionChoices' && (
+                    <div className="space-y-2">
+                        <div className="p-3 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between opacity-50">
+                            <span className="text-xs font-bold uppercase tracking-wider">Group Header</span>
+                            <ChevronRight className="w-4 h-4" />
+                        </div>
+                        <div className="pl-4 space-y-2">
+                            <div className="flex items-center gap-2 opacity-30">
+                                <div className="w-4 h-4 rounded-full border border-white/20" />
+                                <div className="h-2 w-24 bg-white/20 rounded" />
+                            </div>
+                            <div className="flex items-center gap-2 opacity-30">
+                                <div className="w-4 h-4 rounded-full border border-white/20" />
+                                <div className="h-2 w-32 bg-white/20 rounded" />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="text-xs text-muted-foreground mt-2">{component.description}</div>
             </div>
 

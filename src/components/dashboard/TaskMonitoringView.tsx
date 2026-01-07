@@ -43,7 +43,8 @@ import {
     RankingControl,
     FeedbackControl,
     AudioRecorderControl,
-    ChecklistControl
+    ChecklistControl,
+    AccordionChoicesControl
 } from '@/components/builder/Renderers';
 
 interface TaskMonitoringViewProps {
@@ -447,6 +448,7 @@ function renderComponent(component: TaskComponent, payload: any, labels: any) {
         case 'Feedback': return <FeedbackControl component={component} value={value} onChange={() => { }} />;
         case 'AudioRecorder': return <AudioRecorderControl component={component} value={value} onChange={() => { }} />;
         case 'Checklist': return <ChecklistControl component={component} value={value} onChange={() => { }} />;
+        case 'AccordionChoices': return <AccordionChoicesControl component={component} value={value} onChange={() => { }} />;
 
         default: return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
     }

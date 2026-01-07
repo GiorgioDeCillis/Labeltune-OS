@@ -75,45 +75,62 @@ export function PropertiesPanel({ component, onChange }: {
                 <span className="text-sm">Required field</span>
             </label>
 
-            {(component.type === 'Choices' || component.type === 'Checklist') && (
-                <div className="space-y-2 pt-4 border-t border-white/5">
-                    <label className="text-xs font-bold text-muted-foreground">Items (Label:Value per line)</label>
-                    <textarea
-                        value={component.options?.map(o => `${o.label}:${o.value}`).join('\n') || ''}
-                        onChange={(e) => {
-                            const lines = e.target.value.split('\n');
-                            const options = lines.map(line => {
-                                const [label, value] = line.split(':');
-                                return { label: label?.trim(), value: (value || label)?.trim() };
-                            });
-                            onChange({ options });
-                        }}
-                        rows={5}
-                        placeholder="Option 1:opt1"
-                        className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono"
-                    />
-                </div>
+            {(component.type === 'Choices' || component.type === 'Checklist' || component.type === 'AccordionChoices') && (
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                    {component.type === 'AccordionChoices' && (
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                checked={component.multiple || false}
+                                onChange={(e) => onChange({ multiple: e.target.checked })}
+                                className="w-4 h-4 rounded border-white/10 bg-background/50 accent-primary"
+                            />
+                            <span className="text-sm">Allow Multiple Selection</span>
+                        </label>
+                    )}
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-muted-foreground flex justify-between">
+                            <span>Items (Label:Value per line)</span>
+                            {component.type === 'AccordionChoices' && (
+                                <span className="text-primary italic">Use # Name for headers</span>
+                            )}
+                        </label>
+                        <textarea
+                            value={component.options?.map(o => `${o.label}:${o.value}`).join('\n') || ''}
+                            onChange={(e) => {
+                                const lines = e.target.value.split('\n');
+                                const options = lines.map(line => {
+                                    const [label, value] = line.split(':');
+                                    return { label: label?.trim(), value: (value || label)?.trim() };
+                                });
+                                onChange({ options });
+                            }}
+                            rows={5}
+                            placeholder="Option 1:opt1"
+                            className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono"
+                        />
+                    </div>
             )}
 
-            {(component.type === 'Labels' || component.type === 'RectangleLabels') && (
-                <div className="space-y-2 pt-4 border-t border-white/5">
-                    <label className="text-xs font-bold text-muted-foreground">Labels (Value:Color per line)</label>
-                    <textarea
-                        value={component.labels?.map(l => `${l.value}:${l.background || '#000000'}`).join('\n') || ''}
-                        onChange={(e) => {
-                            const lines = e.target.value.split('\n');
-                            const labels = lines.map(line => {
-                                const [value, color] = line.split(':');
-                                return { value: value?.trim(), background: (color || '#000000')?.trim() };
-                            });
-                            onChange({ labels });
-                        }}
-                        rows={5}
-                        placeholder="Car:#ff0000"
-                        className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono"
-                    />
+                    {(component.type === 'Labels' || component.type === 'RectangleLabels') && (
+                        <div className="space-y-2 pt-4 border-t border-white/5">
+                            <label className="text-xs font-bold text-muted-foreground">Labels (Value:Color per line)</label>
+                            <textarea
+                                value={component.labels?.map(l => `${l.value}:${l.background || '#000000'}`).join('\n') || ''}
+                                onChange={(e) => {
+                                    const lines = e.target.value.split('\n');
+                                    const labels = lines.map(line => {
+                                        const [value, color] = line.split(':');
+                                        return { value: value?.trim(), background: (color || '#000000')?.trim() };
+                                    });
+                                    onChange({ labels });
+                                }}
+                                rows={5}
+                                placeholder="Car:#ff0000"
+                                className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono"
+                            />
+                        </div>
+                    )}
                 </div>
-            )}
-        </div>
-    );
+            );
 }
