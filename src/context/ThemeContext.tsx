@@ -27,8 +27,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeType>('osaka-jade');
   const [wallpaper, setWallpaperState] = useState<string>('/themes/osaka-jade/2-osaka-jade-bg.jpg');
-  const [blur, setBlurState] = useState<number>(2);
-  const [transparency, setTransparencyState] = useState<number>(0.75);
+  const [blur, setBlurState] = useState<number>(20);
+  const [transparency, setTransparencyState] = useState<number>(0.10);
   const [avatarUrl, setAvatarUrlState] = useState<string | null>(null);
 
   useEffect(() => {
