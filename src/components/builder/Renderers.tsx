@@ -483,7 +483,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                 Timeline.create({
                     height: 25,
                     style: {
-                        color: '#4f4f4f',
+                        color: 'rgba(255, 255, 255, 0.5)',
                         fontSize: '10px',
                     },
                     timeInterval: (pxPerSec: number) => {
@@ -512,11 +512,11 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                     },
                 } as any),
                 Hover.create({
-                    lineColor: '#ffffff40',
+                    lineColor: 'rgba(255, 255, 255, 0.5)',
                     lineWidth: 1,
-                    labelBackground: '#000000',
+                    labelBackground: 'rgba(0, 0, 0, 0.8)',
                     labelColor: '#ffffff',
-                    labelSize: '10px',
+                    labelSize: '11px',
                     formatTime: (seconds: number) => {
                         const m = Math.floor(seconds / 60);
                         const s = Math.floor(seconds % 60);
@@ -642,46 +642,42 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                 .glass-wavesurfer ::part(minimap) {
                     border-radius: 8px;
                     overflow: hidden;
-                    background: rgba(255, 255, 255, 0.02) !important;
+                    background: rgba(255, 255, 255, 0.05) !important;
                     margin-top: 12px;
                     cursor: pointer;
                 }
                 .glass-wavesurfer ::part(minimap-overlay) {
                     border-radius: 99px;
-                    border: 1px solid rgba(255, 255, 255, 0.15);
-                    background-color: rgba(255, 255, 255, 0.15) !important;
-                    height: 8px !important;
-                    top: 50% !important;
-                    transform: translateY(-50%);
-                    pointer-events: all !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    background-color: rgba(255, 255, 255, 0.2) !important;
                 }
                 .glass-wavesurfer ::part(hover-label) {
-                    background: rgba(0, 0, 0, 0.8) !important;
+                    background: rgba(0, 0, 0, 0.9) !important;
                     backdrop-filter: blur(8px);
-                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    border: 1px solid rgba(255, 255, 255, 0.4);
                     border-radius: 4px;
-                    padding: 4px 8px;
+                    padding: 4px 10px;
                     font-family: monospace;
                     font-size: 11px;
-                    z-index: 50;
-                    margin-top: -30px; /* Position it above the hover point */
-                    position: relative;
+                    z-index: 100;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
                 }
                 .glass-wavesurfer ::part(hover-line) {
-                    background-color: rgba(255, 255, 255, 0.4) !important;
+                    background-color: rgba(255, 255, 255, 0.5) !important;
                 }
                 /* Platform-consistent scrollbar for the waveform if it overflows */
-                .glass-wavesurfer div::-webkit-scrollbar {
+                .glass-wavesurfer ::-webkit-scrollbar {
                     height: 6px;
+                    display: block !important;
                 }
-                .glass-wavesurfer div::-webkit-scrollbar-track {
+                .glass-wavesurfer ::-webkit-scrollbar-track {
                     background: transparent;
                 }
-                .glass-wavesurfer div::-webkit-scrollbar-thumb {
+                .glass-wavesurfer ::-webkit-scrollbar-thumb {
                     background: rgba(255, 255, 255, 0.1);
                     border-radius: 10px;
                 }
-                .glass-wavesurfer div::-webkit-scrollbar-thumb:hover {
+                .glass-wavesurfer ::-webkit-scrollbar-thumb:hover {
                     background: rgba(255, 255, 255, 0.2);
                 }
             `}</style>
@@ -741,7 +737,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                             )}
                         </div>
 
-                        <div className="relative bg-white/5 rounded-xl p-4 border border-white/10 backdrop-blur-sm overflow-hidden glass-wavesurfer">
+                        <div className="relative bg-white/5 rounded-xl p-4 border border-white/10 backdrop-blur-sm overflow-visible glass-wavesurfer">
                             <div ref={waveformRef} className="w-full" />
                         </div>
 
