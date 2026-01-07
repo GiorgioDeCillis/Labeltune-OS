@@ -319,8 +319,8 @@ export async function deleteProjectDraft(projectId: string) {
         throw new Error(`Errore durante l'eliminazione: ${projectError.message}`);
     }
 
-    if (count === 0) {
-        console.warn('Nessun progetto eliminato (già rimosso o ID errato)');
+    if (!count || count === 0) {
+        throw new Error('Il progetto non è stato eliminato. Verifica che esista e che tu abbia i permessi.');
     }
 
     revalidatePath('/dashboard/projects');
