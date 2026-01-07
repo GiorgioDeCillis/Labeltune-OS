@@ -60,13 +60,7 @@ export function ReviewTaskRenderer({
     const isReadOnly = taskStatus === 'approved' || taskStatus === 'completed' || taskStatus === 'rejected';
 
     // Initialize submission results if task is already approved
-    const [submissionResults, setSubmissionResults] = useState<{ earnings: number; timeSpent: number; projectId: string } | null>(
-        taskStatus === 'approved' ? {
-            earnings: initialEarnings,
-            timeSpent: initialTimeSpent,
-            projectId: projectId
-        } : null
-    );
+    const [submissionResults, setSubmissionResults] = useState<{ earnings: number; timeSpent: number; projectId: string } | null>(null);
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const { showToast } = useToast();
@@ -78,7 +72,7 @@ export function ReviewTaskRenderer({
 
     // Timer Logic
     useEffect(() => {
-        if (!submissionResults) {
+        if (!submissionResults && !isReadOnly) {
             timerRef.current = setInterval(() => {
                 setSeconds(prev => prev + 1);
             }, 1000);
@@ -86,7 +80,7 @@ export function ReviewTaskRenderer({
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [submissionResults]);
+    }, [submissionResults, isReadOnly]);
 
     // Autosave timer every 5 seconds
     const secondsRef = useRef(seconds);
@@ -95,7 +89,7 @@ export function ReviewTaskRenderer({
     }, [seconds]);
 
     useEffect(() => {
-        if (isSubmitting || submissionResults) return;
+        if (isSubmitting || submissionResults || isReadOnly) return;
 
         const saveInterval = setInterval(() => {
             if (secondsRef.current > initialTimeSpent) {
@@ -104,7 +98,7 @@ export function ReviewTaskRenderer({
         }, 5000);
 
         return () => clearInterval(saveInterval);
-    }, [taskId, initialTimeSpent, isSubmitting, submissionResults]);
+    }, [taskId, initialTimeSpent, isSubmitting, submissionResults, isReadOnly]);
 
     const formatTime = (totalSeconds: number) => {
         const h = Math.floor(totalSeconds / 3600);
