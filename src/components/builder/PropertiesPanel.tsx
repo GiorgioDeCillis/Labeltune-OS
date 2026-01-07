@@ -88,6 +88,39 @@ export function PropertiesPanel({ component, onChange }: {
                             <span className="text-sm">Allow Multiple Selection</span>
                         </label>
                     )}
+
+                    {component.type === 'AccordionChoices' && (
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-muted-foreground">
+                                Smart Paste <span className="font-normal text-primary/70">(▼ for headers)</span>
+                            </label>
+                            <textarea
+                                placeholder="▼ Category Name\nOption 1 (e.g., description)\nOption 2"
+                                className="w-full bg-background/50 border border-dashed border-primary/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono min-h-[80px]"
+                                onPaste={(e) => {
+                                    e.preventDefault();
+                                    const text = e.clipboardData.getData('text');
+                                    const lines = text.split('\n').filter(l => l.trim());
+                                    const options = lines.map(line => {
+                                        const trimmed = line.trim();
+                                        if (trimmed.startsWith('▼')) {
+                                            const header = trimmed.replace('▼', '').trim();
+                                            return { label: `# ${header}`, value: header.toLowerCase().replace(/\s+/g, '_') };
+                                        } else {
+                                            const match = trimmed.match(/^(.+?)\s*\((.+)\)$/);
+                                            const label = match ? match[1].trim() : trimmed;
+                                            const value = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/_+$/, '');
+                                            return { label, value };
+                                        }
+                                    });
+                                    onChange({ options });
+                                    (e.target as HTMLTextAreaElement).value = '';
+                                }}
+                            />
+                            <p className="text-[10px] text-muted-foreground/60">Paste formatted text here to auto-populate Items below</p>
+                        </div>
+                    )}
+
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-muted-foreground flex justify-between">
                             <span>Items (Label:Value per line)</span>
