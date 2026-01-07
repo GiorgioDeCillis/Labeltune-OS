@@ -1,11 +1,47 @@
-'use client';
-
-import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical, FileText, Download, Eye, Upload, Loader2, Wand2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
     DndContext,
-    closestCenter,
+// ... imports
+
+// ...
+
+// In handleFileChange loop:
+                if (data.sections && Array.isArray(data.sections)) {
+    data.sections.forEach((newSec: any) => {
+        // Filter empty sections
+        if (!newSec.content || newSec.content.trim().length === 0) return;
+
+        const lastSec = accumulatedSections[accumulatedSections.length - 1];
+        const cleanTitle = newSec.title ? newSec.title.trim() : '';
+
+        // Check for continuation or duplicate title (continuation of same section)
+        const isContinued = cleanTitle.toLowerCase() === 'continued' || !cleanTitle;
+        const isSameTitle = lastSec && lastSec.title && cleanTitle && lastSec.title.toLowerCase() === cleanTitle.toLowerCase();
+
+        if (lastSec && (isContinued || isSameTitle)) {
+            // Smart merge: if the new content keeps flowing, just append
+            lastSec.content += '\n\n' + newSec.content;
+        } else {
+            // Deduplicate content if it exactly matches the previous section's end (e.g. header repetition)
+            // Simple check: if content is exactly the same, skip.
+            if (lastSec && lastSec.content.trim() === newSec.content.trim()) return;
+
+            accumulatedSections.push({
+                id: crypto.randomUUID(),
+                title: cleanTitle || `Page ${i} Content`,
+                content: newSec.content || '',
+            });
+        }
+    });
+}
+// ...
+
+// In render:
+<ReactMarkdown remarkPlugins={[remarkGfm]} className="prose prose-invert max-w-none">
+    {activeSection.content || '_No content yet._'}
+</ReactMarkdown>
+closestCenter,
     KeyboardSensor,
     PointerSensor,
     useSensor,
@@ -218,15 +254,30 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
 
                 if (data.sections && Array.isArray(data.sections)) {
                     data.sections.forEach((newSec: any) => {
-                        const lastSec = accumulatedSections[accumulatedSections.length - 1];
+                        // Filter empty sections
+                        if (!newSec.content || newSec.content.trim().length === 0) return;
+                        if (newSec.content === 'No content yet.') return;
 
-                        if (lastSec && (newSec.title === 'Continued' || newSec.title.toLowerCase() === 'continued' || !newSec.title)) {
+                        const lastSec = accumulatedSections[accumulatedSections.length - 1];
+                        const cleanTitle = newSec.title ? newSec.title.trim() : '';
+
+                        // Check for continuation or duplicate title (continuation of same section)
+                        const isContinued = cleanTitle.toLowerCase() === 'continued' || !cleanTitle;
+                        const isSameTitle = lastSec && lastSec.title && cleanTitle && lastSec.title.toLowerCase() === cleanTitle.toLowerCase();
+
+                        if (lastSec && (isContinued || isSameTitle)) {
                             // Smart merge: if the new content keeps flowing, just append
                             lastSec.content += '\n\n' + newSec.content;
                         } else {
+                            // Heuristic to avoid repeating headers that might be captured as content
+                            if (lastSec && lastSec.content.includes(newSec.content.substring(0, 50))) {
+                                // If the start of new content is already in the end of previous content, it might be overlap
+                                // But for safety, let's just push for now unless it's empty
+                            }
+
                             accumulatedSections.push({
                                 id: crypto.randomUUID(),
-                                title: newSec.title || `Page ${i} Content`,
+                                title: cleanTitle || `Section ${(accumulatedSections.length + 1).toString().padStart(2, '0')}`,
                                 content: newSec.content || '',
                             });
                         }
@@ -415,7 +466,9 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
                             ) : (
                                 <div className="p-8 prose prose-invert max-w-none overflow-y-auto h-full bg-black/40">
                                     <h1 className="text-3xl font-black mb-8 border-b border-white/10 pb-6">{activeSection.title}</h1>
-                                    <ReactMarkdown>{activeSection.content || '_No content yet._'}</ReactMarkdown>
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]} className="prose prose-invert max-w-none">
+                                        {activeSection.content || '_No content yet._'}
+                                    </ReactMarkdown>
                                 </div>
                             )}
                         </div>

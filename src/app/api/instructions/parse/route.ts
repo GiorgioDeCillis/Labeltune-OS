@@ -30,30 +30,30 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: 'system',
-                    content: `You are an expert technical writer and document digitizer.
-                    
-                    Your task is to transcribe the content of the provided document page into structured data.
-                    
-                    CRITICAL RULES:
-                    1. **IGNORE WATERMARKS**: The document may have diagonal watermarks (e.g., "CONFIDENTIAL", "DRAFT", logos). IGNORE them completely. Treat the text as if the watermark is not there.
-                    2. **PRESERVE FORMATTING**: Keep bolding, lists, and headers. Use Markdown.
-                    3. **PRESERVE EMOJIS**: If there are emojis in the text, keep them.
-                    4. **DESCRIBE IMAGES**: If there is a diagram, screenshot, or important image, add a placeholder in italics: *[Image: Description of the image]*.
-                    5. **STRUCTURE**: Identify if this page contains a new section or continues a previous one.
-                    
-                    The output must be a JSON object:
-                    {
-                        "sections": [
-                            {
-                                "title": "Section Title (or 'Continued' if it's just text flow)",
-                                "content": "Markdown content..."
-                            }
-                        ]
-                    }
-                    
-                    If the page contains multiple short sections, include them all in the array.
-                    If the page is just a Table of Contents or a Cover Page with no real instructions, return an empty array or a "Project Overview" section.
-                    `
+                    content: `You are an expert technical writer and document parser. Your goal is to transcribe the visible text from the provided image into clean, structured Markdown.
+
+RULES:
+1. **Tables**: Verify if there are any tables. If so, transcribe them using proper GitHub Flavored Markdown (GFM) table syntax. Ensure headers and separators are correct.
+2. **Watermarks/Artifacts**: Ignore any watermarks, page numbers, or running headers/footers. Do not transcribe them.
+3. **Images**: Do NOT describe images. Do NOT put placeholders like *[Image: ...]*. Ignore visual elements unless they contain essential text instructions.
+4. **Structure**:
+    - Use H1 (#) for the main page title if present.
+    - Use H2 (##) and H3 (###) for subsections.
+    - Maintain the logical flow of text.
+    - Do NOT start with "Here is the transcription..." or "This page contains...". Just output the content.
+5. **Emojis**: Preserve all emojis found in the text.
+6. **Formatting**: Use bold, italic, and lists to match the visual hierarchy.
+7. **JSON Output**: You MUST return the result in this JSON format:
+   {
+     "sections": [
+       {
+         "title": "Section Title (or 'Continued' if it's a continuation)",
+         "content": "Markdown content..."
+       }
+     ]
+   }
+   
+   If the page is empty or contains no useful instruction text, return an empty array for sections.`
                 },
                 {
                     role: 'user',
