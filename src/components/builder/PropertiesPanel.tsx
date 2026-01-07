@@ -107,10 +107,11 @@ export function PropertiesPanel({ component, onChange }: {
                                             const header = trimmed.replace('▼', '').trim();
                                             return { label: `# ${header}`, value: header.toLowerCase().replace(/\s+/g, '_') };
                                         } else {
-                                            const match = trimmed.match(/^(.+?)\s*\((.+)\)$/);
-                                            const label = match ? match[1].trim() : trimmed;
-                                            const value = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/_+$/, '');
-                                            return { label, value };
+                                            // Keep full label, but generate clean value from text before parentheses
+                                            const match = trimmed.match(/^(.+?)\s*\(/);
+                                            const valueBase = match ? match[1].trim() : trimmed;
+                                            const value = valueBase.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/_+$/, '');
+                                            return { label: trimmed, value };
                                         }
                                     });
                                     onChange({ options });
