@@ -20,6 +20,7 @@ import {
     useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useToast } from '@/components/Toast';
 
 // Use dynamic import for pdfjs to avoid server-side issues
 const getPdfJs = async () => {
@@ -109,6 +110,8 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
     const [isPreview, setIsPreview] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const { showToast } = useToast();
+    const [loadingStatus, setLoadingStatus] = useState<string>('');
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -266,13 +269,18 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
     return (
         <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
             {isImporting && (
-                <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center text-white">
-                    <div className="bg-black/40 p-8 rounded-2xl border border-white/10 flex flex-col items-center animate-pulse">
-                        <Wand2 className="w-12 h-12 mb-4 text-purple-400 animate-spin-slow" />
-                        <h3 className="text-xl font-bold mb-2">AI is analyzing your PDF...</h3>
-                        <p className="text-muted-foreground text-center max-w-xs">
-                            Extracting text, removing watermarks, and structuring guidelines. This may take a moment.
+                <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md rounded-xl flex flex-col items-center justify-center text-white">
+                    <div className="bg-white/5 p-8 rounded-2xl border border-white/10 flex flex-col items-center animate-in zoom-in duration-300">
+                        <Wand2 className="w-12 h-12 mb-4 text-purple-400 animate-pulse" />
+                        <h3 className="text-xl font-bold mb-2">AI is reading your document...</h3>
+                        <p className="text-muted-foreground text-center mb-6 max-w-xs text-sm">
+                            Extracting text, preserving emojis, describing images, and ignoring watermarks.
                         </p>
+
+                        <div className="flex flex-col items-center gap-2 w-full">
+                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                            <span className="text-sm font-mono text-primary/80">{loadingStatus || 'Initializing...'}</span>
+                        </div>
                     </div>
                 </div>
             )}
