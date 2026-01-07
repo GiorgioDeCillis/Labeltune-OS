@@ -122,6 +122,34 @@ export function PropertiesPanel({ component, onChange }: {
                         </div>
                     )}
 
+                    {(component.type === 'Choices' || component.type === 'Checklist') && (
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-muted-foreground">
+                                Smart Paste <span className="font-normal text-primary/70">(one option per line)</span>
+                            </label>
+                            <textarea
+                                placeholder="Option 1\nOption 2\nOption 3"
+                                className="w-full bg-background/50 border border-dashed border-primary/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono min-h-[60px]"
+                                onPaste={(e) => {
+                                    e.preventDefault();
+                                    const text = e.clipboardData.getData('text');
+                                    const lines = text.split('\n').filter(l => l.trim());
+                                    const options = lines.map(line => {
+                                        const trimmed = line.trim();
+                                        // Keep full label, generate clean value
+                                        const match = trimmed.match(/^(.+?)\s*\(/);
+                                        const valueBase = match ? match[1].trim() : trimmed;
+                                        const value = valueBase.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/_+$/, '');
+                                        return { label: trimmed, value };
+                                    });
+                                    onChange({ options });
+                                    (e.target as HTMLTextAreaElement).value = '';
+                                }}
+                            />
+                            <p className="text-[10px] text-muted-foreground/60">Paste a list of options to auto-populate Items below</p>
+                        </div>
+                    )}
+
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-muted-foreground flex justify-between">
                             <span>Items (Label:Value per line)</span>
