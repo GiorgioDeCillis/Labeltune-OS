@@ -164,58 +164,87 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
         if (!file) return;
 
         setIsImporting(true);
+        setLoadingStatus('Initializing...');
+
         try {
-            // 1. Extract text from PDF
             const arrayBuffer = await file.arrayBuffer();
             const pdfjs = await getPdfJs();
             const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
 
-            let fullText = '';
+            let accumulatedSections: InstructionSection[] = [];
+
+            // Determine if we are starting fresh
+            const isFresh = sections.length === 0 || (sections.length === 1 && sections[0].title === 'New Section' && sections[0].content === '');
+            if (!isFresh) {
+                accumulatedSections = [...sections];
+            }
+
             for (let i = 1; i <= pdf.numPages; i++) {
+                setLoadingStatus(`Processing page ${i} of ${pdf.numPages}...`);
+
                 const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const pageText = textContent.items
-                    .map((item: any) => item.str)
-                    .join(' ');
-                fullText += pageText + '\n\n';
-            }
 
-            // 2. Send to AI for parsing
-            const response = await fetch('/api/instructions/parse', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: fullText }),
-            });
+                // Render to canvas
+                const viewport = page.getViewport({ scale: 1.5 }); // Good balance of quality/size
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
 
-            if (!response.ok) {
-                throw new Error('Failed to parse instructions');
-            }
+                if (!context) continue;
 
-            const data = await response.json();
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport,
+                }).promise;
 
-            // 3. Append new sections
-            if (data.sections && Array.isArray(data.sections)) {
-                // Determine if we should replace or append
-                // If it's a fresh project (only 1 empty section), replace.
-                // Otherwise append.
-                const isFresh = sections.length === 0 || (sections.length === 1 && sections[0].title === 'New Section' && sections[0].content === '');
+                // Convert to base64 image (JPEG is smaller than PNG for photos/scans)
+                const base64Image = canvas.toDataURL('image/jpeg', 0.6);
 
-                let newSections = data.sections;
-                if (!isFresh) {
-                    newSections = [...sections, ...data.sections];
+                // Send to AI
+                const response = await fetch('/api/instructions/parse', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64Image }),
+                });
+
+                if (!response.ok) {
+                    console.error(`Failed to process page ${i}`);
+                    continue;
                 }
 
-                onChange(newSections);
-                if (newSections.length > 0) {
-                    setActiveSectionId(newSections[isFresh ? 0 : sections.length].id);
+                const data = await response.json();
+
+                if (data.sections && Array.isArray(data.sections)) {
+                    data.sections.forEach((newSec: any) => {
+                        const lastSec = accumulatedSections[accumulatedSections.length - 1];
+
+                        if (lastSec && (newSec.title === 'Continued' || newSec.title.toLowerCase() === 'continued' || !newSec.title)) {
+                            // Smart merge: if the new content keeps flowing, just append
+                            lastSec.content += '\n\n' + newSec.content;
+                        } else {
+                            accumulatedSections.push({
+                                id: crypto.randomUUID(),
+                                title: newSec.title || `Page ${i} Content`,
+                                content: newSec.content || '',
+                            });
+                        }
+                    });
                 }
             }
+
+            onChange(accumulatedSections);
+            if (accumulatedSections.length > 0) {
+                if (isFresh) setActiveSectionId(accumulatedSections[0].id);
+            }
+            showToast('PDF instructions imported successfully!', 'success');
 
         } catch (error) {
             console.error('Import failed', error);
-            alert('Failed to import PDF. Please try again.');
+            showToast('Failed to import PDF. Please try again.', 'error');
         } finally {
             setIsImporting(false);
+            setLoadingStatus('');
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
