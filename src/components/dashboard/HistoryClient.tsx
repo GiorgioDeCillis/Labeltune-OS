@@ -65,7 +65,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                     project_id: t.project_id,
                     project_name: t.projects?.name || 'Unknown Project',
                     status: t.status,
-                    role: isReviewer ? 'reviewer' : 'attempter',
+                    role: (isReviewer ? 'reviewer' : 'attempter') as 'attempter' | 'reviewer',
                     time_spent: isReviewer ? (t.reviewer_time_spent || 0) : (t.annotator_time_spent || 0),
                     earnings: isReviewer ? (t.reviewer_earnings || 0) : (t.annotator_earnings || 0),
                     review_rating: t.review_rating,
