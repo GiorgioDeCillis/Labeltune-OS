@@ -50,7 +50,9 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url)
     }
 
-    if (user && !isOnboardingPath && !isAuthPath) {
+    const isApiPath = request.nextUrl.pathname.startsWith('/api')
+
+    if (user && !isOnboardingPath && !isAuthPath && !isApiPath) {
         // Check onboarding status from metadata first
         const isOnboarded = user.app_metadata?.is_onboarded || user.user_metadata?.is_onboarded
 
