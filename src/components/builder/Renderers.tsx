@@ -442,6 +442,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
     readOnly?: boolean
 }) {
     const [isRecording, setIsRecording] = useState(false);
+    const [isTranscribing, setIsTranscribing] = useState(false);
     const [duration, setDuration] = useState(0);
     const [recordingUrl, setRecordingUrl] = useState<string | null>(value);
     const [playbackSpeed, setPlaybackSpeed] = useState(1);
@@ -620,6 +621,31 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
         }
     }, [playbackSpeed]);
 
+    const performTranscription = async (base64Audio: string) => {
+        setIsTranscribing(true);
+        try {
+            const response = await fetch('/api/audio/transcribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ audio: base64Audio }),
+            });
+            const result = await response.json();
+            if (result.text) {
+                // We emit a special event or use a naming convention to autofill
+                // For now, we'll dispatch a custom event that TaskRenderer can listen to
+                // or we can handle it via a new prop if we change the signature.
+                // Given the current architecture, a domestic event is easy.
+                window.dispatchEvent(new CustomEvent('audio-transcription-complete', {
+                    detail: { text: result.text }
+                }));
+            }
+        } catch (error) {
+            console.error('Transcription failed:', error);
+        } finally {
+            setIsTranscribing(false);
+        }
+    };
+
     const startRecording = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -641,8 +667,9 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                 const reader = new FileReader();
                 reader.readAsDataURL(blob);
                 reader.onloadend = () => {
-                    const base64data = reader.result;
+                    const base64data = reader.result as string;
                     onChange(base64data);
+                    performTranscription(base64data);
                 };
             };
 
@@ -742,7 +769,14 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                 )}
             </div>
 
-            <div className={`bg-[#121212] border border-white/10 rounded-xl p-6 transition-all ${isRecording ? 'ring-2 ring-red-500/50' : ''}`}>
+            <div className={`bg-[#121212] border border-white/10 rounded-xl p-6 transition-all ${isRecording ? 'ring-2 ring-red-500/50' : ''} relative overflow-hidden`}>
+                {isTranscribing && (
+                    <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 animate-in fade-in duration-300">
+                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                        <span className="text-xs font-bold uppercase tracking-widest text-primary animate-pulse">Transcribing Audio...</span>
+                    </div>
+                )}
+
                 {!recordingUrl && !isRecording && (
                     <div className="flex flex-col items-center justify-center gap-4 py-8">
                         <button
