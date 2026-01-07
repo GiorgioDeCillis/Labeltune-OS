@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ProjectTemplate, PROJECT_TEMPLATES } from '@/utils/templates';
 import { TaskBuilder } from '@/components/builder/TaskBuilder';
 import { TaskComponent } from '@/components/builder/types';
-import { createProject } from '../actions';
-import { ChevronRight, ChevronLeft, Save, LayoutGrid, Settings2, MessageSquare, Image as ImageIcon, Box, Mic, Bot, BookOpen, FileText, CheckCircle2 } from 'lucide-react';
+import { createProject, saveProjectDraft } from '../actions';
+import { ChevronRight, ChevronLeft, Save, LayoutGrid, Settings2, MessageSquare, Image as ImageIcon, Box, Mic, Bot, BookOpen, FileText, CheckCircle2, Loader2 } from 'lucide-react';
 import { InstructionsStep, InstructionSection } from './steps/InstructionsStep';
 import { CoursesStep } from './steps/CoursesStep';
-import { Course } from '@/types/manual-types';
+import { Course, Project } from '@/types/manual-types';
 import CustomSelect from '@/components/CustomSelect';
 
 const PROJECT_TYPE_OPTIONS = [
@@ -36,25 +36,77 @@ type Step = 'template' | 'instructions' | 'courses' | 'builder' | 'details';
 
 interface ProjectCreationWizardProps {
     availableCourses: Course[];
+    initialData?: Project | null;
 }
 
-export function ProjectCreationWizard({ availableCourses: initialCourses }: ProjectCreationWizardProps) {
-    const [step, setStep] = useState<Step>('template');
+export function ProjectCreationWizard({ availableCourses: initialCoursesList, initialData }: ProjectCreationWizardProps) {
+    const [step, setStep] = useState<Step>(initialData ? 'instructions' : 'template');
     const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
-    const [components, setComponents] = useState<TaskComponent[]>([]);
-    const [instructions, setInstructions] = useState<InstructionSection[]>([
-        { id: '1', title: 'General Guidelines', content: '# Welcome\n\nPlease follow these rules...' }
-    ]);
-    const [availableCourses, setAvailableCourses] = useState<Course[]>(initialCourses);
+    const [components, setComponents] = useState<TaskComponent[]>(initialData?.template_schema || []);
+    const [instructions, setInstructions] = useState<InstructionSection[]>(
+        initialData?.guidelines ? JSON.parse(initialData.guidelines) : [
+            { id: '1', title: 'General Guidelines', content: '# Welcome\n\nPlease follow these rules...' }
+        ]
+    );
+    const [availableCourses, setAvailableCourses] = useState<Course[]>(initialCoursesList);
     const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
+    const [draftId, setDraftId] = useState<string | null>(initialData?.id || null);
+    const [isSaving, setIsSaving] = useState(false);
 
-    const handleSelectTemplate = (template: ProjectTemplate) => {
-        setSelectedTemplate(template);
-        setComponents(template.schema);
-        setStep('instructions');
-    };
+    // Form states for "Details" step to enable auto-save
+    const [details, setDetails] = useState({
+        name: initialData?.name || '',
+        description: initialData?.description || '',
+        type: initialData?.type || '',
+        pay_rate: initialData?.pay_rate || '',
+        max_task_time: initialData?.max_task_time ? initialData.max_task_time / 60 : 30,
+        total_tasks: initialData?.total_tasks || 1000
+    });
 
+    const formRef = useRef<HTMLFormElement>(null);
+
+    // Fetch initially linked courses for draft
+    useEffect(() => {
+        if (initialData) {
+            const linked = initialCoursesList.filter(c => c.project_id === initialData.id).map(c => c.id);
+            setSelectedCourseIds(linked);
+
+            // Sync template if possible
+            const template = PROJECT_TEMPLATES.find(t => t.type === initialData.type);
+            if (template) setSelectedTemplate(template);
+        }
+    }, [initialData, initialCoursesList]);
+
+    const handleAutoSave = useCallback(async () => {
+        if (step === 'template' && !selectedTemplate && !initialData) return;
+
+        setIsSaving(true);
+        try {
+            const formData = new FormData();
+            formData.append('name', details.name || selectedTemplate?.name || 'Untitled Project');
+            formData.append('description', details.description || selectedTemplate?.description || '');
+            formData.append('type', details.type || selectedTemplate?.type || 'text_classification');
+            formData.append('guidelines', JSON.stringify(instructions));
+            formData.append('template_schema', JSON.stringify(components));
+            formData.append('course_ids', JSON.stringify(selectedCourseIds));
+            formData.append('pay_rate', details.pay_rate);
+            formData.append('max_task_time', details.max_task_time.toString());
+            formData.append('total_tasks', details.total_tasks.toString());
+
+            const savedDraft = await saveProjectDraft(formData, draftId || undefined);
+            if (savedDraft) {
+                setDraftId(savedDraft.id);
+            }
+        } catch (error) {
+            console.error('Auto-save failed:', error);
+        } finally {
+            setIsSaving(false);
+        }
+    }, [step, selectedTemplate, initialData, details, instructions, components, selectedCourseIds, draftId]);
+
+    // Auto-save on step change
     const nextStep = () => {
+        handleAutoSave();
         if (step === 'template' && selectedTemplate) setStep('instructions');
         else if (step === 'instructions') setStep('courses');
         else if (step === 'courses') setStep('builder');
@@ -62,10 +114,23 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
     };
 
     const prevStep = () => {
+        handleAutoSave();
         if (step === 'instructions') setStep('template');
         else if (step === 'courses') setStep('instructions');
         else if (step === 'builder') setStep('courses');
         else if (step === 'details') setStep('builder');
+    };
+
+    const handleSelectTemplate = (template: ProjectTemplate) => {
+        setSelectedTemplate(template);
+        setComponents(template.schema);
+        setDetails(prev => ({
+            ...prev,
+            name: `${template.name} Project`,
+            description: template.description,
+            type: template.type
+        }));
+        setStep('instructions');
     };
 
     const steps = [
@@ -80,6 +145,22 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
 
     return (
         <div className="space-y-8">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {isSaving ? (
+                        <div className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Saving draft...
+                        </div>
+                    ) : draftId ? (
+                        <div className="flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                            Draft saved
+                        </div>
+                    ) : null}
+                </div>
+            </div>
+
             {/* Stepper */}
             <div className="flex items-center justify-center gap-4 mb-8">
                 {steps.map((s, i) => (
@@ -218,10 +299,11 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
 
             {step === 'details' && (
                 <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <form action={createProject} className="glass-panel p-8 rounded-2x space-y-6">
+                    <form ref={formRef} action={createProject} className="glass-panel p-8 rounded-2x space-y-6">
                         <input type="hidden" name="template_schema" value={JSON.stringify(components)} />
                         <input type="hidden" name="guidelines" value={JSON.stringify(instructions)} />
                         <input type="hidden" name="course_ids" value={JSON.stringify(selectedCourseIds)} />
+                        <input type="hidden" name="draft_id" value={draftId || ''} />
 
                         <div className="flex items-center gap-4 mb-6">
                             <button type="button" onClick={prevStep} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
@@ -238,7 +320,8 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
                             <input
                                 name="name"
                                 required
-                                defaultValue={selectedTemplate?.name ? `${selectedTemplate.name} Project` : ''}
+                                value={details.name}
+                                onChange={(e) => setDetails(prev => ({ ...prev, name: e.target.value }))}
                                 placeholder="e.g. Sentiment Analysis Dataset"
                                 className="w-full bg-background/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                             />
@@ -249,7 +332,8 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
                             <textarea
                                 name="description"
                                 rows={3}
-                                defaultValue={selectedTemplate?.description}
+                                value={details.description}
+                                onChange={(e) => setDetails(prev => ({ ...prev, description: e.target.value }))}
                                 placeholder="Describe the goal of this project..."
                                 className="w-full bg-background/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none"
                             />
@@ -263,13 +347,16 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
                                     label="Project Type"
                                     placeholder="Select a type"
                                     options={PROJECT_TYPE_OPTIONS}
-                                    defaultValue={selectedTemplate?.type || 'text_classification'}
+                                    defaultValue={details.type || selectedTemplate?.type || 'text_classification'}
+                                    onChange={(val) => setDetails(prev => ({ ...prev, type: val }))}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-bold uppercase text-muted-foreground">Pay Rate</label>
                                 <input
                                     name="pay_rate"
+                                    value={details.pay_rate}
+                                    onChange={(e) => setDetails(prev => ({ ...prev, pay_rate: e.target.value }))}
                                     placeholder="$15.00 / hr"
                                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
                                 />
@@ -282,6 +369,8 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
                                 <input
                                     name="max_task_time"
                                     type="number"
+                                    value={details.max_task_time}
+                                    onChange={(e) => setDetails(prev => ({ ...prev, max_task_time: Number(e.target.value) }))}
                                     placeholder="30"
                                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
                                 />
@@ -291,6 +380,8 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
                                 <input
                                     name="total_tasks"
                                     type="number"
+                                    value={details.total_tasks}
+                                    onChange={(e) => setDetails(prev => ({ ...prev, total_tasks: Number(e.target.value) }))}
                                     placeholder="1000"
                                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
                                 />
@@ -310,7 +401,7 @@ export function ProjectCreationWizard({ availableCourses: initialCourses }: Proj
                         <div className="pt-4 flex justify-end gap-4">
                             <button type="submit" className="px-8 py-4 bg-primary text-primary-foreground font-bold rounded-2xl hover:opacity-90 transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
                                 <Save className="w-5 h-5" />
-                                Create Project
+                                {initialData ? 'Update & Launch' : 'Create Project'}
                             </button>
                         </div>
                     </form>

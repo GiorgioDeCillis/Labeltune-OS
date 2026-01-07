@@ -4,12 +4,119 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+export async function getProject(id: string) {
+    const supabase = await createClient();
+    const { data: project, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) return null;
+    return project;
+}
+
+export async function saveProjectDraft(formData: FormData, draftId?: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const type = formData.get('type') as string;
+    const guidelines = formData.get('guidelines') as string;
+    const pay_rate = formData.get('pay_rate') as string;
+    const template_schema = formData.get('template_schema') as string;
+    const max_task_time_min = formData.get('max_task_time') ? Number(formData.get('max_task_time')) : null;
+    const total_tasks = formData.get('total_tasks') ? Number(formData.get('total_tasks')) : null;
+    const course_ids = formData.get('course_ids') as string;
+
+    const max_task_time = max_task_time_min ? max_task_time_min * 60 : null;
+
+    // 1. Get/Create Organization
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user.id)
+        .single();
+
+    let orgId = profile?.organization_id;
+
+    if (!orgId) {
+        const orgName = `${user.user_metadata?.full_name || 'My'} Organization`;
+        const { data: newOrg } = await supabase
+            .from('organizations')
+            .insert({ name: orgName, slug: crypto.randomUUID() })
+            .select()
+            .single();
+        orgId = newOrg?.id;
+        if (orgId) {
+            await supabase.from('profiles').upsert({ id: user.id, organization_id: orgId });
+        }
+    }
+
+    const projectData = {
+        name,
+        description,
+        type,
+        guidelines,
+        pay_rate,
+        template_schema: template_schema ? JSON.parse(template_schema) : [],
+        organization_id: orgId,
+        status: 'draft',
+        max_task_time,
+        total_tasks
+    };
+
+    let project;
+    if (draftId) {
+        const { data, error } = await supabase
+            .from('projects')
+            .update(projectData)
+            .eq('id', draftId)
+            .select()
+            .single();
+        if (error) throw error;
+        project = data;
+    } else {
+        const { data, error } = await supabase
+            .from('projects')
+            .insert(projectData)
+            .select()
+            .single();
+        if (error) throw error;
+        project = data;
+    }
+
+    // Link courses
+    if (course_ids && project) {
+        try {
+            const courseIds = JSON.parse(course_ids);
+            // First unlink
+            await supabase.from('courses').update({ project_id: null }).eq('project_id', project.id);
+            // Then link
+            if (Array.isArray(courseIds) && courseIds.length > 0) {
+                await supabase
+                    .from('courses')
+                    .update({ project_id: project.id })
+                    .in('id', courseIds);
+            }
+        } catch (e) {
+            console.error('Error linking courses in draft:', e);
+        }
+    }
+
+    revalidatePath('/dashboard/projects');
+    return project;
+}
+
 export async function createProject(formData: FormData) {
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) redirect('/login');
 
+    const draftId = formData.get('draft_id') as string;
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
     const type = formData.get('type') as string;
@@ -53,34 +160,54 @@ export async function createProject(formData: FormData) {
             .upsert({ id: user.id, organization_id: orgId });
     }
 
-    // 3. Create Project
-    const { data: newProject, error } = await supabase
-        .from('projects')
-        .insert({
-            name,
-            description,
-            type,
-            guidelines,
-            pay_rate,
-            template_schema: template_schema ? JSON.parse(template_schema) : [],
-            organization_id: orgId,
-            status: 'active',
-            max_task_time,
-            total_tasks
-        })
-        .select()
-        .single();
+    const projectData = {
+        name,
+        description,
+        type,
+        guidelines,
+        pay_rate,
+        template_schema: template_schema ? JSON.parse(template_schema) : [],
+        organization_id: orgId,
+        status: 'active',
+        max_task_time,
+        total_tasks
+    };
 
-    if (error) {
-        console.error('Error creating project:', error);
-        redirect('/dashboard/projects/new?error=Failed to create project');
+    let project;
+    if (draftId) {
+        const { data, error } = await supabase
+            .from('projects')
+            .update(projectData)
+            .eq('id', draftId)
+            .select()
+            .single();
+        if (error) {
+            console.error('Error updating project from draft:', error);
+            redirect('/dashboard/projects/new?error=Failed to update project from draft');
+        }
+        project = data;
+    } else {
+        const { data, error } = await supabase
+            .from('projects')
+            .insert(projectData)
+            .select()
+            .single();
+        if (error) {
+            console.error('Error creating project:', error);
+            redirect('/dashboard/projects/new?error=Failed to create project');
+        }
+        project = data;
     }
+
+    const newProject = project;
 
     // 4. Link courses if any
     const selectedCourseIds = formData.get('course_ids') as string;
     if (selectedCourseIds && newProject) {
         try {
             const courseIds = JSON.parse(selectedCourseIds);
+            // Unlink first for update case
+            await supabase.from('courses').update({ project_id: null }).eq('project_id', newProject.id);
             if (Array.isArray(courseIds) && courseIds.length > 0) {
                 await supabase
                     .from('courses')
@@ -92,22 +219,29 @@ export async function createProject(formData: FormData) {
         }
     }
 
-    // 5. Create task records if total_tasks is specified
+    // 5. Create task records if total_tasks is specified (only if not already created)
     if (total_tasks && total_tasks > 0 && newProject) {
-        const tasksToInsert = Array.from({ length: total_tasks }, (_, i) => ({
-            project_id: newProject.id,
-            status: 'pending',
-            payload: {},  // Placeholder - actual data will be uploaded separately
-            assigned_to: null
-        }));
-
-        const { error: tasksError } = await supabase
+        // Check if tasks already exist for this project
+        const { count } = await supabase
             .from('tasks')
-            .insert(tasksToInsert);
+            .select('*', { count: 'exact', head: true })
+            .eq('project_id', newProject.id);
 
-        if (tasksError) {
-            console.error('Error creating tasks:', tasksError);
-            // Non-blocking: project is created, tasks failed
+        if ((count || 0) === 0) {
+            const tasksToInsert = Array.from({ length: total_tasks }, (_, i) => ({
+                project_id: newProject.id,
+                status: 'pending',
+                payload: {},  // Placeholder - actual data will be uploaded separately
+                assigned_to: null
+            }));
+
+            const { error: tasksError } = await supabase
+                .from('tasks')
+                .insert(tasksToInsert);
+
+            if (tasksError) {
+                console.error('Error creating tasks:', tasksError);
+            }
         }
     }
 

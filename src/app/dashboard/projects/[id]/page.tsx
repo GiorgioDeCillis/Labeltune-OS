@@ -23,6 +23,11 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 
     if (!project) notFound();
 
+    // Redirect draft projects back to the wizard
+    if (project.status === 'draft') {
+        redirect(`/dashboard/projects/new?draftId=${project.id}`);
+    }
+
     const { data: profile } = await supabase
         .from('profiles')
         .select('role, locale_tag')
