@@ -22,6 +22,37 @@ export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesView
         setMounted(true);
     }, []);
 
+    const Highlight = ({ children, query }: { children: React.ReactNode; query: string }) => {
+        if (!query) return <>{children}</>;
+
+        const highlightText = (text: string) => {
+            if (!text) return text;
+            const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+            return parts.map((part, i) =>
+                part.toLowerCase() === query.toLowerCase() ?
+                    <mark key={i} className="bg-primary/30 text-primary font-medium rounded-sm px-0.5">{part}</mark> :
+                    part
+            );
+        };
+
+        const traverse = (node: React.ReactNode): React.ReactNode => {
+            if (typeof node === 'string') {
+                return highlightText(node);
+            }
+            if (Array.isArray(node)) {
+                return node.map((child, i) => <React.Fragment key={i}>{traverse(child)}</React.Fragment>);
+            }
+            if (React.isValidElement(node)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const { children, ...props } = node.props as any;
+                return React.cloneElement(node, props, traverse(children));
+            }
+            return node;
+        };
+
+        return <>{traverse(children)}</>;
+    };
+
     if (!isOpen || !mounted) return null;
 
     let sections: InstructionSection[] = [];
@@ -160,8 +191,27 @@ export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesView
                     <div className="flex-1 overflow-y-auto p-8 prose prose-invert prose-primary max-w-none bg-black/20">
                         {activeSection ? (
                             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                                <h1 className="text-3xl font-black mb-8 border-b border-white/10 pb-6">{activeSection.title}</h1>
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{activeSection.content}</ReactMarkdown>
+                                <h1 className="text-3xl font-black mb-8 border-b border-white/10 pb-6">
+                                    <Highlight query={searchQuery}>{activeSection.title}</Highlight>
+                                </h1>
+                                <ReactMarkdown
+                                    remarkPlugins={[remarkGfm]}
+                                    components={{
+                                        p: ({ children }) => <p className="mb-4 last:mb-0"><Highlight query={searchQuery}>{children}</Highlight></p>,
+                                        li: ({ children }) => <li><Highlight query={searchQuery}>{children}</Highlight></li>,
+                                        h1: ({ children }) => <h1><Highlight query={searchQuery}>{children}</Highlight></h1>,
+                                        h2: ({ children }) => <h2><Highlight query={searchQuery}>{children}</Highlight></h2>,
+                                        h3: ({ children }) => <h3><Highlight query={searchQuery}>{children}</Highlight></h3>,
+                                        h4: ({ children }) => <h4><Highlight query={searchQuery}>{children}</Highlight></h4>,
+                                        h5: ({ children }) => <h5><Highlight query={searchQuery}>{children}</Highlight></h5>,
+                                        h6: ({ children }) => <h6><Highlight query={searchQuery}>{children}</Highlight></h6>,
+                                        blockquote: ({ children }) => <blockquote><Highlight query={searchQuery}>{children}</Highlight></blockquote>,
+                                        td: ({ children }) => <td><Highlight query={searchQuery}>{children}</Highlight></td>,
+                                        th: ({ children }) => <th><Highlight query={searchQuery}>{children}</Highlight></th>,
+                                    }}
+                                >
+                                    {activeSection.content}
+                                </ReactMarkdown>
                             </div>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-20">
@@ -171,8 +221,8 @@ export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesView
                         )}
                     </div>
                 </div>
-            </div>
-        </div>,
+            </div >
+        </div >,
         document.body
     );
 }
