@@ -60,7 +60,13 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
         type: initialData?.type || '',
         pay_rate: initialData?.pay_rate || '',
         max_task_time: initialData?.max_task_time ? initialData.max_task_time / 60 : 30,
-        total_tasks: initialData?.total_tasks || 1000
+        total_tasks: initialData?.total_tasks || 1000,
+        extra_time_after_max: initialData?.extra_time_after_max ? initialData.extra_time_after_max / 60 : 0,
+        review_task_time: initialData?.review_task_time ? initialData.review_task_time / 60 : 30,
+        review_extra_time: initialData?.review_extra_time ? initialData.review_extra_time / 60 : 0,
+        absolute_expiration_duration: initialData?.absolute_expiration_duration ? initialData.absolute_expiration_duration / 60 : 0,
+        payment_mode: initialData?.payment_mode || 'hourly',
+        pay_per_task: initialData?.pay_per_task || ''
     });
 
     const formRef = useRef<HTMLFormElement>(null);
@@ -92,6 +98,12 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
             formData.append('pay_rate', details.pay_rate);
             formData.append('max_task_time', details.max_task_time.toString());
             formData.append('total_tasks', details.total_tasks.toString());
+            formData.append('extra_time_after_max', details.extra_time_after_max.toString());
+            formData.append('review_task_time', details.review_task_time.toString());
+            formData.append('review_extra_time', details.review_extra_time.toString());
+            formData.append('absolute_expiration_duration', details.absolute_expiration_duration ? details.absolute_expiration_duration.toString() : '');
+            formData.append('payment_mode', details.payment_mode);
+            formData.append('pay_per_task', details.pay_per_task);
 
             const savedDraft = await saveProjectDraft(formData, draftId || undefined);
             if (savedDraft) {
@@ -351,16 +363,7 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
                                     onChange={(val) => setDetails(prev => ({ ...prev, type: val }))}
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold uppercase text-muted-foreground">Pay Rate</label>
-                                <input
-                                    name="pay_rate"
-                                    value={details.pay_rate}
-                                    onChange={(e) => setDetails(prev => ({ ...prev, pay_rate: e.target.value }))}
-                                    placeholder="$15.00 / hr"
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
-                                />
-                            </div>
+                            {/* Removed old pay rate input to move it to Payment Settings section */}
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">
@@ -385,6 +388,110 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
                                     placeholder="1000"
                                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
                                 />
+                            </div>
+                        </div>
+
+                        {/* Timing Configuration */}
+                        <div className="space-y-4 pt-4 border-t border-white/10">
+                            <h4 className="font-bold text-lg">Task Timing</h4>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold uppercase text-muted-foreground">Extra Time (Overtime)</label>
+                                    <input
+                                        name="extra_time_after_max"
+                                        type="number"
+                                        value={details.extra_time_after_max}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, extra_time_after_max: Number(e.target.value) }))}
+                                        placeholder="0 (minutes)"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
+                                    />
+                                    <p className="text-xs text-muted-foreground">Additional time allowed after safe task time expires.</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold uppercase text-muted-foreground">Absolute Expiration (min)</label>
+                                    <input
+                                        name="absolute_expiration_duration"
+                                        type="number"
+                                        value={details.absolute_expiration_duration || ''}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, absolute_expiration_duration: Number(e.target.value) }))}
+                                        placeholder="60 (minutes)"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
+                                    />
+                                    <p className="text-xs text-muted-foreground">Force expire task after X minutes from start, regardless of activity.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Review Configuration */}
+                        <div className="space-y-4 pt-4 border-t border-white/10">
+                            <h4 className="font-bold text-lg">Review Configuration</h4>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold uppercase text-muted-foreground">Review Task Time (min)</label>
+                                    <input
+                                        name="review_task_time"
+                                        type="number"
+                                        value={details.review_task_time}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, review_task_time: Number(e.target.value) }))}
+                                        placeholder="30"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold uppercase text-muted-foreground">Review Extra Time (min)</label>
+                                    <input
+                                        name="review_extra_time"
+                                        type="number"
+                                        value={details.review_extra_time}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, review_extra_time: Number(e.target.value) }))}
+                                        placeholder="0"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Payment Configuration Update */}
+                        <div className="space-y-4 pt-4 border-t border-white/10">
+                            <h4 className="font-bold text-lg">Payment Settings</h4>
+                            <div className="grid grid-cols-2 gap-6 !overflow-visible">
+                                <div className="space-y-2 !overflow-visible">
+                                    <label className="text-sm font-bold uppercase text-muted-foreground">Payment Mode</label>
+                                    <CustomSelect
+                                        name="payment_mode"
+                                        label="Payment Mode"
+                                        placeholder="Select mode"
+                                        options={[
+                                            { code: 'hourly', name: 'Hourly Rate' },
+                                            { code: 'task', name: 'Pay Per Task' }
+                                        ]}
+                                        defaultValue={details.payment_mode}
+                                        onChange={(val) => setDetails(prev => ({ ...prev, payment_mode: val }))}
+                                    />
+                                </div>
+                                {details.payment_mode === 'hourly' ? (
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold uppercase text-muted-foreground">Hourly Rate</label>
+                                        <input
+                                            name="pay_rate"
+                                            value={details.pay_rate}
+                                            onChange={(e) => setDetails(prev => ({ ...prev, pay_rate: e.target.value }))}
+                                            placeholder="$15.00 / hr"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold uppercase text-muted-foreground">Pay Per Task</label>
+                                        <input
+                                            name="pay_per_task"
+                                            value={details.pay_per_task}
+                                            onChange={(e) => setDetails(prev => ({ ...prev, pay_per_task: e.target.value }))}
+                                            placeholder="$0.50 / task"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 

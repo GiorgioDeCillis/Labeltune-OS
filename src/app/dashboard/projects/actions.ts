@@ -30,8 +30,18 @@ export async function saveProjectDraft(formData: FormData, draftId?: string) {
     const max_task_time_min = formData.get('max_task_time') ? Number(formData.get('max_task_time')) : null;
     const total_tasks = formData.get('total_tasks') ? Number(formData.get('total_tasks')) : null;
     const course_ids = formData.get('course_ids') as string;
+    const extra_time_min = formData.get('extra_time_after_max') ? Number(formData.get('extra_time_after_max')) : 0;
+    const review_time_min = formData.get('review_task_time') ? Number(formData.get('review_task_time')) : 30;
+    const review_extra_min = formData.get('review_extra_time') ? Number(formData.get('review_extra_time')) : 0;
+    const abs_expire_min = formData.get('absolute_expiration_duration') ? Number(formData.get('absolute_expiration_duration')) : null;
+    const payment_mode = formData.get('payment_mode') as string || 'hourly';
+    const pay_per_task = formData.get('pay_per_task') as string;
 
     const max_task_time = max_task_time_min ? max_task_time_min * 60 : null;
+    const extra_time_after_max = extra_time_min * 60;
+    const review_task_time = review_time_min * 60;
+    const review_extra_time = review_extra_min * 60;
+    const absolute_expiration_duration = abs_expire_min ? abs_expire_min * 60 : null;
 
     // 1. Get/Create Organization
     const { data: profile } = await supabase
@@ -65,7 +75,13 @@ export async function saveProjectDraft(formData: FormData, draftId?: string) {
         organization_id: orgId,
         status: 'draft',
         max_task_time,
-        total_tasks
+        total_tasks,
+        extra_time_after_max,
+        review_task_time,
+        review_extra_time,
+        absolute_expiration_duration,
+        payment_mode,
+        pay_per_task
     };
 
     let project;
@@ -126,8 +142,18 @@ export async function createProject(formData: FormData) {
     const template_schema = formData.get('template_schema') as string;
     const max_task_time_min = formData.get('max_task_time') ? Number(formData.get('max_task_time')) : null;
     const total_tasks = formData.get('total_tasks') ? Number(formData.get('total_tasks')) : null;
+    const extra_time_min = formData.get('extra_time_after_max') ? Number(formData.get('extra_time_after_max')) : 0;
+    const review_time_min = formData.get('review_task_time') ? Number(formData.get('review_task_time')) : 30;
+    const review_extra_min = formData.get('review_extra_time') ? Number(formData.get('review_extra_time')) : 0;
+    const abs_expire_min = formData.get('absolute_expiration_duration') ? Number(formData.get('absolute_expiration_duration')) : null;
+    const payment_mode = formData.get('payment_mode') as string || 'hourly';
+    const pay_per_task = formData.get('pay_per_task') as string;
 
     const max_task_time = max_task_time_min ? max_task_time_min * 60 : null;
+    const extra_time_after_max = extra_time_min * 60;
+    const review_task_time = review_time_min * 60;
+    const review_extra_time = review_extra_min * 60;
+    const absolute_expiration_duration = abs_expire_min ? abs_expire_min * 60 : null;
 
     // 1. Check if user has an organization
     const { data: profile } = await supabase
@@ -170,7 +196,13 @@ export async function createProject(formData: FormData) {
         organization_id: orgId,
         status: 'active',
         max_task_time,
-        total_tasks
+        total_tasks,
+        extra_time_after_max,
+        review_task_time,
+        review_extra_time,
+        absolute_expiration_duration,
+        payment_mode,
+        pay_per_task
     };
 
     let project;
@@ -341,8 +373,18 @@ export async function updateProject(id: string, formData: FormData) {
     const status = formData.get('status') as string;
     const max_task_time_min = formData.get('max_task_time') ? Number(formData.get('max_task_time')) : null;
     const total_tasks = formData.get('total_tasks') ? Number(formData.get('total_tasks')) : null;
+    const extra_time_min = formData.get('extra_time_after_max') ? Number(formData.get('extra_time_after_max')) : 0;
+    const review_time_min = formData.get('review_task_time') ? Number(formData.get('review_task_time')) : 30;
+    const review_extra_min = formData.get('review_extra_time') ? Number(formData.get('review_extra_time')) : 0;
+    const abs_expire_min = formData.get('absolute_expiration_duration') ? Number(formData.get('absolute_expiration_duration')) : null;
+    const payment_mode = formData.get('payment_mode') as string || 'hourly';
+    const pay_per_task = formData.get('pay_per_task') as string;
 
     const max_task_time = max_task_time_min ? max_task_time_min * 60 : null;
+    const extra_time_after_max = extra_time_min * 60;
+    const review_task_time = review_time_min * 60;
+    const review_extra_time = review_extra_min * 60;
+    const absolute_expiration_duration = abs_expire_min ? abs_expire_min * 60 : null;
 
     const { error } = await supabase
         .from('projects')
@@ -354,7 +396,13 @@ export async function updateProject(id: string, formData: FormData) {
             pay_rate,
             status,
             max_task_time,
-            total_tasks
+            total_tasks,
+            extra_time_after_max,
+            review_task_time,
+            review_extra_time,
+            absolute_expiration_duration,
+            payment_mode,
+            pay_per_task
         })
         .eq('id', id);
 
