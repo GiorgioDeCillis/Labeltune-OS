@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Trash2, GripVertical, FileText, Download, Eye } from 'lucide-react';
+import { Plus, Trash2, GripVertical, FileText, Download, Eye, Upload, Loader2, Wand2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {
     DndContext,
@@ -20,6 +20,14 @@ import {
     useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+
+// Use dynamic import for pdfjs to avoid server-side issues
+const getPdfJs = async () => {
+    const pdfjs = await import('pdfjs-dist');
+    // Set worker source
+    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+    return pdfjs;
+};
 
 export interface InstructionSection {
     id: string;
@@ -99,6 +107,8 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
         sections.length > 0 ? sections[0].id : null
     );
     const [isPreview, setIsPreview] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -139,6 +149,73 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
             const newIndex = sections.findIndex((s) => s.id === over.id);
 
             onChange(arrayMove(sections, oldIndex, newIndex));
+        }
+    };
+
+    const handleImportPDFClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsImporting(true);
+        try {
+            // 1. Extract text from PDF
+            const arrayBuffer = await file.arrayBuffer();
+            const pdfjs = await getPdfJs();
+            const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items
+                    .map((item: any) => item.str)
+                    .join(' ');
+                fullText += pageText + '\n\n';
+            }
+
+            // 2. Send to AI for parsing
+            const response = await fetch('/api/instructions/parse', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: fullText }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to parse instructions');
+            }
+
+            const data = await response.json();
+
+            // 3. Append new sections
+            if (data.sections && Array.isArray(data.sections)) {
+                // Determine if we should replace or append
+                // If it's a fresh project (only 1 empty section), replace.
+                // Otherwise append.
+                const isFresh = sections.length === 0 || (sections.length === 1 && sections[0].title === 'New Section' && sections[0].content === '');
+
+                let newSections = data.sections;
+                if (!isFresh) {
+                    newSections = [...sections, ...data.sections];
+                }
+
+                onChange(newSections);
+                if (newSections.length > 0) {
+                    setActiveSectionId(newSections[isFresh ? 0 : sections.length].id);
+                }
+            }
+
+        } catch (error) {
+            console.error('Import failed', error);
+            alert('Failed to import PDF. Please try again.');
+        } finally {
+            setIsImporting(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         }
     };
 
@@ -187,13 +264,42 @@ export function ProjectInstructionsEditor({ sections, onChange }: ProjectInstruc
     const activeSection = sections.find((s) => s.id === activeSectionId);
 
     return (
-        <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+            {isImporting && (
+                <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center text-white">
+                    <div className="bg-black/40 p-8 rounded-2xl border border-white/10 flex flex-col items-center animate-pulse">
+                        <Wand2 className="w-12 h-12 mb-4 text-purple-400 animate-spin-slow" />
+                        <h3 className="text-xl font-bold mb-2">AI is analyzing your PDF...</h3>
+                        <p className="text-muted-foreground text-center max-w-xs">
+                            Extracting text, removing watermarks, and structuring guidelines. This may take a moment.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            <input
+                type="file"
+                accept=".pdf"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleFileChange}
+            />
+
             <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/10">
                 <div>
                     <h3 className="font-bold">Project Instructions</h3>
                     <p className="text-sm text-muted-foreground">Define multiple sections of guidelines for attempters.</p>
                 </div>
                 <div className="flex gap-3">
+                    <button
+                        onClick={handleImportPDFClick}
+                        disabled={isImporting}
+                        className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 text-purple-200 border border-purple-500/30 rounded-xl text-sm font-bold transition-all flex items-center gap-2 group"
+                    >
+                        {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />}
+                        Import PDF with AI
+                    </button>
+                    <div className="w-px h-8 bg-white/10 mx-1"></div>
                     <button
                         onClick={() => setIsPreview(!isPreview)}
                         className="px-4 py-2 border border-white/10 hover:bg-white/5 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
