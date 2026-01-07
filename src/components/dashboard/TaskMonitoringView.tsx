@@ -131,59 +131,61 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
             </div>
 
             {/* Metrics Grid */}
-            <div className={`grid grid-cols-1 ${currentUserRole === 'annotator' ? '' : 'md:grid-cols-2'} gap-6`}>
+            <div className={`grid grid-cols-1 ${(currentUserRole === 'admin' || currentUserRole === 'pm') ? 'md:grid-cols-2' : ''} gap-6`}>
                 {/* Annotator Info */}
-                <div className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <User className="w-16 h-16" />
-                    </div>
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-lg font-bold border border-primary/20 overflow-hidden">
-                            {annotator?.avatar_url ? (
-                                <img src={annotator.avatar_url} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                                annotator?.full_name?.[0] || 'A'
-                            )}
+                {currentUserRole !== 'reviewer' && (
+                    <div className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <User className="w-16 h-16" />
                         </div>
-                        <div>
-                            <h3 className="text-lg font-bold">Attempter</h3>
-                            <p className="text-sm text-muted-foreground">{annotator?.full_name || 'Unassigned'}</p>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Time Spent</p>
-                            <div className="flex items-center gap-1.5 text-foreground font-medium">
-                                <Timer className="w-3.5 h-3.5 text-primary" />
-                                <span>{formatTime(task.annotator_time_spent)}</span>
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-lg font-bold border border-primary/20 overflow-hidden">
+                                {annotator?.avatar_url ? (
+                                    <img src={annotator.avatar_url} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                    annotator?.full_name?.[0] || 'A'
+                                )}
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold">Attempter</h3>
+                                <p className="text-sm text-muted-foreground">{annotator?.full_name || 'Unassigned'}</p>
                             </div>
                         </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Earnings</p>
-                            <div className="flex items-center gap-1.5 text-green-400 font-bold">
-                                <DollarSign className="w-3.5 h-3.5" />
-                                <span>{task.annotator_earnings?.toFixed(2) || '0.00'}</span>
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Time Spent</p>
+                                <div className="flex items-center gap-1.5 text-foreground font-medium">
+                                    <Timer className="w-3.5 h-3.5 text-primary" />
+                                    <span>{formatTime(task.annotator_time_spent)}</span>
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Earnings</p>
+                                <div className="flex items-center gap-1.5 text-green-400 font-bold">
+                                    <DollarSign className="w-3.5 h-3.5" />
+                                    <span>{task.annotator_earnings?.toFixed(2) || '0.00'}</span>
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Rating</p>
+                                <div className="flex items-center gap-1.5 text-yellow-500 font-bold">
+                                    <Star className="w-3.5 h-3.5 fill-current" />
+                                    <span>{task.review_rating?.toFixed(1) || '-'}</span>
+                                </div>
                             </div>
                         </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Rating</p>
-                            <div className="flex items-center gap-1.5 text-yellow-500 font-bold">
-                                <Star className="w-3.5 h-3.5 fill-current" />
-                                <span>{task.review_rating?.toFixed(1) || '-'}</span>
+                        <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Started At</p>
+                                <p className="text-xs font-medium text-foreground">{formatDate(task.annotator_started_at)}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Finished At</p>
+                                <p className="text-xs font-medium text-foreground">{formatDate(task.annotator_completed_at)}</p>
                             </div>
                         </div>
                     </div>
-                    <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Started At</p>
-                            <p className="text-xs font-medium text-foreground">{formatDate(task.annotator_started_at)}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Finished At</p>
-                            <p className="text-xs font-medium text-foreground">{formatDate(task.annotator_completed_at)}</p>
-                        </div>
-                    </div>
-                </div>
+                )}
 
                 {/* Reviewer Info */}
                 {currentUserRole !== 'annotator' && (
