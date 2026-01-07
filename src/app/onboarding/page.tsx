@@ -5,12 +5,21 @@ import { motion } from 'framer-motion';
 import {
     User, Mail, Phone, Globe, MapPin, FileText,
     CheckCircle2, AlertCircle, Loader2, Info, LogOut,
-    Linkedin, Github, ExternalLink, CreditCard
+    Linkedin, Github, ExternalLink, CreditCard, ShieldCheck, ShieldX
 } from 'lucide-react';
 import { submitOnboarding } from './actions';
 import { useTheme } from '@/context/ThemeContext';
 import CustomSelect from '@/components/CustomSelect';
 import CustomDateInput from '@/components/CustomDateInput';
+
+// Use dynamic import for pdfjs to avoid server-side issues
+const getPdfJs = async () => {
+    const pdfjs = await import('pdfjs-dist');
+    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+    return pdfjs;
+};
+
+type CVValidationStatus = 'idle' | 'validating' | 'valid' | 'invalid';
 
 const COUNTRIES = [
     { code: 'IT', name: 'Italia' },
@@ -33,6 +42,8 @@ const LANGUAGES = [
 export default function OnboardingPage() {
     const { theme } = useTheme();
     const [cvFile, setCvFile] = useState<File | null>(null);
+    const [cvValidationStatus, setCvValidationStatus] = useState<CVValidationStatus>('idle');
+    const [cvValidationReason, setCvValidationReason] = useState<string>('');
     const [isPending, setIsPending] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -59,6 +70,8 @@ export default function OnboardingPage() {
 
         if (!cvFile) {
             errors.cv = 'Il caricamento del CV è obbligatorio';
+        } else if (cvValidationStatus !== 'valid') {
+            errors.cv = 'Il CV deve essere validato prima di procedere';
         }
 
         const paypalEmail = formData.get('paypalEmail') as string;
@@ -299,29 +312,101 @@ export default function OnboardingPage() {
                                             type="file"
                                             accept=".pdf"
                                             required
-                                            onChange={(e) => {
+                                            disabled={cvValidationStatus === 'validating'}
+                                            onChange={async (e) => {
                                                 const file = e.target.files?.[0] || null;
-                                                console.log("File selected:", file?.name);
+                                                if (!file) return;
+
                                                 setCvFile(file);
+                                                setCvValidationStatus('validating');
+                                                setCvValidationReason('');
+
+                                                try {
+                                                    // Convert first page of PDF to image
+                                                    const arrayBuffer = await file.arrayBuffer();
+                                                    const pdfjs = await getPdfJs();
+                                                    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+                                                    const page = await pdf.getPage(1);
+
+                                                    const viewport = page.getViewport({ scale: 1.5 });
+                                                    const canvas = document.createElement('canvas');
+                                                    const context = canvas.getContext('2d');
+                                                    canvas.height = viewport.height;
+                                                    canvas.width = viewport.width;
+
+                                                    if (!context) throw new Error('Canvas context not available');
+
+                                                    await page.render({
+                                                        canvasContext: context,
+                                                        viewport: viewport,
+                                                    }).promise;
+
+                                                    const base64Image = canvas.toDataURL('image/jpeg', 0.7);
+
+                                                    // Validate with AI
+                                                    const response = await fetch('/api/cv/validate', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ image: base64Image }),
+                                                    });
+
+                                                    const data = await response.json();
+
+                                                    if (data.isValid) {
+                                                        setCvValidationStatus('valid');
+                                                        setCvValidationReason(data.reason || 'CV valido');
+                                                    } else {
+                                                        setCvValidationStatus('invalid');
+                                                        setCvValidationReason(data.reason || 'Documento non riconosciuto come CV');
+                                                    }
+                                                } catch (err) {
+                                                    console.error('CV validation error:', err);
+                                                    setCvValidationStatus('invalid');
+                                                    setCvValidationReason('Errore durante la validazione del CV');
+                                                }
                                             }}
                                             className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                         />
-                                        <div className={`w-full border-2 border-dashed rounded-2xl p-8 transition-all text-center ${cvFile ? 'bg-primary/5 border-primary/50' : fieldErrors.cv ? 'bg-red-500/5 border-red-500/30' : 'bg-white/5 border-white/10 group-hover/file:border-primary/50 group-hover/file:bg-primary/5'
+                                        <div className={`w-full border-2 border-dashed rounded-2xl p-8 transition-all text-center ${cvValidationStatus === 'valid' ? 'bg-emerald-500/10 border-emerald-500/50' :
+                                                cvValidationStatus === 'invalid' ? 'bg-red-500/10 border-red-500/50' :
+                                                    cvValidationStatus === 'validating' ? 'bg-blue-500/10 border-blue-500/50' :
+                                                        fieldErrors.cv ? 'bg-red-500/5 border-red-500/30' :
+                                                            'bg-white/5 border-white/10 group-hover/file:border-primary/50 group-hover/file:bg-primary/5'
                                             }`}>
                                             <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 group-hover/file:scale-110 transition-transform">
-                                                {cvFile ? (
-                                                    <CheckCircle2 className="w-6 h-6 text-primary" />
+                                                {cvValidationStatus === 'validating' ? (
+                                                    <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
+                                                ) : cvValidationStatus === 'valid' ? (
+                                                    <ShieldCheck className="w-6 h-6 text-emerald-400" />
+                                                ) : cvValidationStatus === 'invalid' ? (
+                                                    <ShieldX className="w-6 h-6 text-red-400" />
                                                 ) : fieldErrors.cv ? (
                                                     <AlertCircle className="w-6 h-6 text-red-500" />
                                                 ) : (
                                                     <FileText className="w-6 h-6 opacity-40 group-hover/file:text-primary group-hover/file:opacity-100" />
                                                 )}
                                             </div>
-                                            <span className={`text-sm font-bold block truncate max-w-xs mx-auto ${fieldErrors.cv ? 'text-red-500' : ''}`}>
-                                                {cvFile ? cvFile.name : fieldErrors.cv ? fieldErrors.cv : "Clicca o trascina il tuo CV"}
+                                            <span className={`text-sm font-bold block truncate max-w-xs mx-auto ${cvValidationStatus === 'valid' ? 'text-emerald-400' :
+                                                    cvValidationStatus === 'invalid' ? 'text-red-400' :
+                                                        cvValidationStatus === 'validating' ? 'text-blue-400' :
+                                                            fieldErrors.cv ? 'text-red-500' : ''
+                                                }`}>
+                                                {cvValidationStatus === 'validating' ? 'Validazione in corso...' :
+                                                    cvValidationStatus === 'valid' ? cvFile?.name :
+                                                        cvValidationStatus === 'invalid' ? 'CV non valido' :
+                                                            cvFile ? cvFile.name :
+                                                                fieldErrors.cv ? fieldErrors.cv :
+                                                                    'Clicca o trascina il tuo CV'}
                                             </span>
-                                            <p className="text-[10px] uppercase tracking-widest opacity-40 mt-1">
-                                                {cvFile ? `${(cvFile.size / 1024 / 1024).toFixed(2)} MB` : "Solo formati PDF"}
+                                            <p className={`text-[10px] uppercase tracking-widest mt-1 ${cvValidationStatus === 'valid' ? 'text-emerald-400/70' :
+                                                    cvValidationStatus === 'invalid' ? 'text-red-400/70' :
+                                                        'opacity-40'
+                                                }`}>
+                                                {cvValidationStatus === 'validating' ? 'AI sta analizzando il documento...' :
+                                                    cvValidationStatus === 'valid' ? `✓ ${cvValidationReason}` :
+                                                        cvValidationStatus === 'invalid' ? cvValidationReason :
+                                                            cvFile ? `${(cvFile.size / 1024 / 1024).toFixed(2)} MB` :
+                                                                'Solo formati PDF'}
                                             </p>
                                         </div>
                                     </div>
@@ -420,7 +505,7 @@ export default function OnboardingPage() {
                         >
                             <button
                                 type="submit"
-                                disabled={isPending}
+                                disabled={isPending || cvValidationStatus !== 'valid'}
                                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-5 rounded-2xl shadow-2xl shadow-primary/20 transition-all flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group text-lg"
                             >
                                 {isPending ? (
