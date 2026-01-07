@@ -29,7 +29,8 @@ import {
     RubricTable,
     HyperTextObject,
     ViewLayout,
-    AudioRecorderControl
+    AudioRecorderControl,
+    ChecklistControl
 } from '@/components/builder/Renderers';
 
 import { useToast } from '@/components/Toast';
@@ -319,6 +320,7 @@ function renderComponent(
     if (component.type === 'Ranking') return <RankingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
     if (component.type === 'Feedback') return <FeedbackControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
     if (component.type === 'AudioRecorder') return <AudioRecorderControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+    if (component.type === 'Checklist') return <ChecklistControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
 
     return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
 }

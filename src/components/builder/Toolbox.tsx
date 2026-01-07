@@ -67,6 +67,7 @@ export function Toolbox() {
                 <DraggableTool type="Number" label="Number" icon={Hash} />
                 <DraggableTool type="RectangleLabels" label="Rectangle Labels" icon={MousePointer2} />
                 <DraggableTool type="AudioRecorder" label="Audio Recorder" icon={Mic} />
+                <DraggableTool type="Checklist" label="Self-Check List" icon={CheckSquare} />
             </div>
 
             <div className="space-y-2">

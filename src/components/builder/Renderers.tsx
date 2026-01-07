@@ -1156,6 +1156,67 @@ export function FeedbackControl({ component, value, onChange, readOnly }: {
         </div>
     );
 }
+
+export function ChecklistControl({ component, value, onChange, readOnly }: {
+    component: TaskComponent,
+    value: any,
+    onChange: (val: any) => void,
+    readOnly?: boolean
+}) {
+    // value is an object mapping option values (item names) to booleans
+    const checkedItems = value || {};
+
+    const toggleItem = (itemValue: string) => {
+        if (readOnly) return;
+        onChange({
+            ...checkedItems,
+            [itemValue]: !checkedItems[itemValue]
+        });
+    };
+
+    return (
+        <div className="space-y-3">
+            <div>
+                <label className="text-sm font-bold block mb-1">
+                    {component.title} {component.required && <span className="text-red-400">*</span>}
+                </label>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
+            </div>
+            <div className="space-y-2">
+                {component.options?.map((item) => (
+                    <label
+                        key={item.value}
+                        className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${checkedItems[item.value]
+                            ? 'bg-primary/20 border-primary/50 text-white'
+                            : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+                            } ${readOnly ? 'cursor-default' : ''}`}
+                    >
+                        <div
+                            onClick={(e) => {
+                                e.preventDefault();
+                                toggleItem(item.value);
+                            }}
+                            className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-all ${checkedItems[item.value]
+                                ? 'bg-primary border-primary'
+                                : 'border-white/20 bg-background/50'
+                                }`}
+                        >
+                            {checkedItems[item.value] && <Check className="w-3.5 h-3.5 text-primary-foreground stroke-[3]" />}
+                        </div>
+                        <div className="flex-1">
+                            <span className="text-sm font-medium">{item.label}</span>
+                            {item.hint && <p className="text-[10px] opacity-60 mt-0.5">{item.hint}</p>}
+                        </div>
+                    </label>
+                ))}
+            </div>
+        </div>
+    );
+}
 export function RubricTable({ component }: { component: TaskComponent }) {
     // Expected structure in rubicCriteria for this table:
     // [{ title: "Language", category: "Native Fluency", description: "Response uses native, fluent..." }]

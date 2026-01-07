@@ -28,7 +28,8 @@ export type TaskComponentType =
     | 'Ranking'
     | 'Feedback'
     | 'RequirementPanel'
-    | 'AudioRecorder';
+    | 'AudioRecorder'
+    | 'Checklist';
 
 export interface TaskComponent {
     id: string;

@@ -75,9 +75,9 @@ export function PropertiesPanel({ component, onChange }: {
                 <span className="text-sm">Required field</span>
             </label>
 
-            {component.type === 'Choices' && (
+            {(component.type === 'Choices' || component.type === 'Checklist') && (
                 <div className="space-y-2 pt-4 border-t border-white/5">
-                    <label className="text-xs font-bold text-muted-foreground">Options (Label:Value per line)</label>
+                    <label className="text-xs font-bold text-muted-foreground">Items (Label:Value per line)</label>
                     <textarea
                         value={component.options?.map(o => `${o.label}:${o.value}`).join('\n') || ''}
                         onChange={(e) => {

@@ -156,6 +156,23 @@ function SortableComponent({ component, isSelected, onSelect, onDelete }: {
                     </div>
                 )}
 
+                {component.type === 'Checklist' && (
+                    <div className="space-y-2">
+                        {component.options?.slice(0, 3).map((opt, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                                <div className="w-4 h-4 rounded border border-white/20 flex items-center justify-center">
+                                    <div className="w-2.5 h-2.5 bg-primary rounded-sm opacity-50"></div>
+                                </div>
+                                <span className="text-sm">{opt.label}</span>
+                            </div>
+                        ))}
+                        {(component.options?.length || 0) > 3 && <div className="text-xs text-muted-foreground pl-6">...more</div>}
+                        {(!component.options || component.options.length === 0) && (
+                            <div className="text-xs text-muted-foreground italic">No items added yet</div>
+                        )}
+                    </div>
+                )}
+
                 <div className="text-xs text-muted-foreground mt-2">{component.description}</div>
             </div>
 
