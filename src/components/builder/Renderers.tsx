@@ -478,6 +478,12 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
             height: 80,
             normalize: true,
             minPxPerSec: zoom,
+            formatTime: (seconds: number) => {
+                const m = Math.floor(seconds / 60);
+                const s = Math.floor(seconds % 60);
+                const ms = Math.floor((seconds % 1) * 1000);
+                return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+            },
             plugins: [
                 Timeline.create({
                     height: 20,
@@ -492,12 +498,6 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                     labelBackground: '#000000',
                     labelColor: '#ffffff',
                     labelSize: '10px',
-                    formatTime: (seconds: number) => {
-                        const m = Math.floor(seconds / 60);
-                        const s = Math.floor(seconds % 60);
-                        const ms = Math.floor((seconds % 1) * 1000);
-                        return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
-                    },
                 }),
                 Minimap.create({
                     height: 15,
