@@ -11,47 +11,62 @@ export function VideoObject({ component, data }: { component: TaskComponent, dat
     const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
 
     return (
-        <div className="rounded-lg overflow-hidden border border-white/10 relative bg-black/40 aspect-video flex flex-col">
-            {src ? (
-                <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <video src={src} className="w-full flex-1" />
-                    <div className="h-1 bg-primary/30 w-full relative">
-                        <div className="absolute inset-y-0 left-0 bg-primary w-1/3" />
-                    </div>
-                </>
-            ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-4">
-                    <Video className="w-12 h-12 opacity-20" />
-                    <div className="text-center">
-                        <p className="font-bold text-sm">Video Player Placeholder</p>
-                        <p className="text-xs opacity-50">Link data to {component.value}</p>
-                    </div>
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            {component.description && (
+                <div className="text-xs text-muted-foreground mb-2 prose prose-invert prose-xs max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
                 </div>
             )}
+            <div className="rounded-lg overflow-hidden border border-white/10 relative bg-black/40 aspect-video flex flex-col">
+                {src ? (
+                    <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <video src={src} className="w-full flex-1" controls />
+                        <div className="h-1 bg-primary/30 w-full relative">
+                            <div className="absolute inset-y-0 left-0 bg-primary w-1/3" />
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-4">
+                        <Video className="w-12 h-12 opacity-20" />
+                        <div className="text-center">
+                            <p className="font-bold text-sm">Video Player Placeholder</p>
+                            <p className="text-xs opacity-50">Link data to {component.value}</p>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
 
 export function TimeSeriesObject({ component, data }: { component: TaskComponent, data: any }) {
-    // Mock waveform for visualization
     return (
-        <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                    <Activity className="w-4 h-4 text-primary" />
-                    {component.title}
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            {component.description && (
+                <div className="text-xs text-muted-foreground mb-2 prose prose-invert prose-xs max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
                 </div>
-                <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">00:00:00 - 00:05:00</div>
-            </div>
-            <div className="h-32 flex items-end gap-[2px]">
-                {Array.from({ length: 120 }).map((_, i) => (
-                    <div
-                        key={i}
-                        className="flex-1 bg-primary/20 rounded-full"
-                        style={{ height: `${20 + Math.random() * 80}%` }}
-                    />
-                ))}
+            )}
+            <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                        <Activity className="w-4 h-4 text-primary" />
+                        {component.title || 'TimeSeries'}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">00:00:00 - 00:05:00</div>
+                </div>
+                <div className="h-32 flex items-end gap-[2px]">
+                    {Array.from({ length: 120 }).map((_, i) => (
+                        <div
+                            key={i}
+                            className="flex-1 bg-primary/20 rounded-full"
+                            style={{ height: `${20 + Math.random() * 80}%` }}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );
@@ -61,25 +76,29 @@ export function PDFObject({ component, data }: { component: TaskComponent, data:
     const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
 
     return (
-        <div className="bg-white/5 border border-white/10 rounded-lg aspect-[3/4] flex flex-col overflow-hidden relative group">
-            <div className="p-3 border-b border-white/10 bg-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-red-400" />
-                    <span className="text-xs font-bold truncate max-w-[150px]">{component.value}.pdf</span>
-                </div>
-                <div className="flex gap-2">
-                    <div className="w-2 h-2 rounded-full bg-white/10" />
-                    <div className="w-2 h-2 rounded-full bg-white/10" />
-                </div>
-            </div>
-            {src ? (
-                <iframe src={src} className="w-full flex-1 invert border-none grayscale opacity-80" />
-            ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-4">
-                    <FileText className="w-12 h-12 opacity-20" />
-                    <span className="text-xs font-bold uppercase tracking-widest opacity-30 italic">PDF Document Preview</span>
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            {component.description && (
+                <div className="text-xs text-muted-foreground mb-2 prose prose-invert prose-xs max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
                 </div>
             )}
+            <div className="bg-white/5 border border-white/10 rounded-lg aspect-[3/4] flex flex-col overflow-hidden relative group">
+                <div className="p-3 border-b border-white/10 bg-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-red-400" />
+                        <span className="text-xs font-bold truncate max-w-[150px]">{component.value}.pdf</span>
+                    </div>
+                </div>
+                {src ? (
+                    <iframe src={src} className="w-full flex-1 invert border-none grayscale opacity-80" />
+                ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-4">
+                        <FileText className="w-12 h-12 opacity-20" />
+                        <span className="text-xs font-bold uppercase tracking-widest opacity-30 italic">PDF Document Preview</span>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
@@ -96,7 +115,13 @@ export function MultiMessageObject({ component, data }: { component: TaskCompone
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground mb-6 uppercase tracking-widest">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            {component.description && (
+                <div className="text-xs text-muted-foreground mb-2 prose prose-invert prose-xs max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                </div>
+            )}
+            <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground mb-2 uppercase tracking-widest">
                 <MessagesSquare className="w-4 h-4" />
                 Conversation History
             </div>
@@ -111,7 +136,7 @@ export function MultiMessageObject({ component, data }: { component: TaskCompone
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-white/5 border border-white/10 text-foreground'
                         }`}>
-                        {msg.content}
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                     </div>
                     {msg.role === 'user' && (
                         <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
@@ -128,19 +153,25 @@ export function MultiMessageObject({ component, data }: { component: TaskCompone
 export function ImageObject({ component, data }: { component: TaskComponent, data: any }) {
     const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
 
-    if (!src) {
-        return (
-            <div className="bg-white/5 border border-white/10 rounded-lg h-64 flex items-center justify-center text-muted-foreground gap-2">
-                <ImageIcon className="w-8 h-8 opacity-50" />
-                <span>No image data ({component.value})</span>
-            </div>
-        );
-    }
-
     return (
-        <div className="rounded-lg overflow-hidden border border-white/10 relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={component.name} className="w-full object-contain max-h-[500px]" />
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            {component.description && (
+                <div className="text-xs text-muted-foreground mb-2 prose prose-invert prose-xs max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                </div>
+            )}
+            <div className="rounded-lg overflow-hidden border border-white/10 relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {src ? (
+                    <img src={src} alt={component.name} className="w-full object-contain max-h-[500px]" />
+                ) : (
+                    <div className="bg-white/5 h-64 flex items-center justify-center text-muted-foreground gap-2">
+                        <ImageIcon className="w-8 h-8 opacity-50" />
+                        <span>No image data ({component.value})</span>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
@@ -149,8 +180,16 @@ export function TextObject({ component, data }: { component: TaskComponent, data
     const text = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.text;
 
     return (
-        <div className="p-4 bg-white/5 border border-white/10 rounded-lg text-lg">
-            {text || <span className="text-muted-foreground italic">No text data</span>}
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            {component.description && (
+                <div className="text-xs text-muted-foreground mb-2 prose prose-invert prose-xs max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                </div>
+            )}
+            <div className="p-4 bg-white/5 border border-white/10 rounded-lg text-lg">
+                {text || <span className="text-muted-foreground italic">No text data</span>}
+            </div>
         </div>
     );
 }
@@ -159,16 +198,24 @@ export function AudioObject({ component, data }: { component: TaskComponent, dat
     const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
 
     return (
-        <div className="p-4 bg-white/5 border border-white/10 rounded-lg flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <Music className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1">
-                {src ? (
-                    <audio controls src={src} className="w-full h-8" />
-                ) : (
-                    <span className="text-muted-foreground text-sm">No audio data ({component.value})</span>
-                )}
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            {component.description && (
+                <div className="text-xs text-muted-foreground mb-2 prose prose-invert prose-xs max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                </div>
+            )}
+            <div className="p-4 bg-white/5 border border-white/10 rounded-lg flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Music className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                    {src ? (
+                        <audio controls src={src} className="w-full h-8" />
+                    ) : (
+                        <span className="text-muted-foreground text-sm">No audio data ({component.value})</span>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -176,14 +223,21 @@ export function AudioObject({ component, data }: { component: TaskComponent, dat
 
 export function HeaderComponent({ component }: { component: TaskComponent }) {
     return (
-        <h3 className="text-xl font-bold mb-4 border-b border-white/10 pb-2">
-            {component.text || component.value || 'Header'}
-        </h3>
+        <div className="mb-6 border-b border-white/10 pb-4">
+            <h3 className="text-2xl font-bold mb-2">
+                {component.title || component.text || component.value || 'Header'}
+            </h3>
+            {component.description && (
+                <div className="prose prose-invert max-w-none text-muted-foreground">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                </div>
+            )}
+        </div>
     );
 }
 
 export function HyperTextObject({ component, data }: { component: TaskComponent, data: any }) {
-    const content = component.value?.startsWith('$') ? data[component.value.substring(1)] : (component.text || component.content);
+    const content = component.value?.startsWith('$') ? data[component.value.substring(1)] : (component.content || component.text || component.description || component.title);
 
     return (
         <div className="prose prose-invert max-w-none text-foreground/90">
@@ -195,10 +249,21 @@ export function HyperTextObject({ component, data }: { component: TaskComponent,
 }
 
 export function ViewLayout({ component, children }: { component: TaskComponent, children?: React.ReactNode }) {
-    // Basic View container. Label Studio allows styling here, we'll use a simple div for now.
     return (
-        <div className="space-y-4 w-full">
-            {children}
+        <div className="space-y-6 w-full mb-8">
+            {(component.title || component.description) && (
+                <div className="space-y-2 mb-4">
+                    {component.title && <h4 className="text-lg font-bold text-foreground/80">{component.title}</h4>}
+                    {component.description && (
+                        <div className="prose prose-invert prose-sm max-w-none text-muted-foreground">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                        </div>
+                    )}
+                </div>
+            )}
+            <div className="space-y-4">
+                {children}
+            </div>
         </div>
     );
 }
@@ -217,14 +282,19 @@ export function ChoicesControl({ component, value, onChange, readOnly }: {
 
     const toggle = (val: string) => {
         if (readOnly) return;
-        // Basic single select behavior for now, unless we add 'multiple' prop
-        // Label Studio choices are usually radio unless choice="multiple"
         onChange([val]);
     };
 
     return (
-        <div className="space-y-2">
-            <label className="text-sm font-bold block mb-2">{component.title}</label>
+        <div className="space-y-3">
+            <div>
+                <label className="text-sm font-bold block mb-1">{component.title}</label>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
+            </div>
             <div className="grid gap-2">
                 {component.options?.map((opt) => (
                     <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selected.includes(opt.value)
@@ -253,8 +323,15 @@ export function RatingControl({ component, value, onChange, readOnly }: {
     readOnly?: boolean
 }) {
     return (
-        <div className="space-y-2">
-            <label className="text-sm font-bold block mb-2">{component.title}</label>
+        <div className="space-y-3">
+            <div>
+                <label className="text-sm font-bold block mb-1">{component.title}</label>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
+            </div>
             <div className="flex gap-2">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                     <button
@@ -281,8 +358,15 @@ export function TextAreaControl({ component, value, onChange, readOnly }: {
     readOnly?: boolean
 }) {
     return (
-        <div className="space-y-2">
-            <label className="text-sm font-bold block mb-2">{component.title}</label>
+        <div className="space-y-3">
+            <div>
+                <label className="text-sm font-bold block mb-1">{component.title}{component.required && <span className="text-red-500 ml-1">*</span>}</label>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
+            </div>
             <textarea
                 value={value || ''}
                 onChange={(e) => onChange(e.target.value)}
@@ -315,8 +399,15 @@ export function ImageLabelsControl({ component, value, onChange, readOnly }: {
     };
 
     return (
-        <div className="space-y-2">
-            <label className="text-sm font-bold block mb-2">{component.title}</label>
+        <div className="space-y-3">
+            <div>
+                <label className="text-sm font-bold block mb-1">{component.title}</label>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
+            </div>
             <div className="flex flex-wrap gap-2">
                 {component.labels?.map((label) => (
                     <button
@@ -369,15 +460,18 @@ export function InstructionBlock({ component, data }: { component: TaskComponent
                 </div>
             </div>
             {!isCollapsed && (
-                <div className="p-4 space-y-3 text-sm leading-relaxed">
-                    {component.content && (
-                        <div dangerouslySetInnerHTML={{ __html: component.content.replace(/\n/g, '<br/>') }} />
+                <div className="p-4 space-y-4 text-sm leading-relaxed">
+                    {(component.content || component.text) && (
+                        <div className="prose prose-invert prose-sm max-w-none">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.content || component.text || ''}</ReactMarkdown>
+                        </div>
                     )}
-                    {component.text && <p>{component.text}</p>}
                     {component.children?.map((child, i) => (
                         <div key={child.id || i} className="pl-4 border-l-2 border-yellow-500/50 py-1 text-yellow-200/80 flex items-start gap-2">
                             <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                            <span>{child.text}</span>
+                            <div className="prose prose-invert prose-xs max-w-none">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{child.text || ''}</ReactMarkdown>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -390,9 +484,10 @@ export function RequirementPanel({ component }: { component: TaskComponent }) {
     return (
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
             <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">{component.title || 'Task Requirements'}</h4>
-            {component.text && <p className="text-sm">{component.text}</p>}
-            {component.content && (
-                <div className="text-sm space-y-2" dangerouslySetInnerHTML={{ __html: component.content.replace(/\n/g, '<br/>') }} />
+            {(component.text || component.content) && (
+                <div className="prose prose-invert prose-sm max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.content || component.text || ''}</ReactMarkdown>
+                </div>
             )}
         </div>
     );
@@ -402,10 +497,10 @@ export function SideBySideLayout({ component, children, data }: { component: Tas
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {component.children?.map((child, i) => (
-                <div key={child.id || i} className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+                <div key={child.id || i} className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-4 flex flex-col">
                     <h4 className="font-bold text-sm border-b border-white/5 pb-2">{child.title || `Response ${String.fromCharCode(65 + i)}`}</h4>
-                    <div className="text-sm leading-relaxed max-h-[400px] overflow-y-auto custom-scrollbar">
-                        {child.text || child.content || 'No content'}
+                    <div className="flex-1 text-sm leading-relaxed max-h-[400px] overflow-y-auto custom-scrollbar prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{child.content || child.text || 'No content'}</ReactMarkdown>
                     </div>
                 </div>
             ))}
@@ -569,10 +664,14 @@ export function FeedbackControl({ component, value, onChange, readOnly }: {
 
     return (
         <div className="space-y-3">
-            <h4 className="font-bold text-sm">{component.title}</h4>
-            {component.description && (
-                <p className="text-xs text-muted-foreground">{component.description}</p>
-            )}
+            <div>
+                <label className="text-sm font-bold block mb-1">{component.title}</label>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
+            </div>
             <textarea
                 value={text}
                 onChange={(e) => onChange(e.target.value)}
@@ -599,6 +698,11 @@ export function RubricTable({ component }: { component: TaskComponent }) {
         <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
             <div className="p-4 border-b border-white/5 bg-white/5">
                 <h4 className="font-bold text-sm tracking-wider uppercase text-muted-foreground">{component.title || 'Rubric Checklist'}</h4>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mt-2 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
@@ -614,14 +718,20 @@ export function RubricTable({ component }: { component: TaskComponent }) {
                             <tr key={item.id || i} className="hover:bg-white/5 transition-colors">
                                 <td className="p-3 font-bold text-primary/80">{item.title}</td>
                                 <td className="p-3 text-muted-foreground">{item.category}</td>
-                                <td className="p-3 leading-relaxed">{item.description}</td>
+                                <td className="p-3 leading-relaxed">
+                                    <div className="prose prose-invert prose-xs max-w-none">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.description}</ReactMarkdown>
+                                    </div>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
-            {component.content && (
-                <div className="p-4 text-xs italic text-muted-foreground border-t border-white/5 bg-white/5" dangerouslySetInnerHTML={{ __html: component.content }} />
+            {(component.content || component.text) && (
+                <div className="p-4 text-xs italic text-muted-foreground border-t border-white/5 bg-white/5 prose prose-invert prose-xs max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.content || component.text || ''}</ReactMarkdown>
+                </div>
             )}
         </div>
     );
