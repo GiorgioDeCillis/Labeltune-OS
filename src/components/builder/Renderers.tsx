@@ -477,7 +477,8 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
             barRadius: 3,
             height: 80,
             normalize: true,
-            minPxPerSec: Math.max(20, zoom), // Ensure a minimum sensible px/sec to avoid disappearance
+            hideScrollbar: true, // Use Minimap as the only scrollbar
+            minPxPerSec: Math.max(20, zoom),
             plugins: [
                 Timeline.create({
                     height: 25,
@@ -530,35 +531,6 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                     overlayColor: 'rgba(255, 255, 255, 0.1)',
                 }),
             ],
-        });
-
-        // Ensure Hover and other time-displaying plugins use precision format
-        const formatTime = (seconds: number) => {
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60);
-            const ms = Math.floor((seconds % 1) * 1000);
-            return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
-        };
-
-        const hoverPlugin = (wavesurferRef.current as any).plugins.find((p: any) => p instanceof Hover);
-        if (hoverPlugin) {
-            hoverPlugin.formatTime = formatTime;
-        }
-
-        // Manual listener to force millisecond precision in hover label
-        // This is a fallback in case the plugin's formatTime override is ignored
-        wavesurferRef.current.on('interaction', (newTime: number) => {
-            const wrapper = waveformRef.current?.querySelector('div');
-            // v7 uses nested shadow roots or a specific wrapper
-            const label = wrapper?.shadowRoot?.querySelector('[part="hover-label"]');
-            if (label) {
-                label.textContent = formatTime(newTime);
-            }
-        });
-
-        // Also update on 'hover' if available in v7
-        wavesurferRef.current.on('timeupdate', (newTime: number) => {
-            // This might be too frequent, but helps if the hover label is visible during playback
         });
 
         wavesurferRef.current.load(recordingUrl);
@@ -672,6 +644,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                     overflow: hidden;
                     background: rgba(255, 255, 255, 0.02) !important;
                     margin-top: 12px;
+                    cursor: pointer;
                 }
                 .glass-wavesurfer ::part(minimap-overlay) {
                     border-radius: 99px;
@@ -680,20 +653,22 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                     height: 8px !important;
                     top: 50% !important;
                     transform: translateY(-50%);
+                    pointer-events: all !important;
                 }
                 .glass-wavesurfer ::part(hover-label) {
                     background: rgba(0, 0, 0, 0.8) !important;
                     backdrop-filter: blur(8px);
-                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
                     border-radius: 4px;
                     padding: 4px 8px;
                     font-family: monospace;
                     font-size: 11px;
-                    transform: translateY(-100%);
-                    margin-top: -4px;
+                    z-index: 50;
+                    margin-top: -30px; /* Position it above the hover point */
+                    position: relative;
                 }
                 .glass-wavesurfer ::part(hover-line) {
-                    background-color: rgba(255, 255, 255, 0.2) !important;
+                    background-color: rgba(255, 255, 255, 0.4) !important;
                 }
                 /* Platform-consistent scrollbar for the waveform if it overflows */
                 .glass-wavesurfer div::-webkit-scrollbar {
