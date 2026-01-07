@@ -57,6 +57,8 @@ export function ReviewTaskRenderer({
     const [seconds, setSeconds] = useState(initialTimeSpent);
     const [feedback, setFeedback] = useState('');
 
+    const isReadOnly = taskStatus === 'approved' || taskStatus === 'completed' || taskStatus === 'rejected';
+
     // Initialize submission results if task is already approved
     const [submissionResults, setSubmissionResults] = useState<{ earnings: number; timeSpent: number; projectId: string } | null>(
         taskStatus === 'approved' ? {
@@ -115,6 +117,7 @@ export function ReviewTaskRenderer({
     const taskData = initialData || {};
 
     const handleChange = (id: string, value: any) => {
+        if (isReadOnly) return;
         setFormData((prev: any) => ({ ...prev, [id]: value }));
     };
 
@@ -208,13 +211,13 @@ export function ReviewTaskRenderer({
                     const value = formData[component.name] || formData[component.id];
                     const onChange = (val: any) => handleChange(component.name || component.id, val);
 
-                    if (component.type === 'Choices') return <ChoicesControl key={component.id} component={component} value={value} onChange={onChange} />;
-                    if (component.type === 'Rating') return <RatingControl key={component.id} component={component} value={value} onChange={onChange} />;
-                    if (component.type === 'TextArea') return <TextAreaControl key={component.id} component={component} value={value} onChange={onChange} />;
-                    if (component.type === 'Labels' || component.type === 'RectangleLabels') return <ImageLabelsControl key={component.id} component={component} value={value} onChange={onChange} />;
-                    if (component.type === 'RubricScorer') return <RubricScorerControl key={component.id} component={component} value={value} onChange={onChange} />;
-                    if (component.type === 'Ranking') return <RankingControl key={component.id} component={component} value={value} onChange={onChange} />;
-                    if (component.type === 'Feedback') return <FeedbackControl key={component.id} component={component} value={value} onChange={onChange} />;
+                    if (component.type === 'Choices') return <ChoicesControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'Rating') return <RatingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'TextArea') return <TextAreaControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'Labels' || component.type === 'RectangleLabels') return <ImageLabelsControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'RubricScorer') return <RubricScorerControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'Ranking') return <RankingControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+                    if (component.type === 'Feedback') return <FeedbackControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
 
                     return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
                 })}
@@ -227,13 +230,19 @@ export function ReviewTaskRenderer({
                         {[1, 2, 3, 4, 5].map((star) => (
                             <button
                                 key={star}
-                                onClick={() => setRating(star)}
-                                className={`p-1 transition-all ${rating >= star ? 'text-yellow-500 scale-110' : 'text-white/10 hover:text-white/20'}`}
+                                onClick={() => !isReadOnly && setRating(star)}
+                                disabled={isReadOnly}
+                                className={`p-1 transition-all ${rating >= star ? 'text-yellow-500 scale-110' : 'text-white/10 hover:text-white/20'} ${isReadOnly ? 'cursor-default' : ''}`}
                             >
                                 <Star className={`w-5 h-5 ${rating >= star ? 'fill-current' : ''}`} />
                             </button>
                         ))}
                     </div>
+                    {isReadOnly && (
+                        <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/40 uppercase tracking-widest flex items-center gap-2">
+                            <span>Read Only Mode</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Reviewer Feedback Section */}
@@ -245,29 +254,32 @@ export function ReviewTaskRenderer({
                     <textarea
                         value={feedback}
                         onChange={(e) => setFeedback(e.target.value)}
-                        placeholder="Write constructive feedback for the attempter... (optional)"
-                        className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all resize-none placeholder:text-white/20"
+                        placeholder={isReadOnly ? "No feedback provided." : "Write constructive feedback for the attempter... (optional)"}
+                        disabled={isReadOnly}
+                        className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all resize-none placeholder:text-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <button
-                        onClick={handleReject}
-                        disabled={isSubmitting}
-                        className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2 border border-red-500/20"
-                    >
-                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsDown className="w-4 h-4" />}
-                        Reject & Re-Queue
-                    </button>
-                    <button
-                        onClick={handleApprove}
-                        disabled={isSubmitting}
-                        className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
-                    >
-                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
-                        Approve & Validate
-                    </button>
-                </div>
+                {!isReadOnly && (
+                    <div className="grid grid-cols-2 gap-4">
+                        <button
+                            onClick={handleReject}
+                            disabled={isSubmitting}
+                            className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2 border border-red-500/20"
+                        >
+                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsDown className="w-4 h-4" />}
+                            Reject & Re-Queue
+                        </button>
+                        <button
+                            onClick={handleApprove}
+                            disabled={isSubmitting}
+                            className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                        >
+                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
+                            Approve & Validate
+                        </button>
+                    </div>
+                )}
             </div>
 
             <ConfirmDialog
