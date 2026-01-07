@@ -31,9 +31,11 @@ export interface Project {
     status: string;
     created_at: string;
     template_schema?: any; // JSON
+    guidelines?: string; // JSON String
     pay_rate?: string;
     max_task_time?: number;
     total_tasks?: number;
+    organization_id?: string;
 }
 
 export interface Course {
