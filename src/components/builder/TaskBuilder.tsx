@@ -8,7 +8,8 @@ import { Canvas } from './Canvas';
 import { PropertiesPanel } from './PropertiesPanel';
 import { createClient } from '@/utils/supabase/client';
 import { ProjectTemplate, PROJECT_TEMPLATES } from '@/utils/templates';
-import { LayoutGrid, Save } from 'lucide-react';
+import { LayoutGrid, Save, Eye } from 'lucide-react';
+import { TaskPreviewModal } from './TaskPreviewModal';
 
 import { nanoid } from 'nanoid';
 import { TaskComponent, TaskComponentType } from './types';
@@ -89,6 +90,7 @@ export function TaskBuilder({
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [showTemplates, setShowTemplates] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -220,16 +222,26 @@ export function TaskBuilder({
                 <div className="flex-1 glass-panel p-8 rounded-xl min-h-[600px] flex flex-col">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-bold text-sm text-muted-foreground uppercase">Canvas</h3>
-                        {showSaveButton && project && (
+                        <div className="flex gap-2">
                             <button
-                                onClick={saveTemplate}
-                                disabled={isSaving}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all font-bold"
+                                onClick={() => setShowPreview(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all font-bold text-sm"
+                                title="Preview Task"
                             >
-                                <Save className="w-4 h-4" />
-                                {isSaving ? 'Saving...' : 'Save Template'}
+                                <Eye className="w-4 h-4" />
+                                Preview
                             </button>
-                        )}
+                            {showSaveButton && project && (
+                                <button
+                                    onClick={saveTemplate}
+                                    disabled={isSaving}
+                                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all font-bold text-sm"
+                                >
+                                    <Save className="w-4 h-4" />
+                                    {isSaving ? 'Saving...' : 'Save Template'}
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <SortableContext items={components.map(c => c.id)} strategy={verticalListSortingStrategy}>
@@ -261,6 +273,12 @@ export function TaskBuilder({
                     </div>
                 ) : null}
             </DragOverlay>
+            <TaskPreviewModal
+                isOpen={showPreview}
+                onClose={() => setShowPreview(false)}
+                schema={components}
+                project={project}
+            />
         </DndContext>
     );
 }
