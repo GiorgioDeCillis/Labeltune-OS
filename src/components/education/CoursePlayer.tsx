@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { QuizPlayer } from './QuizPlayer';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { completeLesson, getNextCourseId } from '@/app/dashboard/courses/actions';
 import { useToast } from '@/components/Toast';
 
@@ -177,7 +178,7 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
 
                                     {/* Content */}
                                     <div className="prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-h1:text-3xl prose-a:text-primary">
-                                        <ReactMarkdown>{activeLesson.content || ''}</ReactMarkdown>
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{activeLesson.content || ''}</ReactMarkdown>
                                     </div>
 
 

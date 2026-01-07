@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, FileText, Download, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { InstructionSection } from '@/app/dashboard/projects/new/steps/InstructionsStep';
 
 interface GuidelinesViewerProps {
@@ -136,7 +137,7 @@ export function GuidelinesViewer({ guidelines, isOpen, onClose }: GuidelinesView
                         {activeSection ? (
                             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                                 <h1 className="text-3xl font-black mb-8 border-b border-white/10 pb-6">{activeSection.title}</h1>
-                                <ReactMarkdown>{activeSection.content}</ReactMarkdown>
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{activeSection.content}</ReactMarkdown>
                             </div>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-20">
