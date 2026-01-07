@@ -248,6 +248,49 @@ export async function createProject(formData: FormData) {
     revalidatePath('/dashboard/projects');
     redirect('/dashboard/projects');
 }
+export async function deleteProjectDraft(projectId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // 1. Verify role
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    const isAuthorized = profile?.role === 'pm' || profile?.role === 'admin';
+    if (!isAuthorized) throw new Error('Unauthorized');
+
+    // 2. Check if project is a draft
+    const { data: project } = await supabase
+        .from('projects')
+        .select('status')
+        .eq('id', projectId)
+        .single();
+
+    if (!project || project.status !== 'draft') {
+        throw new Error('Can only delete draft projects');
+    }
+
+    // 3. Delete linked tasks first (if any were created)
+    await supabase.from('tasks').delete().eq('project_id', projectId);
+
+    // 4. Delete Project
+    const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+
+    if (error) {
+        console.error('Error deleting draft project:', error);
+        throw new Error('Failed to delete draft project');
+    }
+
+    revalidatePath('/dashboard/projects');
+}
 
 export async function updateProject(id: string, formData: FormData) {
     const supabase = await createClient();

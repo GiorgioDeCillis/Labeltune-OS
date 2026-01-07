@@ -1,9 +1,19 @@
 import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
 import { Plus, Folder, Calendar } from 'lucide-react';
+import { DeleteDraftButton } from './delete-draft-button';
 
 export default async function ProjectsPage() {
     const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user?.id)
+        .single();
+
+    const isInternal = profile?.role === 'pm' || profile?.role === 'admin';
 
     const { data: projects, error } = await supabase
         .from('projects')
@@ -48,11 +58,16 @@ export default async function ProjectsPage() {
                                             }`}>
                                             <Folder className="w-6 h-6" />
                                         </div>
-                                        <span className={`text-xs px-2 py-1 rounded-full border ${project.status === 'active' ? 'border-green-500/30 text-green-400' :
-                                            isDraft ? 'border-yellow-500/30 text-yellow-400' : 'border-white/10 text-muted-foreground'
-                                            }`}>
-                                            {project.status === 'draft' ? 'Draft' : project.status}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {isDraft && isInternal && (
+                                                <DeleteDraftButton projectId={project.id} />
+                                            )}
+                                            <span className={`text-xs px-2 py-1 rounded-full border ${project.status === 'active' ? 'border-green-500/30 text-green-400' :
+                                                isDraft ? 'border-yellow-500/30 text-yellow-400' : 'border-white/10 text-muted-foreground'
+                                                }`}>
+                                                {project.status === 'draft' ? 'Draft' : project.status}
+                                            </span>
+                                        </div>
                                     </div>
                                     <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{project.name}</h3>
                                     <p className="text-muted-foreground text-sm mb-6 line-clamp-2 flex-1">{project.description}</p>
