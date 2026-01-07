@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// Increase max duration to 60 seconds to handle long generations
-export const maxDuration = 60;
+// Increase max duration to 300 seconds (5 minutes) to handle very long generations
+export const maxDuration = 300;
 
 // Initialize OpenAI client
 const openai = new OpenAI({
