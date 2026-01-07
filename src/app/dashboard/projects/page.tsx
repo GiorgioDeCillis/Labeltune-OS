@@ -80,7 +80,13 @@ export default async function ProjectsPage() {
                                 </Link>
 
                                 {isDraft && isInternal && (
-                                    <div className="absolute bottom-5 right-5 z-10">
+                                    <div
+                                        className="absolute bottom-5 right-5 z-50"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                        }}
+                                    >
                                         <DeleteDraftButton projectId={project.id} />
                                     </div>
                                 )}

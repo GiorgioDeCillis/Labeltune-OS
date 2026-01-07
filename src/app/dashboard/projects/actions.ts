@@ -252,9 +252,9 @@ export async function deleteProjectDraft(projectId: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) throw new Error('Unauthorized');
+    if (!user) throw new Error('Non autorizzato');
 
-    // 1. Verify role
+    // 1. Verifica ruolo
     const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -262,35 +262,69 @@ export async function deleteProjectDraft(projectId: string) {
         .single();
 
     const isAuthorized = profile?.role === 'pm' || profile?.role === 'admin';
-    if (!isAuthorized) throw new Error('Unauthorized');
+    if (!isAuthorized) throw new Error('Non autorizzato');
 
-    // 2. Check if project is a draft
+    // 2. Verifica che il progetto esista e sia una bozza
     const { data: project } = await supabase
         .from('projects')
-        .select('status')
+        .select('name, status')
         .eq('id', projectId)
         .single();
 
-    if (!project || project.status !== 'draft') {
-        throw new Error('Can only delete draft projects');
+    if (!project) throw new Error('Progetto non trovato');
+    if (project.status !== 'draft') {
+        throw new Error('Solo i progetti in stato bozza possono essere eliminati');
     }
 
-    // 3. Delete linked tasks and unlink courses first
-    await supabase.from('tasks').delete().eq('project_id', projectId);
-    await supabase.from('courses').update({ project_id: null }).eq('project_id', projectId);
+    // 3. Pulizia dipendenze in ordine
 
-    // 4. Delete Project
-    const { error } = await supabase
-        .from('projects')
+    // a. Elimina assegnazioni team
+    const { error: assigneesError } = await supabase
+        .from('project_assignees')
         .delete()
+        .eq('project_id', projectId);
+
+    if (assigneesError) {
+        console.error('Errore eliminazione assegnatari:', assigneesError);
+    }
+
+    // b. Elimina task associati
+    const { error: tasksError } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('project_id', projectId);
+
+    if (tasksError) {
+        console.error('Errore eliminazione task:', tasksError);
+    }
+
+    // c. Scollega i corsi
+    const { error: coursesError } = await supabase
+        .from('courses')
+        .update({ project_id: null })
+        .eq('project_id', projectId);
+
+    if (coursesError) {
+        console.error('Errore scollegamento corsi:', coursesError);
+    }
+
+    // 4. Elimina finalmente il progetto
+    const { error: projectError, count } = await supabase
+        .from('projects')
+        .delete({ count: 'exact' })
         .eq('id', projectId);
 
-    if (error) {
-        console.error('Error deleting draft project:', error);
-        throw new Error('Failed to delete draft project');
+    if (projectError) {
+        console.error('Errore eliminazione progetto:', projectError);
+        throw new Error(`Errore durante l'eliminazione: ${projectError.message}`);
+    }
+
+    if (count === 0) {
+        console.warn('Nessun progetto eliminato (già rimosso o ID errato)');
     }
 
     revalidatePath('/dashboard/projects');
+    return project.name;
 }
 
 export async function updateProject(id: string, formData: FormData) {

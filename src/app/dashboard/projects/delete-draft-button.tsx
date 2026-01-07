@@ -22,8 +22,8 @@ export function DeleteDraftButton({ projectId }: DeleteDraftButtonProps) {
         setIsConfirmOpen(false);
         startTransition(async () => {
             try {
-                await deleteProjectDraft(projectId);
-                showToast('Bozza eliminata con successo', 'success');
+                const projectName = await deleteProjectDraft(projectId);
+                showToast(`Bozza "${projectName}" eliminata con successo`, 'success');
                 router.refresh();
             } catch (error) {
                 console.error('Failed to delete draft:', error);
@@ -40,6 +40,8 @@ export function DeleteDraftButton({ projectId }: DeleteDraftButtonProps) {
                     e.stopPropagation();
                     setIsConfirmOpen(true);
                 }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
                 disabled={isPending}
                 className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all flex items-center justify-center border border-red-500/10 hover:border-red-500/30"
                 title="Elimina bozza"
