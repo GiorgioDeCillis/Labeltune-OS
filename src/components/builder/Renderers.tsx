@@ -477,8 +477,14 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
             barRadius: 3,
             height: 80,
             normalize: true,
-            hideScrollbar: true, // Use Minimap as the only scrollbar
+            hideScrollbar: true,
             minPxPerSec: Math.max(20, zoom),
+            formatTime: (seconds: number) => {
+                const m = Math.floor(seconds / 60);
+                const s = Math.floor(seconds % 60);
+                const ms = Math.floor((seconds % 1) * 1000);
+                return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+            },
             plugins: [
                 Timeline.create({
                     height: 25,
@@ -511,19 +517,6 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                         return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
                     },
                 } as any),
-                Hover.create({
-                    lineColor: 'rgba(255, 255, 255, 0.5)',
-                    lineWidth: 1,
-                    labelBackground: 'rgba(0, 0, 0, 0.8)',
-                    labelColor: '#ffffff',
-                    labelSize: '11px',
-                    formatTime: (seconds: number) => {
-                        const m = Math.floor(seconds / 60);
-                        const s = Math.floor(seconds % 60);
-                        const ms = Math.floor((seconds % 1) * 1000);
-                        return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
-                    },
-                } as any),
                 Minimap.create({
                     height: 15,
                     waveColor: 'rgba(255, 255, 255, 0.05)',
@@ -533,14 +526,80 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
             ],
         });
 
-        wavesurferRef.current.load(recordingUrl);
+        // Manual Hover Label Logic for total control and millisecond precision
+        const formatHoverTime = (seconds: number) => {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            const ms = Math.floor((seconds % 1) * 1000);
+            return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+        };
 
+        const hoverLabel = document.createElement('div');
+        hoverLabel.style.position = 'absolute';
+        hoverLabel.style.zIndex = '100';
+        hoverLabel.style.pointerEvents = 'none';
+        hoverLabel.style.display = 'none';
+        hoverLabel.style.background = 'rgba(0, 0, 0, 0.9)';
+        hoverLabel.style.color = '#fff';
+        hoverLabel.style.padding = '4px 8px';
+        hoverLabel.style.borderRadius = '4px';
+        hoverLabel.style.fontSize = '11px';
+        hoverLabel.style.fontFamily = 'monospace';
+        hoverLabel.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+        hoverLabel.style.backdropFilter = 'blur(4px)';
+        hoverLabel.style.transform = 'translate(-50%, -100%)';
+        hoverLabel.style.marginTop = '-10px';
+
+        waveformRef.current?.appendChild(hoverLabel);
+
+        const hoverLine = document.createElement('div');
+        hoverLine.style.position = 'absolute';
+        hoverLine.style.zIndex = '99';
+        hoverLine.style.pointerEvents = 'none';
+        hoverLine.style.display = 'none';
+        hoverLine.style.top = '0';
+        hoverLine.style.bottom = '0';
+        hoverLine.style.width = '1px';
+        hoverLine.style.background = 'rgba(255, 255, 255, 0.4)';
+
+        waveformRef.current?.appendChild(hoverLine);
+
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!waveformRef.current || !wavesurferRef.current) return;
+            const rect = waveformRef.current.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const duration = wavesurferRef.current.getDuration();
+            if (duration > 0) {
+                const time = (x / rect.width) * duration;
+                hoverLabel.style.display = 'block';
+                hoverLabel.style.left = `${x}px`;
+                hoverLabel.style.top = `0px`;
+                hoverLabel.textContent = formatHoverTime(Math.max(0, Math.min(time, duration)));
+
+                hoverLine.style.display = 'block';
+                hoverLine.style.left = `${x}px`;
+            }
+        };
+
+        const handleMouseLeave = () => {
+            hoverLabel.style.display = 'none';
+            hoverLine.style.display = 'none';
+        };
+
+        waveformRef.current?.addEventListener('mousemove', handleMouseMove);
+        waveformRef.current?.addEventListener('mouseleave', handleMouseLeave);
+
+        wavesurferRef.current.load(recordingUrl);
 
         wavesurferRef.current.on('play', () => setIsPlaying(true));
         wavesurferRef.current.on('pause', () => setIsPlaying(false));
         wavesurferRef.current.on('finish', () => setIsPlaying(false));
 
         return () => {
+            waveformRef.current?.removeEventListener('mousemove', handleMouseMove);
+            waveformRef.current?.removeEventListener('mouseleave', handleMouseLeave);
+            if (hoverLabel.parentNode) hoverLabel.parentNode.removeChild(hoverLabel);
+            if (hoverLine.parentNode) hoverLine.parentNode.removeChild(hoverLine);
             if (wavesurferRef.current) {
                 wavesurferRef.current.destroy();
             }
@@ -645,25 +704,18 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                     background: rgba(255, 255, 255, 0.05) !important;
                     margin-top: 12px;
                     cursor: pointer;
+                    pointer-events: auto !important;
+                    touch-action: none;
                 }
                 .glass-wavesurfer ::part(minimap-overlay) {
                     border-radius: 99px;
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    background-color: rgba(255, 255, 255, 0.2) !important;
-                }
-                .glass-wavesurfer ::part(hover-label) {
-                    background: rgba(0, 0, 0, 0.9) !important;
-                    backdrop-filter: blur(8px);
                     border: 1px solid rgba(255, 255, 255, 0.4);
-                    border-radius: 4px;
-                    padding: 4px 10px;
-                    font-family: monospace;
-                    font-size: 11px;
-                    z-index: 100;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                    background-color: rgba(255, 255, 255, 0.3) !important;
+                    cursor: grab;
+                    pointer-events: auto !important;
                 }
-                .glass-wavesurfer ::part(hover-line) {
-                    background-color: rgba(255, 255, 255, 0.5) !important;
+                .glass-wavesurfer ::part(minimap-overlay):active {
+                    cursor: grabbing;
                 }
                 /* Platform-consistent scrollbar for the waveform if it overflows */
                 .glass-wavesurfer ::-webkit-scrollbar {
