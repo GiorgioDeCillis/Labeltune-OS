@@ -237,7 +237,10 @@ export function TaskRenderer({
         if (targetProjectId) {
             try {
                 await startTasking(targetProjectId);
-            } catch (error) {
+            } catch (error: any) {
+                if (error.message?.includes('NEXT_REDIRECT') || error.digest?.includes('NEXT_REDIRECT')) {
+                    throw error;
+                }
                 console.error("Error starting next task:", error);
                 router.push(`/dashboard/projects/${targetProjectId}`);
             }

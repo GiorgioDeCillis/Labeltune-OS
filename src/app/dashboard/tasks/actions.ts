@@ -14,7 +14,7 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
     // Get project pay rate and max time
     const { data: task } = await supabase
         .from('tasks')
-        .select('project_id, projects(pay_rate, max_task_time)')
+        .select('project_id, projects(pay_rate, max_task_time, payment_mode, pay_per_task)')
         .eq('id', taskId)
         .single();
 
@@ -30,7 +30,18 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
     const maxTime = (Array.isArray(projectsData) ? projectsData[0]?.max_task_time : projectsData?.max_task_time);
     const billableTime = maxTime ? Math.min(timeSpent, maxTime) : timeSpent;
 
-    const earnings = (billableTime / 3600) * payRate;
+    // Payment Mode Logic
+    const paymentMode = (Array.isArray(projectsData) ? projectsData[0]?.payment_mode : projectsData?.payment_mode) || 'hourly';
+    let earnings = 0;
+
+    if (paymentMode === 'task') {
+        const payPerTaskRaw = (Array.isArray(projectsData) ? projectsData[0]?.pay_per_task : projectsData?.pay_per_task) || '0';
+        const matchesRate = payPerTaskRaw.toString().match(/(\d+(?:[.,]\d+)?)/);
+        const cleanRate = matchesRate ? matchesRate[0].replace(',', '.') : '0';
+        earnings = parseFloat(cleanRate) || 0;
+    } else {
+        earnings = (billableTime / 3600) * payRate;
+    }
 
     const { error } = await supabase
         .from('tasks')
@@ -122,7 +133,7 @@ export async function updateTaskTimer(taskId: string, timeSpent: number) {
     // Get project pay rate for real-time earnings update
     const { data: task } = await supabase
         .from('tasks')
-        .select('project_id, annotator_started_at, projects(pay_rate, max_task_time)')
+        .select('project_id, annotator_started_at, projects(pay_rate, max_task_time, payment_mode, pay_per_task)')
         .eq('id', taskId)
         .single();
 
@@ -134,9 +145,21 @@ export async function updateTaskTimer(taskId: string, timeSpent: number) {
         const cleanRate = matches ? matches[0].replace(',', '.') : '0';
         const payRate = parseFloat(cleanRate) || 0;
 
-        const maxTime = (Array.isArray(projectsData) ? projectsData[0]?.max_task_time : projectsData?.max_task_time);
-        const billableTime = maxTime ? Math.min(timeSpent, maxTime) : timeSpent;
-        earnings = (billableTime / 3600) * payRate;
+        if (earnings === 0 && (projectsData.payment_mode === 'task' || projectsData[0]?.payment_mode === 'task')) {
+            // For task mode, we might want to show estimated earnings or 0 until completion?
+            // Usually for timer, we show 0 or the fixed amount. Let's show the fixed amount as "Pending Earnings"
+            // But usually earnings are finalized on submit.
+            // If we want to show it accruing, it doesn't make sense.
+            // Let's set it to valid earnings so user sees what they WILL get.
+            const payPerTaskRaw = (Array.isArray(projectsData) ? projectsData[0]?.pay_per_task : projectsData?.pay_per_task) || '0';
+            const matchesRate = payPerTaskRaw.toString().match(/(\d+(?:[.,]\d+)?)/);
+            const cleanRate = matchesRate ? matchesRate[0].replace(',', '.') : '0';
+            earnings = parseFloat(cleanRate) || 0;
+        } else {
+            const maxTime = (Array.isArray(projectsData) ? projectsData[0]?.max_task_time : projectsData?.max_task_time);
+            const billableTime = maxTime ? Math.min(timeSpent, maxTime) : timeSpent;
+            earnings = (billableTime / 3600) * payRate;
+        }
     }
 
     // Track starting time if not already set
