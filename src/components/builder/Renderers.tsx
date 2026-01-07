@@ -6,6 +6,9 @@ import { getDefaultAvatar } from '@/utils/avatar';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import WaveSurfer from 'wavesurfer.js';
+import Timeline from 'wavesurfer.js/dist/plugins/timeline.esm.js';
+import Hover from 'wavesurfer.js/dist/plugins/hover.esm.js';
+import Minimap from 'wavesurfer.js/dist/plugins/minimap.esm.js';
 
 // --- Objects ---
 
@@ -442,7 +445,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
     const [duration, setDuration] = useState(0);
     const [recordingUrl, setRecordingUrl] = useState<string | null>(value);
     const [playbackSpeed, setPlaybackSpeed] = useState(1);
-    const [zoom, setZoom] = useState(10);
+    const [zoom, setZoom] = useState(20); // Increased initial zoom
     const [isPlaying, setIsPlaying] = useState(false);
 
     const waveformRef = useRef<HTMLDivElement>(null);
@@ -475,6 +478,34 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
             height: 80,
             normalize: true,
             minPxPerSec: zoom,
+            plugins: [
+                Timeline.create({
+                    height: 20,
+                    style: {
+                        color: '#4f4f4f',
+                        fontSize: '10px',
+                    },
+                }),
+                Hover.create({
+                    lineColor: '#ffffff40',
+                    lineWidth: 1,
+                    labelBackground: '#000000',
+                    labelColor: '#ffffff',
+                    labelSize: '10px',
+                    formatTime: (seconds: number) => {
+                        const m = Math.floor(seconds / 60);
+                        const s = Math.floor(seconds % 60);
+                        const ms = Math.floor((seconds % 1) * 1000);
+                        return `${m}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+                    },
+                }),
+                Minimap.create({
+                    height: 15,
+                    waveColor: '#2a2a2a',
+                    progressColor: '#555555',
+                    overlayColor: 'rgba(255, 255, 255, 0.05)',
+                }),
+            ],
         });
 
         wavesurferRef.current.load(recordingUrl);
@@ -670,7 +701,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
                                 <input
                                     type="range"
                                     min="1"
-                                    max="100"
+                                    max="1000"
                                     value={zoom}
                                     onChange={(e) => setZoom(parseInt(e.target.value))}
                                     className="flex-1 accent-primary h-1 bg-white/10 rounded-lg cursor-pointer"
