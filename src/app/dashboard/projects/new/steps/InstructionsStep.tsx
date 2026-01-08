@@ -1,9 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ProjectInstructionsEditor, InstructionSection } from '@/components/dashboard/ProjectInstructionsEditor';
-
-export type { InstructionSection };
+import { ProjectInstructionsEditor } from '@/components/dashboard/ProjectInstructionsEditor';
+import { InstructionSection } from '@/types/manual-types';
 
 interface InstructionsStepProps {
     sections: InstructionSection[];

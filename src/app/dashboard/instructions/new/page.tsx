@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ProjectInstructionsEditor, InstructionSection } from '@/components/dashboard/ProjectInstructionsEditor';
+import { ProjectInstructionsEditor } from '@/components/dashboard/ProjectInstructionsEditor';
+import { InstructionSection } from '@/types/manual-types';
 import { createInstructionSet } from '../actions';
 import { ChevronLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';

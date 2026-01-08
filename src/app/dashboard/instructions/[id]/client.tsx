@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ProjectInstructionsEditor, InstructionSection } from '@/components/dashboard/ProjectInstructionsEditor';
+import { ProjectInstructionsEditor } from '@/components/dashboard/ProjectInstructionsEditor';
 import { updateInstructionSet, deleteInstructionSet } from '../actions';
 import { ChevronLeft, Save, Loader2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/Toast';
-import { InstructionSet } from '@/types/manual-types';
+import { InstructionSet, InstructionSection } from '@/types/manual-types';
 
 interface EditInstructionClientProps {
     instructionSet: InstructionSet;

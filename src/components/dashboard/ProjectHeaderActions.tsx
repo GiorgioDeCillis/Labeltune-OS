@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Settings, ListTodo, Users, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { EditInstructionsModal } from '@/components/dashboard/EditInstructionsModal';
-import { InstructionSection } from '@/components/dashboard/ProjectInstructionsEditor';
+import { InstructionSection } from '@/types/manual-types';
 
 interface ProjectHeaderActionsProps {
     id: string;

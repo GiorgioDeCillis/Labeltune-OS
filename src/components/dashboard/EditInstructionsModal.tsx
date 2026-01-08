@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { X, Save, FileText } from 'lucide-react';
-import { ProjectInstructionsEditor, InstructionSection } from '@/components/dashboard/ProjectInstructionsEditor';
+import { ProjectInstructionsEditor } from '@/components/dashboard/ProjectInstructionsEditor';
+import { InstructionSection } from '@/types/manual-types';
 import { updateProjectInstructions } from '@/app/dashboard/projects/actions';
 import { useToast } from '@/components/Toast';
 
