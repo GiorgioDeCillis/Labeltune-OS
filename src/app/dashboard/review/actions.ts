@@ -90,11 +90,11 @@ export async function rejectTask(taskId: string, feedback?: string) {
         .from('tasks')
         .update({
             status: 'rejected',
-            assigned_to: null,
+            // assigned_to: null, // Keep the annotator
             reviewed_by: user.id,
             reviewer_completed_at: new Date().toISOString(),
             review_feedback: feedback,
-            labels: null
+            // labels: null // Keep the labels as reference
         })
         .eq('id', taskId);
 

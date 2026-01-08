@@ -187,3 +187,53 @@ export async function updateTaskTimer(taskId: string, timeSpent: number) {
 
     return { success: true };
 }
+
+export async function requeueTask(taskId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('Unauthorized');
+
+    // Verify admin/pm
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'pm' && profile?.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const { error } = await supabase
+        .from('tasks')
+        .update({
+            status: 'pending',
+            assigned_to: null,
+            labels: null,
+            annotator_labels: null,
+            annotator_time_spent: 0,
+            annotator_earnings: 0,
+            annotator_started_at: null,
+            annotator_completed_at: null,
+            reviewed_by: null,
+            reviewer_time_spent: 0,
+            reviewer_earnings: 0,
+            reviewer_started_at: null,
+            reviewer_completed_at: null,
+            review_rating: null,
+            review_feedback: null,
+            reviewer_rating: null,
+            reviewer_feedback: null
+        })
+        .eq('id', taskId);
+
+    if (error) {
+        console.error('Error requeueing task:', error);
+        throw new Error('Failed to requeue task');
+    }
+
+    // revalidatePath(`/dashboard/projects/[id]/tasks/[taskId]`); // Can't easily get project ID here without fetch, but we can revalidate broadly
+    revalidatePath('/dashboard/projects', 'layout');
+    return { success: true };
+}

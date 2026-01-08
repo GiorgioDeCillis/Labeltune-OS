@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 import { submitReviewerFeedback } from '@/app/dashboard/review/actions';
+import { requeueTask } from '@/app/dashboard/tasks/actions';
 import { TaskComponent } from '@/components/builder/types';
 import {
     ImageObject,
@@ -69,6 +70,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
     const [feedbackRating, setFeedbackRating] = useState(0);
     const [feedbackText, setFeedbackText] = useState('');
+    const [isRequeueing, setIsRequeueing] = useState(false);
 
     // Parse schema safely
     const schema = React.useMemo(() => {
@@ -167,6 +169,35 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                         </div>
                     </div>
                 </div>
+
+                {/* Admin/PM Actions */}
+                {(isPrivileged && task.status === 'rejected') && (
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={async () => {
+                                if (confirm("Sei sicuro di voler resettare questa task e rimandarla in coda? Tutti i dati attuali verranno persi.")) {
+                                    setIsRequeueing(true);
+                                    try {
+                                        const res = await requeueTask(task.id);
+                                        if (res.success) {
+                                            showToast('Task resettata e rimandata in coda', 'success');
+                                            router.refresh();
+                                        }
+                                    } catch (e: any) {
+                                        showToast(e.message || 'Errore nel reset della task', 'error');
+                                    } finally {
+                                        setIsRequeueing(false);
+                                    }
+                                }
+                            }}
+                            disabled={isRequeueing}
+                            className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold uppercase tracking-widest rounded-lg border border-red-500/20 transition-all flex items-center gap-2"
+                        >
+                            {isRequeueing ? <Timer className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
+                            Reset Task & Re-Queue
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Metrics Grid */}

@@ -237,7 +237,7 @@ export function ReviewTaskRenderer({
                             className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2 border border-red-500/20"
                         >
                             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsDown className="w-4 h-4" />}
-                            Reject & Re-Queue
+                            Reject Task
                         </button>
                         <button
                             onClick={handleApprove}
@@ -267,7 +267,7 @@ export function ReviewTaskRenderer({
                 onClose={() => setConfirmAction({ isOpen: false, type: null })}
                 onConfirm={executeReject}
                 title="Reject Task"
-                description="Are you sure you want to REJECT this task? It will be sent back to the queue and current progress cleared."
+                description="Are you sure you want to REJECT this task? The annotator will see your feedback and will need to fix their work."
                 confirmText="Reject Task"
                 type="danger"
                 isProcessing={isSubmitting}
