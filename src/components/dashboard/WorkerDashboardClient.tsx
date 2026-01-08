@@ -195,6 +195,11 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
 
     return (
         <div className="space-y-12">
+            <div>
+                <h2 className="text-3xl font-bold tracking-tight text-white">Welcome back, {profile?.full_name?.split(' ')[0]}</h2>
+                <p className="text-white/60">Annotator Dashboard</p>
+            </div>
+
             <ProjectQueueModal
                 isOpen={isQueueOpen}
                 onClose={() => setIsQueueOpen(false)}
