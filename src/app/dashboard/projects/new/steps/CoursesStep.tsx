@@ -21,6 +21,7 @@ interface CoursesStepProps {
     onToggleCourse: (id: string) => void;
     onCourseCreated: (courseId: string) => void;
     instructions?: InstructionSection[];
+    projectId?: string;
 }
 
 interface GeneratedCourseData {
@@ -32,7 +33,7 @@ interface GeneratedCourseData {
     lessons: Partial<Lesson>[];
 }
 
-export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCourse, onCourseCreated, instructions = [] }: CoursesStepProps) {
+export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCourse, onCourseCreated, instructions = [], projectId }: CoursesStepProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -376,6 +377,7 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
                         </div>
                         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                             <CourseBuilder
+                                projectId={projectId}
                                 onSaveSuccess={handleSaveSuccess}
                                 onCancel={() => {
                                     setIsCreating(false);

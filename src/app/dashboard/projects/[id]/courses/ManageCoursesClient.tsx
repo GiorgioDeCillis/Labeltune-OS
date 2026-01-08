@@ -115,6 +115,7 @@ export function ManageCoursesClient({
                     onToggleCourse={handleToggleCourse}
                     onCourseCreated={handleCourseCreated}
                     instructions={instructions}
+                    projectId={projectId}
                 />
             </div>
 
