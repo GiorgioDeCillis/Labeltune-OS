@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Upload, Send, User, ChevronLeft, ChevronRight, Loader2, FileText, Layout, Archive } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { createInstructionSet, UnifiedInstructionItem } from '../instructions/actions';
+import { createInstructionSet, UnifiedInstructionItem } from '../knowledge/actions';
 import { useToast } from '@/components/Toast';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

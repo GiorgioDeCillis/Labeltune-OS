@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Lesson, QuizQuestion } from '@/types/manual-types';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { gradeWithAI } from '@/app/dashboard/knowledge/courses/grading';
-import { completeLesson } from '@/app/dashboard/knowledge/courses/actions';
+import { completeLesson } from '@/app/dashboard/knowledge/knowledge/courses/actions';
 
 interface QuizPlayerProps {
     lesson: Lesson;

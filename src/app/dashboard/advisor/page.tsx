@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import AdvisorClient from './AdvisorClient';
-import { getUnifiedInstructions } from '../instructions/actions';
+import { getUnifiedInstructions } from '../knowledge/actions';
 
 export const metadata = {
     title: 'AI Advisor | Labeltune',

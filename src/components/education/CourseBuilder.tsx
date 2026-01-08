@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Course, Lesson } from '@/types/manual-types';
-import { createCourse, updateCourse, createLesson, updateLesson, deleteLesson, saveCourseWithLessons } from '@/app/dashboard/knowledge/courses/actions';
+import { createCourse, updateCourse, createLesson, updateLesson, deleteLesson, saveCourseWithLessons } from '@/app/dashboard/knowledge/knowledge/courses/actions';
 import { useRouter } from 'next/navigation';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
