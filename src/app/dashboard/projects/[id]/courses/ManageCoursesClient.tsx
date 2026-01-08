@@ -5,6 +5,7 @@ import { ChevronLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { CoursesStep } from '@/app/dashboard/projects/new/steps/CoursesStep';
 import { Course } from '@/types/manual-types';
+import { InstructionSection } from '@/app/dashboard/projects/new/steps/InstructionsStep';
 import { updateProjectCourses } from '@/app/dashboard/projects/actions';
 import { useToast } from '@/components/Toast';
 import { useRouter } from 'next/navigation';
@@ -14,13 +15,15 @@ interface ManageCoursesClientProps {
     projectName: string;
     availableCourses: Course[];
     initialSelectedCourseIds: string[];
+    instructions?: InstructionSection[];
 }
 
 export function ManageCoursesClient({
     projectId,
     projectName,
     availableCourses,
-    initialSelectedCourseIds
+    initialSelectedCourseIds,
+    instructions = []
 }: ManageCoursesClientProps) {
     const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>(initialSelectedCourseIds);
     const [courses, setCourses] = useState<Course[]>(availableCourses);
@@ -111,6 +114,7 @@ export function ManageCoursesClient({
                     selectedCourseIds={selectedCourseIds}
                     onToggleCourse={handleToggleCourse}
                     onCourseCreated={handleCourseCreated}
+                    instructions={instructions}
                 />
             </div>
 

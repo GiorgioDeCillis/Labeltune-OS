@@ -40,6 +40,8 @@ export default async function ManageProjectCoursesPage({ params }: { params: Pro
         ?.filter(c => c.project_id === id)
         .map(c => c.id) || [];
 
+    const instructions = project.guidelines ? JSON.parse(project.guidelines) : [];
+
     return (
         <div className="max-w-6xl mx-auto space-y-8">
             <ManageCoursesClient
@@ -47,6 +49,7 @@ export default async function ManageProjectCoursesPage({ params }: { params: Pro
                 projectName={project.name}
                 availableCourses={(allCourses || []) as Course[]}
                 initialSelectedCourseIds={initialSelectedCourseIds}
+                instructions={instructions}
             />
         </div>
     );

@@ -79,7 +79,7 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
             }
         };
         fetchInstructions();
-    }, []);
+    }, [instructions]);
 
     useEffect(() => {
         setMounted(true);
