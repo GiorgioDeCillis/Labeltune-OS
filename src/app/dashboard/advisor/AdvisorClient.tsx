@@ -306,17 +306,18 @@ export default function AdvisorClient({ instructions }: { instructions: Instruct
                                 : 'bg-white/5 border border-white/5 text-white rounded-tl-sm'
                             }
                         `}>
-                            <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                className="prose prose-invert prose-sm max-w-none"
-                                components={{
-                                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                                    ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
-                                    ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
-                                }}
-                            >
-                                {msg.content}
-                            </ReactMarkdown>
+                            <div className="prose prose-invert prose-sm max-w-none">
+                                <ReactMarkdown
+                                    remarkPlugins={[remarkGfm]}
+                                    components={{
+                                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                        ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                                        ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                                    }}
+                                >
+                                    {msg.content}
+                                </ReactMarkdown>
+                            </div>
                         </div>
 
                         {msg.role === 'user' && (
