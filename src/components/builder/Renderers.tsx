@@ -458,6 +458,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
     const [playbackSpeed, setPlaybackSpeed] = useState(1);
     const [zoom, setZoom] = useState(20); // Increased initial zoom
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isReady, setIsReady] = useState(false);
 
     const waveformRef = useRef<HTMLDivElement>(null);
     const wavesurferRef = useRef<WaveSurfer | null>(null);
@@ -606,11 +607,27 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
         waveformRef.current?.addEventListener('mousemove', handleMouseMove);
         waveformRef.current?.addEventListener('mouseleave', handleMouseLeave);
 
-        wavesurferRef.current.load(recordingUrl);
-
         wavesurferRef.current.on('play', () => setIsPlaying(true));
         wavesurferRef.current.on('pause', () => setIsPlaying(false));
         wavesurferRef.current.on('finish', () => setIsPlaying(false));
+        wavesurferRef.current.on('ready', () => {
+            setIsReady(true);
+            if (wavesurferRef.current) {
+                // Apply initial zoom and speed once ready
+                try {
+                    wavesurferRef.current.zoom(zoom);
+                    wavesurferRef.current.setPlaybackRate(playbackSpeed);
+                } catch (e) {
+                    console.error('Error applying initial WaveSurfer settings:', e);
+                }
+            }
+        });
+
+        try {
+            wavesurferRef.current.load(recordingUrl);
+        } catch (e) {
+            console.error('Error loading audio into WaveSurfer:', e);
+        }
 
         return () => {
             waveformRef.current?.removeEventListener('mousemove', handleMouseMove);
@@ -618,24 +635,37 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
             if (hoverLabel.parentNode) hoverLabel.parentNode.removeChild(hoverLabel);
             if (hoverLine.parentNode) hoverLine.parentNode.removeChild(hoverLine);
             if (wavesurferRef.current) {
-                wavesurferRef.current.destroy();
+                try {
+                    wavesurferRef.current.destroy();
+                } catch (e) {
+                    // Ignore destroy errors (like AbortError when a fetch is in progress)
+                    console.warn('WaveSurfer destroy warning:', e);
+                }
             }
         };
     }, [recordingUrl]);
 
     // Update zoom
     useEffect(() => {
-        if (wavesurferRef.current) {
-            wavesurferRef.current.zoom(zoom);
+        if (wavesurferRef.current && isReady) {
+            try {
+                wavesurferRef.current.zoom(zoom);
+            } catch (e) {
+                console.error('WaveSurfer zoom error:', e);
+            }
         }
-    }, [zoom]);
+    }, [zoom, isReady]);
 
     // Update speed
     useEffect(() => {
-        if (wavesurferRef.current) {
-            wavesurferRef.current.setPlaybackRate(playbackSpeed);
+        if (wavesurferRef.current && isReady) {
+            try {
+                wavesurferRef.current.setPlaybackRate(playbackSpeed);
+            } catch (e) {
+                console.error('WaveSurfer playback rate error:', e);
+            }
         }
-    }, [playbackSpeed]);
+    }, [playbackSpeed, isReady]);
 
     const performTranscription = async (base64Audio: string) => {
         setIsTranscribing(true);
