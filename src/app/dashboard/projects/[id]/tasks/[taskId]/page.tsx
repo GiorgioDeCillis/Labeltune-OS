@@ -57,10 +57,13 @@ export default async function SingleTaskMonitoringPage({
         .eq('id', user.id)
         .single();
 
+    // Safety check: handle project join (if it comes back as an array)
+    const project = Array.isArray(task.projects) ? task.projects[0] : task.projects;
+
     return (
         <TaskMonitoringView
             task={task}
-            project={task.projects}
+            project={project}
             annotator={annotator}
             reviewer={reviewer}
             currentUserRole={currentUserProfile?.role || 'annotator'}

@@ -66,7 +66,8 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
         }
     }
 
-    const templateSchema = (task.projects?.template_schema as TaskComponent[]) || [];
+    const project = Array.isArray(task.projects) ? task.projects[0] : task.projects;
+    const templateSchema = (project?.template_schema as TaskComponent[]) || [];
 
     // If task is finalized, show Monitoring View (Read Only with Preview Header)
     if (['approved', 'completed', 'rejected'].includes(task.status)) {
@@ -80,7 +81,7 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
             <div className="max-w-6xl mx-auto space-y-6 h-full flex flex-col pt-6">
                 <TaskMonitoringView
                     task={task}
-                    project={task.projects}
+                    project={project}
                     annotator={annotatorObj}
                     reviewer={reviewerProfile}
                     currentUserRole="reviewer" // This ensures Reviewer Metrics are shown

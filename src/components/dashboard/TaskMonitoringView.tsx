@@ -59,6 +59,9 @@ interface TaskMonitoringViewProps {
 export function TaskMonitoringView({ task, project, annotator, reviewer, currentUserRole, backUrl }: TaskMonitoringViewProps) {
     const router = useRouter();
     const { showToast } = useToast();
+    if (!task) return <div className="p-8 text-center text-red-400">Task data not found.</div>;
+    const safeProject = project || task.projects || {};
+
     const [activeVersion, setActiveVersion] = useState<'annotator' | 'reviewer'>(
         (task.status === 'approved' || task.status === 'completed') ? 'reviewer' : 'annotator'
     );
@@ -66,7 +69,39 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
     const [feedbackRating, setFeedbackRating] = useState(0);
     const [feedbackText, setFeedbackText] = useState('');
-    const schema = project.template_schema as TaskComponent[];
+
+    // Parse schema safely
+    const schema = React.useMemo(() => {
+        const rawSchema = safeProject.template_schema;
+        if (!rawSchema) return [];
+        if (typeof rawSchema === 'string') {
+            try {
+                return JSON.parse(rawSchema) as TaskComponent[];
+            } catch (e) {
+                console.error('Error parsing template_schema:', e);
+                return [];
+            }
+        }
+        return rawSchema as TaskComponent[];
+    }, [safeProject.template_schema]);
+
+    // Parse labels and payload safely
+    const parseJSON = (data: any) => {
+        if (!data) return {};
+        if (typeof data === 'string') {
+            try {
+                return JSON.parse(data);
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                return {};
+            }
+        }
+        return data;
+    };
+
+    const labels = parseJSON(task.labels);
+    const annotatorLabels = parseJSON(task.annotator_labels || task.labels);
+    const payload = parseJSON(task.payload);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(task.id);
@@ -95,7 +130,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
         });
     };
 
-    const currentLabels = activeVersion === 'annotator' ? (task.annotator_labels || task.labels) : task.labels;
+    const currentLabels = activeVersion === 'annotator' ? annotatorLabels : labels;
 
     const isPrivileged = currentUserRole === 'admin' || currentUserRole === 'pm';
 
@@ -105,7 +140,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Link
-                        href={backUrl || (currentUserRole === 'annotator' ? '/dashboard/history' : `/dashboard/projects/${project.id}/tasks`)}
+                        href={backUrl || (currentUserRole === 'annotator' ? '/dashboard/history' : (safeProject.id ? `/dashboard/projects/${safeProject.id}/tasks` : '/dashboard/projects'))}
                         className="p-2 hover:bg-white/5 rounded-full transition-colors"
                     >
                         <ChevronLeft className="w-5 h-5 text-muted-foreground" />
@@ -276,7 +311,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                     <div className="max-w-4xl mx-auto space-y-8">
                         {schema.map((component) => (
                             <div key={component.id} className="pointer-events-none opacity-90">
-                                {renderComponent(component, task.payload || {}, currentLabels || {})}
+                                {renderComponent(component, payload, currentLabels)}
                             </div>
                         ))}
                     </div>
@@ -387,7 +422,8 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
     );
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: { status?: string }) {
+    const rawStatus = status || 'pending';
     const styles: Record<string, string> = {
         pending: 'bg-white/5 text-muted-foreground border-white/10',
         in_progress: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -406,12 +442,12 @@ function StatusBadge({ status }: { status: string }) {
         rejected: AlertCircle,
     };
 
-    const Icon = icons[status] || Clock;
+    const Icon = icons[rawStatus] || Clock;
 
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${styles[status] || styles.pending}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${styles[rawStatus] || styles.pending}`}>
             <Icon className="w-3 h-3" />
-            {status.replace('_', ' ')}
+            {rawStatus.replace('_', ' ')}
         </span>
     );
 }
