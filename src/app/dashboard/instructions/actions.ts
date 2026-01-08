@@ -73,3 +73,17 @@ export async function getInstructionSet(id: string) {
     if (error) throw new Error(error.message);
     return instructionSet;
 }
+
+export async function getInstructionSets() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const { data: instructionSets, error } = await supabase
+        .from('instructions')
+        .select('id, name, content, updated_at')
+        .order('created_at', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return instructionSets || [];
+}

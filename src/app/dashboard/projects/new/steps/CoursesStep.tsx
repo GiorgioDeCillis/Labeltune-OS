@@ -6,6 +6,7 @@ import { Course, Lesson } from '@/types/manual-types';
 import { CourseBuilder } from '@/components/education/CourseBuilder';
 import { createPortal } from 'react-dom';
 import { useToast } from '@/components/Toast';
+import { getInstructionSets } from '@/app/dashboard/instructions/actions';
 
 interface InstructionSection {
     id: string;
@@ -47,6 +48,38 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
         includeFinalAssessment: true
     });
 
+    // Instruction Selection State
+    const [instructionSource, setInstructionSource] = useState<'wizard' | 'saved'>('wizard');
+    const [savedInstructionSets, setSavedInstructionSets] = useState<{ id: string, name: string, content: any }[]>([]);
+    const [selectedSavedId, setSelectedSavedId] = useState<string>('');
+    const [isLoadingInstructions, setIsLoadingInstructions] = useState(false);
+
+    useEffect(() => {
+        // Default to wizard if instructions exist, otherwise saved
+        if (instructions.length === 0) {
+            setInstructionSource('saved');
+        } else {
+            setInstructionSource('wizard');
+        }
+
+        // Fetch saved instructions
+        const fetchInstructions = async () => {
+            setIsLoadingInstructions(true);
+            try {
+                const sets = await getInstructionSets();
+                setSavedInstructionSets(sets);
+                if (sets.length > 0 && !selectedSavedId) {
+                    setSelectedSavedId(sets[0].id);
+                }
+            } catch (error) {
+                console.error('Failed to fetch instructions', error);
+            } finally {
+                setIsLoadingInstructions(false);
+            }
+        };
+        fetchInstructions();
+    }, []);
+
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -72,11 +105,31 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
         setIsGenerating(true);
 
         try {
+            // Determine which instructions to use
+            let selectedInstructions = instructions;
+
+            if (instructionSource === 'saved') {
+                const selectedSet = savedInstructionSets.find(s => s.id === selectedSavedId);
+                if (!selectedSet) {
+                    throw new Error('Please select a valid instruction set.');
+                }
+                // Ensure content is parsed if string, or cast to InstructionSection[]
+                // Assuming stored content matches the structure. 
+                // Using 'any' cast for safety if types mismatch slightly at runtime
+                selectedInstructions = typeof selectedSet.content === 'string'
+                    ? JSON.parse(selectedSet.content)
+                    : selectedSet.content;
+            }
+
+            if (!selectedInstructions || selectedInstructions.length === 0) {
+                throw new Error('No instructions content found.');
+            }
+
             const response = await fetch('/api/courses/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    instructions,
+                    instructions: selectedInstructions,
                     options: genOptions
                 }),
             });
@@ -112,9 +165,9 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
                 <div className="flex gap-3">
                     <button
                         onClick={() => setIsGenerateModalOpen(true)}
-                        disabled={!hasInstructions}
+                        disabled={!hasInstructions && savedInstructionSets.length === 0 && !isGenerateModalOpen} // Only disable if NOTHING is available and modal is closed. Inside modal we fetch.
                         className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 text-purple-200 border border-purple-500/30 rounded-xl text-sm font-bold transition-all flex items-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
-                        title={!hasInstructions ? 'Add instructions in the previous step first' : 'Generate a course from your instructions'}
+                        title={'Generate a course from your instructions'}
                     >
                         <Wand2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                         Generate with AI
@@ -152,16 +205,60 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
                         </div>
 
                         <div className="p-6 space-y-6">
-                            {/* Instructions Summary */}
-                            <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                <div className="flex items-center gap-2 text-sm font-bold text-primary mb-2">
-                                    <BookOpen className="w-4 h-4" />
-                                    Based on {instructions.length} instruction section(s)
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    {instructions.slice(0, 3).map(s => s.title).join(', ')}
-                                    {instructions.length > 3 && ` and ${instructions.length - 3} more...`}
-                                </p>
+                            {/* Source Selection */}
+                            <div className="flex bg-white/5 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setInstructionSource('wizard')}
+                                    disabled={!hasInstructions}
+                                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${instructionSource === 'wizard' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-white disabled:opacity-30'}`}
+                                >
+                                    Current Project Instructions
+                                </button>
+                                <button
+                                    onClick={() => setInstructionSource('saved')}
+                                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${instructionSource === 'saved' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-white'}`}
+                                >
+                                    Load from Library
+                                </button>
+                            </div>
+
+                            {/* Instructions Content Display */}
+                            <div className="p-4 bg-white/5 rounded-xl border border-white/10 min-h-[100px] flex flex-col justify-center">
+                                {instructionSource === 'wizard' ? (
+                                    <>
+                                        <div className="flex items-center gap-2 text-sm font-bold text-primary mb-2">
+                                            <BookOpen className="w-4 h-4" />
+                                            Based on {instructions.length} instruction section(s)
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {instructions.slice(0, 3).map(s => s.title).join(', ')}
+                                            {instructions.length > 3 && ` and ${instructions.length - 3} more...`}
+                                        </p>
+                                    </>
+                                ) : (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-xs font-bold uppercase text-muted-foreground">Select Instruction Set</label>
+                                            {isLoadingInstructions && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+                                        </div>
+
+                                        {savedInstructionSets.length > 0 ? (
+                                            <select
+                                                value={selectedSavedId}
+                                                onChange={(e) => setSelectedSavedId(e.target.value)}
+                                                className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-sm focus:outline-none focus:border-purple-500/50"
+                                            >
+                                                {savedInstructionSets.map(set => (
+                                                    <option key={set.id} value={set.id}>
+                                                        {set.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground text-center italic">No saved instructions found.</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Options */}
