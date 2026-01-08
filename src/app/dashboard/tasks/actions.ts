@@ -163,7 +163,7 @@ export async function cleanupProjectTasks(projectId: string) {
     // Fetch ALL in-progress tasks globally to see what IDs are stored
     const { data: globalTasks } = await supabase
         .from('tasks')
-        .select('id, project_id, status, assigned_to')
+        .select('id, project_id, status, assigned_to, annotator_started_at, updated_at')
         .eq('status', 'in_progress');
 
     console.log(`[CLEANUP] GLOBAL SEARCH: Found ${globalTasks?.length || 0} in_progress tasks total`);
@@ -187,7 +187,7 @@ export async function cleanupProjectTasks(projectId: string) {
         const wallClockDiffSec = (now.getTime() - startedAt.getTime()) / 1000;
         const inactivitySec = (now.getTime() - updatedAt.getTime()) / 1000;
 
-        let isExpired = true; // FORCE EXPIRE FOR DEBUGGING
+        let isExpired = false;
 
         // 1. Absolute Expiration Check (Hard limit since start - e.g. "you have 2 hours to finish this")
         if (absolute_expiration_duration && wallClockDiffSec > absolute_expiration_duration) {
