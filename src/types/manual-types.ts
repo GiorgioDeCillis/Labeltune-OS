@@ -87,3 +87,13 @@ export interface UserCourseProgress {
     completed_lessons: string[];
     updated_at: string;
 }
+
+export interface InstructionSet {
+    id: string;
+    name: string;
+    description: string | null;
+    content: any; // InstructionSection[]
+    created_at: string;
+    updated_at: string;
+    project_id?: string | null;
+}

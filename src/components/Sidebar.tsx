@@ -15,7 +15,8 @@ import {
     Search,
     Menu,
     X,
-    User
+    User,
+    FileText
 } from 'lucide-react';
 
 export function Sidebar({ userRole }: { userRole: string }) {
@@ -32,6 +33,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
         { href: '/dashboard/projects', label: 'Projects', icon: FolderPlus },
         { href: '/dashboard/datasets', label: 'Dataset Explorer', icon: Search },
         { href: '/dashboard/courses', label: 'Courses', icon: GraduationCap },
+        { href: '/dashboard/instructions', label: 'Instructions', icon: FileText },
     ];
 
     const reviewLinks: { href: string; label: string; icon: any }[] = [];
