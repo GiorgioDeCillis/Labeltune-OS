@@ -79,8 +79,10 @@ export async function rejectTask(taskId: string, feedback?: string) {
     const { error } = await supabase
         .from('tasks')
         .update({
-            status: 'pending',
+            status: 'rejected',
             assigned_to: null,
+            reviewed_by: user.id,
+            reviewer_completed_at: new Date().toISOString(),
             review_feedback: feedback,
             labels: null
         })

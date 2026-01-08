@@ -790,7 +790,7 @@ export async function startTasking(projectId: string) {
         .select('id')
         .eq('project_id', projectId)
         .eq('assigned_to', user.id)
-        .eq('status', 'pending')
+        .in('status', ['pending', 'rejected'])
         .maybeSingle();
 
     if (assignedPendingTask) {
@@ -813,7 +813,7 @@ export async function startTasking(projectId: string) {
         .select('id')
         .eq('project_id', projectId)
         .is('assigned_to', null)
-        .eq('status', 'pending')
+        .in('status', ['pending', 'rejected'])
         .limit(1)
         .maybeSingle();
 
@@ -875,8 +875,8 @@ export async function startSpecificTask(taskId: string) {
         throw new Error('Task not found');
     }
 
-    if (task.status !== 'pending') {
-        throw new Error('Can only start pending tasks');
+    if (task.status !== 'pending' && task.status !== 'rejected') {
+        throw new Error('Can only start pending or rejected tasks');
     }
 
     // Start the task: assign to current user and set status to in_progress

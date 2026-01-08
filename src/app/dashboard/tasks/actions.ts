@@ -51,7 +51,9 @@ export async function submitTask(taskId: string, labels: any, timeSpent: number)
             status: 'submitted',
             annotator_time_spent: timeSpent, // Keep tracking real time spent
             annotator_earnings: earnings,
-            annotator_completed_at: new Date().toISOString()
+            annotator_completed_at: new Date().toISOString(),
+            reviewed_by: null,
+            review_feedback: null
         })
         .eq('id', taskId);
 
