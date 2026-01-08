@@ -23,6 +23,7 @@ import { useToast } from '@/components/Toast';
 import { submitReviewerFeedback } from '@/app/dashboard/review/actions';
 import { requeueTask } from '@/app/dashboard/tasks/actions';
 import { TaskComponent } from '@/components/builder/types';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
     ImageObject,
     TextObject,
@@ -73,6 +74,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
     const [feedbackRating, setFeedbackRating] = useState(0);
     const [feedbackText, setFeedbackText] = useState('');
     const [isRequeueing, setIsRequeueing] = useState(false);
+    const [showRequeueConfirm, setShowRequeueConfirm] = useState(false);
 
     // Parse schema safely
     const schema = React.useMemo(() => {
@@ -176,22 +178,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                 {(isPrivileged && task.status === 'rejected') && (
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={async () => {
-                                if (confirm("Sei sicuro di voler resettare questa task e rimandarla in coda? Tutti i dati attuali verranno persi.")) {
-                                    setIsRequeueing(true);
-                                    try {
-                                        const res = await requeueTask(task.id);
-                                        if (res.success) {
-                                            showToast('Task resettata e rimandata in coda', 'success');
-                                            router.refresh();
-                                        }
-                                    } catch (e: any) {
-                                        showToast(e.message || 'Errore nel reset della task', 'error');
-                                    } finally {
-                                        setIsRequeueing(false);
-                                    }
-                                }
-                            }}
+                            onClick={() => setShowRequeueConfirm(true)}
                             disabled={isRequeueing}
                             className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold uppercase tracking-widest rounded-lg border border-red-500/20 transition-all flex items-center gap-2"
                         >
@@ -201,6 +188,31 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                     </div>
                 )}
             </div>
+
+            <ConfirmDialog
+                isOpen={showRequeueConfirm}
+                onClose={() => setShowRequeueConfirm(false)}
+                onConfirm={async () => {
+                    setShowRequeueConfirm(false);
+                    setIsRequeueing(true);
+                    try {
+                        const res = await requeueTask(task.id);
+                        if (res.success) {
+                            showToast('Task resettata e rimandata in coda', 'success');
+                            router.refresh();
+                        }
+                    } catch (e: any) {
+                        showToast(e.message || 'Errore nel reset della task', 'error');
+                    } finally {
+                        setIsRequeueing(false);
+                    }
+                }}
+                title="Reset Task & Re-Queue"
+                description="Sei sicuro di voler resettare questa task e rimandarla in coda? Tutti i dati attuali verranno persi."
+                confirmText="Reset & Re-Queue"
+                type="danger"
+                isProcessing={isRequeueing}
+            />
 
             {/* Metrics Grid */}
             <div className={`grid grid-cols-1 ${(currentUserRole === 'admin' || currentUserRole === 'pm') ? 'md:grid-cols-2' : ''} gap-6`}>
