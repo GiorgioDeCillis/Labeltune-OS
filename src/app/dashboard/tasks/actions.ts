@@ -137,13 +137,20 @@ export async function cleanupProjectTasks(projectId: string) {
     const supabase = await createClient();
 
     // Fetch project settings
+    console.log(`[CLEANUP] Starting cleanup for project: ${projectId}`);
+    // Fetch project settings
     const { data: project } = await supabase
         .from('projects')
-        .select('max_task_time, extra_time_after_max, absolute_expiration_duration')
+        .select('name, max_task_time, extra_time_after_max, absolute_expiration_duration')
         .eq('id', projectId)
         .single();
 
-    if (!project) return { success: false, error: 'Project not found' };
+    if (!project) {
+        console.warn(`[CLEANUP] Project not found: ${projectId}`);
+        return { success: false, error: 'Project not found' };
+    }
+
+    console.log(`[CLEANUP] Found project: ${project.name}`, project);
 
     const { max_task_time, extra_time_after_max, absolute_expiration_duration } = project;
 
@@ -157,6 +164,7 @@ export async function cleanupProjectTasks(projectId: string) {
         .eq('project_id', projectId)
         .eq('status', 'in_progress');
 
+    console.log(`[CLEANUP] Found ${tasks?.length || 0} in_progress tasks`);
     if (!tasks || tasks.length === 0) return { success: true, count: 0 };
 
     const now = new Date();
@@ -177,14 +185,14 @@ export async function cleanupProjectTasks(projectId: string) {
             isExpired = true;
         }
 
-        // 2. Task Time + Extra Time Check (Soft limit with inactivity buffer)
-        // If they have exceeded max_time + extra_time AND they haven't pinged the server lately (e.g. 5 mins buffer)
-        // We assume they closed the browser or gave up.
+        // 2. Task Time + Extra Time Check (Soft limit with absolute buffer)
+        // If they have exceeded max_time + extra_time, we consider it expired
+        // especially if they have stopped updating the timer.
         if (!isExpired && max_task_time) {
             const totalAllowedSec = max_task_time + (extra_time_after_max || 0);
-            const inactivityBuffer = 120; // 2 minutes buffer for inactivity
 
-            if (wallClockDiffSec > (totalAllowedSec + inactivityBuffer)) {
+            // If they are way over time (e.g. 2x the time) or over time + small buffer
+            if (wallClockDiffSec > totalAllowedSec + 60) {
                 isExpired = true;
             }
         }
@@ -201,7 +209,8 @@ export async function cleanupProjectTasks(projectId: string) {
                 assigned_to: null,
                 status: 'pending',
                 annotator_time_spent: 0,
-                annotator_started_at: null
+                annotator_started_at: null,
+                labels: null // Clear progress so next person starts fresh
             })
             .in('id', expiredTaskIds);
 
@@ -212,9 +221,14 @@ export async function cleanupProjectTasks(projectId: string) {
 
         console.log(`Cleanup: Expired ${expiredTaskIds.length} stale tasks for project ${projectId}`);
 
-        // Revalidate relevant paths
+        // Revalidate aggressively
         revalidatePath(`/dashboard/projects/${projectId}/tasks`);
+        revalidatePath(`/dashboard/projects/${projectId}`);
         revalidatePath('/dashboard/tasks');
+        revalidatePath('/dashboard/history');
+
+        // Revalidate layout to force refresh
+        revalidatePath('/dashboard', 'layout');
     }
 
     return { success: true, count: expiredTaskIds.length };
