@@ -40,9 +40,9 @@ import { startReviewing } from '@/app/dashboard/projects/actions';
 import { TaskSubmissionSuccess } from '@/components/dashboard/TaskSubmissionSuccess';
 
 export function ReviewTaskRenderer({
-    schema,
+    schema = [],
     taskId,
-    initialData,
+    initialData = {},
     initialTimeSpent = 0,
     projectId,
     initialEarnings = 0,
@@ -283,34 +283,38 @@ function renderComponent(
     handleChange: (id: string, value: any) => void,
     isReadOnly: boolean
 ) {
+    if (!component) return null;
+    const taskDataSafe = taskData || {};
+    const formDataSafe = formData || {};
+
     // Objects
-    if (component.type === 'Image') return <ImageObject key={component.id} component={component} data={taskData} />;
-    if (component.type === 'Text') return <TextObject key={component.id} component={component} data={taskData} />;
-    if (component.type === 'Audio') return <AudioObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'Image') return <ImageObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'Text') return <TextObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'Audio') return <AudioObject key={component.id} component={component} data={taskDataSafe} />;
     if (component.type === 'Header') return <HeaderComponent key={component.id} component={component} />;
-    if (component.type === 'HyperText') return <HyperTextObject key={component.id} component={component} data={taskData} />;
-    if (component.type === 'Video') return <VideoObject key={component.id} component={component} data={taskData} />;
-    if (component.type === 'TimeSeries') return <TimeSeriesObject key={component.id} component={component} data={taskData} />;
-    if (component.type === 'PDF') return <PDFObject key={component.id} component={component} data={taskData} />;
-    if (component.type === 'MultiMessage') return <MultiMessageObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'HyperText') return <HyperTextObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'Video') return <VideoObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'TimeSeries') return <TimeSeriesObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'PDF') return <PDFObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'MultiMessage') return <MultiMessageObject key={component.id} component={component} data={taskDataSafe} />;
 
     // Layout
     if (component.type === 'View') {
         return (
             <ViewLayout key={component.id} component={component}>
-                {component.children?.map(child => renderComponent(child, taskData, formData, handleChange, isReadOnly))}
+                {component.children?.map(child => renderComponent(child, taskDataSafe, formDataSafe, handleChange, isReadOnly))}
             </ViewLayout>
         );
     }
 
     // Pogo Workflow Components
-    if (component.type === 'InstructionBlock') return <InstructionBlock key={component.id} component={component} data={taskData} />;
+    if (component.type === 'InstructionBlock') return <InstructionBlock key={component.id} component={component} data={taskDataSafe} />;
     if (component.type === 'RequirementPanel') return <RequirementPanel key={component.id} component={component} />;
-    if (component.type === 'SideBySide') return <SideBySideLayout key={component.id} component={component} data={taskData} />;
+    if (component.type === 'SideBySide') return <SideBySideLayout key={component.id} component={component} data={taskDataSafe} />;
     if (component.type === 'RubricTable') return <RubricTable key={component.id} component={component} />;
 
     // Controls
-    const value = formData[component.name] || formData[component.id];
+    const value = formDataSafe[component.name] || formDataSafe[component.id];
     const onChange = (val: any) => handleChange(component.name || component.id, val);
 
     if (component.type === 'Choices') return <ChoicesControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;

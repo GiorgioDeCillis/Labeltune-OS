@@ -215,11 +215,11 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                         <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Started At</p>
-                                <p className="text-xs font-medium text-foreground">{formatDate(task.annotator_started_at)}</p>
+                                <p className="text-xs font-medium text-foreground" suppressHydrationWarning>{formatDate(task.annotator_started_at)}</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Finished At</p>
-                                <p className="text-xs font-medium text-foreground">{formatDate(task.annotator_completed_at)}</p>
+                                <p className="text-xs font-medium text-foreground" suppressHydrationWarning>{formatDate(task.annotator_completed_at)}</p>
                             </div>
                         </div>
                     </div>
@@ -270,11 +270,11 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                         <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Started At</p>
-                                <p className="text-xs font-medium text-foreground">{formatDate(task.reviewer_started_at)}</p>
+                                <p className="text-xs font-medium text-foreground" suppressHydrationWarning>{formatDate(task.reviewer_started_at)}</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Finished At</p>
-                                <p className="text-xs font-medium text-foreground">{formatDate(task.reviewer_completed_at)}</p>
+                                <p className="text-xs font-medium text-foreground" suppressHydrationWarning>{formatDate(task.reviewer_completed_at)}</p>
                             </div>
                         </div>
                     </div>

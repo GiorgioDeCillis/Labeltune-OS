@@ -105,7 +105,7 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
                                 <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 font-bold">
                                     REVIEW MODE
                                 </span>
-                                <h2 className="text-xl font-bold tracking-tight">{task.projects?.name}</h2>
+                                <h2 className="text-xl font-bold tracking-tight">{project?.name}</h2>
                             </div>
                             <div className="flex items-center gap-4 mt-1">
                                 <CopyableTaskId taskId={task.id} />
@@ -115,11 +115,11 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
                                     <CopyableId label="Annotator ID" id={task.assigned_to} />
                                 )}
                                 <span className="text-white/20">|</span>
-                                <ProjectGuidelinesLink guidelines={task.projects?.guidelines} label="Read Guidelines" />
+                                <ProjectGuidelinesLink guidelines={project?.guidelines} label="Read Guidelines" />
                                 <TaskTimerHeader
                                     key={task.id}
                                     initialTimeSpent={task.reviewer_time_spent || 0}
-                                    maxTime={task.projects?.max_task_time}
+                                    maxTime={project?.max_task_time}
                                     isReadOnly={false}
                                 />
                             </div>
@@ -143,7 +143,10 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
                                     key={task.id}
                                     schema={templateSchema}
                                     taskId={task.id}
-                                    initialData={{ ...(typeof task.payload === 'string' ? JSON.parse(task.payload) : task.payload || {}), ...(typeof task.labels === 'string' ? JSON.parse(task.labels) : task.labels || {}) }}
+                                    initialData={{
+                                        ...(typeof task.payload === 'string' ? (JSON.parse(task.payload || '{}')) : task.payload || {}),
+                                        ...(typeof task.labels === 'string' ? (JSON.parse(task.labels || '{}')) : task.labels || {})
+                                    }}
                                     initialTimeSpent={task.reviewer_time_spent || 0}
                                     projectId={task.project_id}
                                     initialEarnings={task.reviewer_earnings || 0}
