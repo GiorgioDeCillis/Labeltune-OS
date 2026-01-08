@@ -102,96 +102,39 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
     const handleSave = async () => {
         setIsLoading(true);
         try {
-            console.log('[CourseBuilder] handleSave started. existingCourse:', existingCourse?.id, 'selectedProjectId:', selectedProjectId, 'courseTitle:', courseTitle);
-            let courseId = existingCourse?.id;
+            console.log('[CourseBuilder] handleSave started. existingCourse:', existingCourse?.id, 'selectedProjectId:', selectedProjectId);
 
-            // 1. Create or Update Course
-            if (existingCourse) {
-                await updateCourse(existingCourse.id, {
+            const result = await saveCourseWithLessons(
+                selectedProjectId || null,
+                {
                     title: courseTitle,
                     description: courseDescription,
                     duration: courseDuration
-                });
-            } else {
-                console.log('[CourseBuilder] Creating new course with projectId:', selectedProjectId);
-                const newCourse = await createCourse(selectedProjectId || null, {
-                    title: courseTitle,
-                    description: courseDescription,
-                    duration: courseDuration
-                });
-                console.log('[CourseBuilder] New course created:', newCourse);
-                courseId = newCourse.id;
-            }
+                },
+                lessons,
+                existingCourse?.id
+            );
 
-            // 2. Sync Lessons
-            // Simple approach: Delete all existing lesson references not in new list? 
-            // Or just update/create. For MVP, let's just create new ones and update existing.
-            // A better way is to handle one-by-one or diff, but here we just iterate.
+            if (result && result.success) {
+                console.log('[CourseBuilder] Save successful, courseId:', result.courseId);
+                showToast('Course saved successfully!', 'success');
 
-            if (courseId) {
-                // Delete removed lessons (if editing)
-                if (existingCourse && existingCourse.lessons) {
-                    const currentIds = lessons.filter(l => !l.id?.startsWith('temp-')).map(l => l.id);
-                    const lessonsToDelete = existingCourse.lessons.filter(l => !currentIds.includes(l.id));
-                    for (const l of lessonsToDelete) {
-                        try {
-                            await deleteLesson(l.id);
-                        } catch (err) {
-                            console.error('[CourseBuilder] Error deleting lesson:', l.id, err);
-                        }
-                    }
-                }
-
-                // Upsert lessons
-                console.log('[CourseBuilder] Processing', lessons.length, 'lessons for courseId:', courseId);
-                for (let i = 0; i < lessons.length; i++) {
-                    const lesson = lessons[i];
-                    console.log(`[CourseBuilder] Processing lesson ${i}:`, lesson.id, lesson.title);
-
-                    const lessonData = {
-                        title: lesson.title,
-                        content: lesson.content,
-                        video_url: lesson.video_url,
-                        order: i, // Update order based on current index
-                        type: lesson.type,
-                        quiz_data: lesson.quiz_data
-                    };
-
-                    try {
-                        if (lesson.id && !lesson.id.startsWith('temp-')) {
-                            console.log(`[CourseBuilder] Updating existing lesson: ${lesson.id}`);
-                            await updateLesson(lesson.id, lessonData);
-                        } else {
-                            console.log(`[CourseBuilder] Creating new lesson for course: ${courseId}`);
-                            const newLesson = await createLesson(courseId, lessonData);
-                            console.log(`[CourseBuilder] Created lesson result:`, newLesson?.id);
-                        }
-                    } catch (err: any) {
-                        console.error(`[CourseBuilder] Error processing lesson ${i}:`, err);
-                        showToast(`Failed to save lesson "${lesson.title}": ${err.message}`, 'error');
-                        // Consider if we should throw here to stop the whole save, or continue?
-                        // For now let's log and maybe fail the whole operation if critical.
-                        throw err;
-                    }
-                }
-            }
-
-            console.log('[CourseBuilder] Course save completed successfully');
-            showToast('Course saved successfully!', 'success');
-
-            if (onSaveSuccess && courseId) {
-                onSaveSuccess(courseId);
-            } else {
-                if (selectedProjectId) {
-                    router.push(`/dashboard/projects/${selectedProjectId}`);
+                if (onSaveSuccess && result.courseId) {
+                    onSaveSuccess(result.courseId);
                 } else {
-                    router.push('/dashboard/courses');
+                    if (selectedProjectId) {
+                        router.push(`/dashboard/projects/${selectedProjectId}`);
+                    } else {
+                        router.push('/dashboard/courses');
+                    }
+                    router.refresh();
                 }
-                router.refresh();
+            } else {
+                throw new Error('Unknown error during save');
             }
 
         } catch (error) {
-            console.error(error);
+            console.error('[CourseBuilder] Save failed:', error);
             const message = error instanceof Error ? error.message : 'Failed to save course';
             showToast(message, 'error');
         } finally {

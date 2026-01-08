@@ -264,3 +264,112 @@ export async function getNextCourseId(currentCourseId: string) {
 
     return courses[currentIndex + 1].id;
 }
+
+export async function saveCourseWithLessons(
+    projectId: string | null,
+    courseData: Partial<Course>,
+    lessons: Partial<Lesson>[],
+    courseId?: string
+) {
+    console.log('[saveCourseWithLessons] Started. CourseId:', courseId, 'Lessons count:', lessons.length);
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    let finalCourseId = courseId;
+
+    try {
+        // 1. Create or Update Course
+        if (courseId) {
+            const { error: updateError } = await supabase
+                .from('courses')
+                .update({
+                    title: courseData.title,
+                    description: courseData.description,
+                    duration: courseData.duration
+                })
+                .eq('id', courseId);
+
+            if (updateError) throw new Error(`Failed to update course: ${updateError.message}`);
+        } else {
+            const { data: newCourse, error: createError } = await supabase
+                .from('courses')
+                .insert({
+                    project_id: projectId || null,
+                    title: courseData.title!,
+                    description: courseData.description,
+                    duration: courseData.duration
+                })
+                .select()
+                .single();
+
+            if (createError) throw new Error(`Failed to create course: ${createError.message}`);
+            finalCourseId = newCourse.id;
+        }
+
+        if (!finalCourseId) throw new Error('Failed to determine course ID');
+
+        // 2. Handle Lessons
+        // First delete existing lessons not present in the new list (if updating)
+        if (courseId) {
+            const currentIds = lessons
+                .filter(l => l.id && !l.id.startsWith('temp-'))
+                .map(l => l.id);
+
+            // Get all lessons for course, identify which to delete.
+            const { data: allExisting } = await supabase.from('lessons').select('id').eq('course_id', finalCourseId);
+            if (allExisting) {
+                const toDelete = allExisting.filter(e => !currentIds.includes(e.id)).map(e => e.id);
+                if (toDelete.length > 0) {
+                    await supabase.from('lessons').delete().in('id', toDelete);
+                }
+            }
+        }
+
+        // 3. Upsert Lessons
+        // We handle this sequentially to ensure order and avoid complexity with bulk upsert of mixed new/old
+        for (let i = 0; i < lessons.length; i++) {
+            const l = lessons[i];
+            const isNew = !l.id || l.id.startsWith('temp-');
+
+            const lessonPayload = {
+                course_id: finalCourseId,
+                title: l.title!,
+                content: l.content || '',
+                order: i,
+                video_url: l.video_url || '',
+                type: l.type || 'text',
+                quiz_data: l.quiz_data || null
+            };
+
+            if (isNew) {
+                const { error } = await supabase.from('lessons').insert(lessonPayload);
+                if (error) {
+                    console.error('[saveCourseWithLessons] Error inserting lesson:', i, error);
+                    throw error;
+                }
+            } else {
+                const { error } = await supabase
+                    .from('lessons')
+                    .update(lessonPayload)
+                    .eq('id', l.id!);
+                if (error) {
+                    console.error('[saveCourseWithLessons] Error updating lesson:', l.id, error);
+                    throw error;
+                }
+            }
+        }
+
+    } catch (error: any) {
+        console.error('[saveCourseWithLessons] Critical error:', error);
+        throw new Error(error.message || 'Failed to save course and lessons');
+    }
+
+    // 4. Revalidate
+    revalidatePath(`/dashboard/courses/${finalCourseId}`);
+    if (projectId) revalidatePath(`/dashboard/projects/${projectId}`);
+    revalidatePath('/dashboard/courses');
+
+    return { success: true, courseId: finalCourseId };
+}
+
