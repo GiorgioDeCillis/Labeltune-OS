@@ -359,7 +359,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                 />
                 <StatCard
                     title="Avg. Rate"
-                    value={`€${stats.avgRate.toFixed(2)}`}
+                    value={`€${Number(stats.avgRate || 0).toFixed(2)}`}
                     icon={TrendingUp}
                 />
             </div>

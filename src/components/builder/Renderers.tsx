@@ -65,13 +65,17 @@ export function TimeSeriesObject({ component, data }: { component: TaskComponent
                     <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">00:00:00 - 00:05:00</div>
                 </div>
                 <div className="h-32 flex items-end gap-[2px]">
-                    {Array.from({ length: 120 }).map((_, i) => (
-                        <div
-                            key={i}
-                            className="flex-1 bg-primary/20 rounded-full"
-                            style={{ height: `${20 + Math.random() * 80}%` }}
-                        />
-                    ))}
+                    {Array.from({ length: 120 }).map((_, i) => {
+                        // Deterministic height based on index to avoid hydration mismatch
+                        const height = 20 + ((i * 13) % 80);
+                        return (
+                            <div
+                                key={i}
+                                className="flex-1 bg-primary/20 rounded-full"
+                                style={{ height: `${height}%` }}
+                            />
+                        );
+                    })}
                 </div>
             </div>
         </div>

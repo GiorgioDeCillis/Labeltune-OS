@@ -144,7 +144,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                     </div>
                     <div>
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Total Earnings</p>
-                        <h3 className="text-2xl font-bold text-white">€{stats.totalEarnings.toFixed(2)}</h3>
+                        <h3 className="text-2xl font-bold text-white">€{Number(stats.totalEarnings || 0).toFixed(2)}</h3>
                     </div>
                 </div>
 
@@ -155,7 +155,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                     <div>
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Avg. Quality Rating</p>
                         <h3 className="text-2xl font-bold text-white">
-                            {stats.avgRating !== null ? stats.avgRating.toFixed(1) : 'N/A'}
+                            {stats.avgRating !== null ? Number(stats.avgRating).toFixed(1) : 'N/A'}
                         </h3>
                     </div>
                 </div>
@@ -214,14 +214,14 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <span className="text-sm font-bold text-emerald-400">
-                                                €{task.earnings.toFixed(2)}
+                                                €{Number(task.earnings || 0).toFixed(2)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             {task.review_rating ? (
                                                 <div className="flex items-center justify-center gap-1">
                                                     <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                                    <span className="text-sm font-bold text-white">{task.review_rating.toFixed(1)}</span>
+                                                    <span className="text-sm font-bold text-white">{Number(task.review_rating || 0).toFixed(1)}</span>
                                                 </div>
                                             ) : (
                                                 <span className="text-xs text-white/20">-</span>
@@ -308,7 +308,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                                             <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Rating</p>
                                             <div className="flex items-center gap-1.5 text-yellow-400">
                                                 <Star className="w-4 h-4 fill-current" />
-                                                <span className="text-lg font-black">{selectedTask.review_rating?.toFixed(1) || '-'}</span>
+                                                <span className="text-lg font-black">{Number(selectedTask.review_rating || 0).toFixed(1)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -327,7 +327,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                                 <div className="flex flex-col gap-2 pt-2 border-t border-white/5">
                                     <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest">
                                         <span className="text-white/40">Earnings Earned</span>
-                                        <span className="text-emerald-400">€{selectedTask.earnings.toFixed(2)}</span>
+                                        <span className="text-emerald-400">€{Number(selectedTask.earnings || 0).toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest">
                                         <span className="text-white/40">Time Spent</span>

@@ -187,7 +187,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate, userRole 
                                                             </span>
                                                             <span className="text-[10px] text-green-500/80 font-bold flex items-center gap-0.5">
                                                                 <Euro className="w-3 h-3" />
-                                                                {task.annotator_earnings?.toFixed(2) || '0.00'}
+                                                                {Number(task.annotator_earnings || 0).toFixed(2)}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -215,7 +215,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate, userRole 
                                                             </span>
                                                             <span className="text-[10px] text-green-500/80 font-bold flex items-center gap-0.5">
                                                                 <Euro className="w-3 h-3" />
-                                                                {task.reviewer_earnings?.toFixed(2) || '0.00'}
+                                                                {Number(task.reviewer_earnings || 0).toFixed(2)}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -228,7 +228,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate, userRole 
                                             {task.review_rating ? (
                                                 <div className="flex items-center gap-1">
                                                     <Star className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
-                                                    <span className="text-sm font-bold text-yellow-500">{task.review_rating.toFixed(1)}</span>
+                                                    <span className="text-sm font-bold text-yellow-500">{Number(task.review_rating || 0).toFixed(1)}</span>
                                                 </div>
                                             ) : (
                                                 <span className="text-sm text-muted-foreground italic">-</span>
@@ -298,7 +298,7 @@ function StatusBadge({ status }: { status: string }) {
     return (
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${styles[status] || styles.pending}`}>
             <Icon className="w-3 h-3" />
-            {status.replace('_', ' ')}
+            {String(status || 'pending').replace('_', ' ')}
         </span>
     );
 }

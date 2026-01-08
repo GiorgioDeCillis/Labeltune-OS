@@ -89,14 +89,15 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
     const parseJSON = (data: any) => {
         if (!data) return {};
         if (typeof data === 'string') {
+            if (data === 'null') return {};
             try {
-                return JSON.parse(data);
+                return JSON.parse(data) || {};
             } catch (e) {
                 console.error('Error parsing JSON:', e);
                 return {};
             }
         }
-        return data;
+        return data || {};
     };
 
     const labels = parseJSON(task.labels);
@@ -201,14 +202,14 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                                 <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Earnings</p>
                                 <div className="flex items-center gap-1.5 text-green-400 font-bold">
                                     <DollarSign className="w-3.5 h-3.5" />
-                                    <span>{task.annotator_earnings?.toFixed(2) || '0.00'}</span>
+                                    <span>{Number(task.annotator_earnings || 0).toFixed(2)}</span>
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Rating</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Ann. Rating</p>
                                 <div className="flex items-center gap-1.5 text-yellow-500 font-bold">
-                                    <Star className="w-3.5 h-3.5 fill-current" />
-                                    <span>{task.review_rating?.toFixed(1) || '-'}</span>
+                                    <Star className="w-3.5 h-3.5" />
+                                    <span>{Number(task.review_rating || 0).toFixed(1)}</span>
                                 </div>
                             </div>
                         </div>
@@ -256,14 +257,14 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                                 <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Earnings</p>
                                 <div className="flex items-center gap-1.5 text-green-400 font-bold">
                                     <DollarSign className="w-3.5 h-3.5" />
-                                    <span>{task.reviewer_earnings?.toFixed(2) || '0.00'}</span>
+                                    <span>{Number(task.reviewer_earnings || 0).toFixed(2)}</span>
                                 </div>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Rev. Rating</p>
                                 <div className="flex items-center gap-1.5 text-yellow-500 font-bold">
                                     <Star className="w-3.5 h-3.5" />
-                                    <span>{task.reviewer_rating?.toFixed(1) || '-'}</span>
+                                    <span>{Number(task.reviewer_rating || 0).toFixed(1)}</span>
                                 </div>
                             </div>
                         </div>
