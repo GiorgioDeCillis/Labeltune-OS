@@ -59,6 +59,7 @@ export default function OnboardingPage() {
             { id: 'primaryLanguage', label: 'Lingua Principale' },
             { id: 'address', label: 'Indirizzo' },
             { id: 'paypalEmail', label: 'Email PayPal' },
+            { id: 'privacyConsent', label: 'Consenso Privacy' },
         ];
 
         requiredFields.forEach(field => {
@@ -482,6 +483,24 @@ export default function OnboardingPage() {
                                     </div>
 
                                     <div className="pt-4 space-y-4">
+                                        <label className="flex items-start gap-4 cursor-pointer group">
+                                            <div className="relative flex-shrink-0 mt-1">
+                                                <input
+                                                    name="privacyConsent"
+                                                    type="checkbox"
+                                                    required
+                                                    className="peer sr-only"
+                                                />
+                                                <div className={`w-6 h-6 border-2 ${fieldErrors.privacyConsent ? 'border-red-500' : 'border-white/10'} rounded-lg group-hover:border-primary/50 transition-all peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center`}>
+                                                    <CheckCircle2 className="w-4 h-4 text-white scale-0 peer-checked:scale-100 transition-transform" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-sm font-bold opacity-80 group-hover:opacity-100 transition-opacity">Trattamento Dati Personali</span>
+                                                <p className="text-xs opacity-40 leading-relaxed">Autorizzo il trattamento dei dati personali ai sensi del D.Lgs. 101/2018 e del GDPR (Regolamento UE 2016/679)</p>
+                                            </div>
+                                        </label>
+
                                         <label className="flex items-start gap-4 cursor-pointer group">
                                             <div className="relative flex-shrink-0 mt-1">
                                                 <input

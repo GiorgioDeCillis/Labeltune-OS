@@ -24,7 +24,12 @@ export async function submitOnboarding(formData: FormData) {
     const githubUrl = formData.get('githubUrl') as string || null
     const websiteUrl = formData.get('websiteUrl') as string || null
     const jobOffersConsent = formData.get('jobOffersConsent') === 'on'
+    const privacyConsent = formData.get('privacyConsent') === 'on'
     const cvFile = formData.get('cv') as File
+
+    if (!privacyConsent) {
+        throw new Error('È necessario autorizzare il trattamento dei dati personali per procedere.')
+    }
 
     let cvUrl = null
 
@@ -81,6 +86,7 @@ export async function submitOnboarding(formData: FormData) {
             website_url: websiteUrl,
             paypal_email: paypalEmail,
             job_offers_consent: jobOffersConsent,
+            privacy_consent: privacyConsent,
             primary_language: primaryLanguage,
             locale_tag: localeTag,
             is_onboarded: true,
