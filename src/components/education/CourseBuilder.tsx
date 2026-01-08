@@ -102,6 +102,7 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
     const handleSave = async () => {
         setIsLoading(true);
         try {
+            console.log('[CourseBuilder] handleSave started. existingCourse:', existingCourse?.id, 'selectedProjectId:', selectedProjectId, 'courseTitle:', courseTitle);
             let courseId = existingCourse?.id;
 
             // 1. Create or Update Course
@@ -112,11 +113,13 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
                     duration: courseDuration
                 });
             } else {
+                console.log('[CourseBuilder] Creating new course with projectId:', selectedProjectId);
                 const newCourse = await createCourse(selectedProjectId || null, {
                     title: courseTitle,
                     description: courseDescription,
                     duration: courseDuration
                 });
+                console.log('[CourseBuilder] New course created:', newCourse);
                 courseId = newCourse.id;
             }
 
@@ -131,13 +134,20 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
                     const currentIds = lessons.filter(l => !l.id?.startsWith('temp-')).map(l => l.id);
                     const lessonsToDelete = existingCourse.lessons.filter(l => !currentIds.includes(l.id));
                     for (const l of lessonsToDelete) {
-                        await deleteLesson(l.id);
+                        try {
+                            await deleteLesson(l.id);
+                        } catch (err) {
+                            console.error('[CourseBuilder] Error deleting lesson:', l.id, err);
+                        }
                     }
                 }
 
                 // Upsert lessons
+                console.log('[CourseBuilder] Processing', lessons.length, 'lessons for courseId:', courseId);
                 for (let i = 0; i < lessons.length; i++) {
                     const lesson = lessons[i];
+                    console.log(`[CourseBuilder] Processing lesson ${i}:`, lesson.id, lesson.title);
+
                     const lessonData = {
                         title: lesson.title,
                         content: lesson.content,
@@ -147,14 +157,26 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
                         quiz_data: lesson.quiz_data
                     };
 
-                    if (lesson.id && !lesson.id.startsWith('temp-')) {
-                        await updateLesson(lesson.id, lessonData);
-                    } else {
-                        await createLesson(courseId, lessonData);
+                    try {
+                        if (lesson.id && !lesson.id.startsWith('temp-')) {
+                            console.log(`[CourseBuilder] Updating existing lesson: ${lesson.id}`);
+                            await updateLesson(lesson.id, lessonData);
+                        } else {
+                            console.log(`[CourseBuilder] Creating new lesson for course: ${courseId}`);
+                            const newLesson = await createLesson(courseId, lessonData);
+                            console.log(`[CourseBuilder] Created lesson result:`, newLesson?.id);
+                        }
+                    } catch (err: any) {
+                        console.error(`[CourseBuilder] Error processing lesson ${i}:`, err);
+                        showToast(`Failed to save lesson "${lesson.title}": ${err.message}`, 'error');
+                        // Consider if we should throw here to stop the whole save, or continue?
+                        // For now let's log and maybe fail the whole operation if critical.
+                        throw err;
                     }
                 }
             }
 
+            console.log('[CourseBuilder] Course save completed successfully');
             showToast('Course saved successfully!', 'success');
 
             if (onSaveSuccess && courseId) {

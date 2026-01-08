@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { Course, Lesson } from '@/types/manual-types';
 
 export async function createCourse(projectId: string | null, data: Partial<Course>) {
+    console.log('[createCourse] Called with projectId:', projectId, 'data title:', data.title);
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Unauthorized');
@@ -89,6 +90,7 @@ export async function deleteCourse(courseId: string) {
 }
 
 export async function createLesson(courseId: string, data: Partial<Lesson>) {
+    console.log('[createLesson] Starting with courseId:', courseId, 'data:', JSON.stringify(data));
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Unauthorized');
@@ -107,7 +109,11 @@ export async function createLesson(courseId: string, data: Partial<Lesson>) {
         .select()
         .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+        console.error('[createLesson] Error creating lesson:', error.message);
+        throw new Error(error.message);
+    }
+    console.log('[createLesson] Success, created lesson id:', lesson.id);
     revalidatePath(`/dashboard/courses/${courseId}`);
     return lesson;
 }
