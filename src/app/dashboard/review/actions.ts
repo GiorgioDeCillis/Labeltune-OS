@@ -4,7 +4,8 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-function parseRate(rate: string): number {
+function parseRate(rate: any): number {
+    if (!rate) return 0;
     const matches = rate.toString().match(/(\d+(?:[.,]\d+)?)/);
     const cleanRate = matches ? matches[0].replace(',', '.') : '0';
     return parseFloat(cleanRate) || 0;
@@ -19,7 +20,7 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
     // Get project pay rate
     const { data: task, error: fetchError } = await supabase
         .from('tasks')
-        .select('project_id, projects(pay_rate, payment_mode, review_pay_per_task)')
+        .select('project_id, projects(pay_rate, payment_mode, pay_per_task, review_pay_per_task)')
         .eq('id', taskId)
         .single();
 
@@ -28,15 +29,16 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
         return { success: false, error: 'Could not find task or project data' };
     }
 
-    const projectsData = task.projects as any;
-    const paymentMode = projectsData?.payment_mode || 'hourly';
+    const p = (task as any).projects || (task as any).project;
+    const projectData = Array.isArray(p) ? p[0] : p;
+    const paymentMode = projectData?.payment_mode || 'hourly';
 
     let earnings = 0;
     if (paymentMode === 'task') {
-        const reviewRate = projectsData?.review_pay_per_task || '0';
+        const reviewRate = projectData?.review_pay_per_task || projectData?.pay_per_task || '0';
         earnings = parseRate(reviewRate);
     } else {
-        const rawRate = projectsData?.pay_rate || '0';
+        const rawRate = projectData?.pay_rate || '0';
         const payRate = parseRate(rawRate);
         earnings = (timeSpent / 3600) * payRate;
     }
@@ -114,20 +116,21 @@ export async function updateReviewTimer(taskId: string, timeSpent: number) {
     // Get project pay rate for real-time earnings update
     const { data: task } = await supabase
         .from('tasks')
-        .select('project_id, reviewer_started_at, projects(pay_rate, payment_mode, review_pay_per_task)')
+        .select('project_id, reviewer_started_at, projects(pay_rate, payment_mode, pay_per_task, review_pay_per_task)')
         .eq('id', taskId)
         .single();
 
     let earnings = 0;
-    if (task?.projects) {
-        const projectsData = task.projects as any;
-        const paymentMode = projectsData?.payment_mode || 'hourly';
+    const p = (task as any)?.projects || (task as any)?.project;
+    if (p) {
+        const projectData = Array.isArray(p) ? p[0] : p;
+        const paymentMode = projectData?.payment_mode || 'hourly';
 
         if (paymentMode === 'task') {
-            const reviewRate = projectsData?.review_pay_per_task || '0';
+            const reviewRate = projectData?.review_pay_per_task || projectData?.pay_per_task || '0';
             earnings = parseRate(reviewRate);
         } else {
-            const rawRate = projectsData?.pay_rate || '0';
+            const rawRate = projectData?.pay_rate || '0';
             const payRate = parseRate(rawRate);
             earnings = (timeSpent / 3600) * payRate;
         }
