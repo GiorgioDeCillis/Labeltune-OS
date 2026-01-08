@@ -50,6 +50,18 @@ export async function deleteInstructionSet(id: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Unauthorized');
 
+    // Check if instruction is linked to a project
+    const { data: instruction, error: fetchError } = await supabase
+        .from('instructions')
+        .select('project_id')
+        .eq('id', id)
+        .single();
+
+    if (fetchError) throw new Error(fetchError.message);
+    if (instruction?.project_id) {
+        throw new Error('Cannot delete instruction set linked to a project');
+    }
+
     const { error } = await supabase
         .from('instructions')
         .delete()

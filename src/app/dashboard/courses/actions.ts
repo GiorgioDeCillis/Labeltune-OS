@@ -47,6 +47,39 @@ export async function updateCourse(courseId: string, data: Partial<Course>) {
     revalidatePath('/dashboard/courses');
 }
 
+export async function deleteCourse(courseId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    // Check if course is linked to a project
+    const { data: course, error: fetchError } = await supabase
+        .from('courses')
+        .select('project_id')
+        .eq('id', courseId)
+        .single();
+
+    if (fetchError) throw new Error(fetchError.message);
+    if (course?.project_id) {
+        throw new Error('Cannot delete course linked to a project');
+    }
+
+    // Delete associated lessons first
+    await supabase.from('lessons').delete().eq('course_id', courseId);
+
+    // Delete course progress records
+    await supabase.from('user_course_progress').delete().eq('course_id', courseId);
+
+    // Delete the course
+    const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', courseId);
+
+    if (error) throw new Error(error.message);
+    revalidatePath('/dashboard/courses');
+}
+
 export async function createLesson(courseId: string, data: Partial<Lesson>) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
