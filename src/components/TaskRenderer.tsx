@@ -33,7 +33,8 @@ import {
     ViewLayout,
     AudioRecorderControl,
     ChecklistControl,
-    AccordionChoicesControl
+    AccordionChoicesControl,
+    AIResponseGeneratorObject
 } from '@/components/builder/Renderers';
 
 export function TaskRenderer({
@@ -540,6 +541,7 @@ function renderComponent(
     if (component.type === 'TimeSeries') return <TimeSeriesObject key={component.id} component={component} data={taskData} />;
     if (component.type === 'PDF') return <PDFObject key={component.id} component={component} data={taskData} />;
     if (component.type === 'MultiMessage') return <MultiMessageObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'AIResponseGenerator') return <AIResponseGeneratorObject key={component.id} component={component} readOnly={isReadOnly} />;
 
     // Layout
     if (component.type === 'View') {

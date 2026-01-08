@@ -30,7 +30,17 @@ export type TaskComponentType =
     | 'RequirementPanel'
     | 'AudioRecorder'
     | 'Checklist'
-    | 'AccordionChoices';
+    | 'AccordionChoices'
+    | 'AIResponseGenerator';
+
+export interface AIGeneratorConfig {
+    id: string;
+    name: string;
+    provider: 'platform' | 'openai' | 'anthropic';
+    model?: string;
+    apiKey?: string;
+    systemPrompt?: string;
+}
 
 export interface TaskComponent {
     id: string;
@@ -64,6 +74,11 @@ export interface TaskComponent {
         category?: string;
         description?: string;
     }[]; // For RubricScorer
+    // AI Config
+    aiConfig?: {
+        referenceTextLimit?: number;
+        generators?: AIGeneratorConfig[];
+    };
 }
 
 export interface TaskTemplate {

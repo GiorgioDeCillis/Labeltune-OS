@@ -67,6 +67,21 @@ function createDefaultComponent(type: TaskComponentType): TaskComponent {
             return { ...base, value: '$pdf', title: 'PDF Document' };
         case 'MultiMessage':
             return { ...base, value: '$messages', title: 'Chat / Conversation' };
+        case 'AIResponseGenerator':
+            return {
+                ...base,
+                title: 'AI Assistant',
+                aiConfig: {
+                    referenceTextLimit: 500,
+                    generators: [
+                        {
+                            id: nanoid(),
+                            name: 'Assistant 1',
+                            provider: 'platform',
+                        }
+                    ]
+                }
+            };
         default:
             return { ...base, title: `New ${type}` };
     }

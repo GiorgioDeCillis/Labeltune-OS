@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TaskComponent } from './types';
-import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic, ChevronRight } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic, ChevronRight, Bot } from 'lucide-react';
 
 export function Canvas({ components, selectedId, onSelect, onDelete }: {
     components: TaskComponent[],
@@ -188,6 +188,15 @@ function SortableComponent({ component, isSelected, onSelect, onDelete }: {
                                 <div className="w-4 h-4 rounded-full border border-white/20" />
                                 <div className="h-2 w-32 bg-white/20 rounded" />
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {component.type === 'AIResponseGenerator' && (
+                    <div className="space-y-2">
+                        <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                            <Bot className="w-6 h-6 opacity-50" />
+                            <span className="text-xs uppercase tracking-widest font-bold">AI Assistant ({component.aiConfig?.generators?.length || 0} models)</span>
                         </div>
                     </div>
                 )}

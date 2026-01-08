@@ -17,7 +17,8 @@ import {
     FileText,
     MessagesSquare,
     Mic,
-    ListTree
+    ListTree,
+    Bot
 } from 'lucide-react';
 import { TaskComponentType } from './types';
 
@@ -84,6 +85,7 @@ export function Toolbox() {
                 <DraggableTool type="TimeSeries" label="Time Series Chart" icon={Activity} />
                 <DraggableTool type="PDF" label="PDF Document" icon={FileText} />
                 <DraggableTool type="MultiMessage" label="Conversation (LLM)" icon={MessagesSquare} />
+                <DraggableTool type="AIResponseGenerator" label="AI Assistant" icon={Bot} />
             </div>
         </div>
     );

@@ -1,5 +1,7 @@
 import React from 'react';
-import { TaskComponent } from './types';
+import { TaskComponent, AIGeneratorConfig } from './types';
+import { Plus, Trash2, Wand2 } from 'lucide-react';
+import { nanoid } from 'nanoid';
 
 export function PropertiesPanel({ component, onChange }: {
     component: TaskComponent,
@@ -194,6 +196,155 @@ export function PropertiesPanel({ component, onChange }: {
                     />
                 </div>
             )}
-        </div>
-    );
+
+            {component.type === 'AIResponseGenerator' && (
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                    <h4 className="text-xs font-bold text-muted-foreground flex items-center gap-2">
+                        <Wand2 className="w-3 h-3" />
+                        AI Configuration
+                    </h4>
+
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground">Reference Text Limit</label>
+                        <input
+                            type="number"
+                            value={component.aiConfig?.referenceTextLimit || 500}
+                            onChange={(e) => onChange({
+                                aiConfig: {
+                                    ...component.aiConfig,
+                                    referenceTextLimit: parseInt(e.target.value) || 0
+                                }
+                            })}
+                            className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-muted-foreground flex justify-between items-center">
+                            <span>Generators</span>
+                            <button
+                                onClick={() => {
+                                    const newGen: AIGeneratorConfig = {
+                                        id: nanoid(),
+                                        name: `Assistant ${(component.aiConfig?.generators?.length || 0) + 1}`,
+                                        provider: 'platform'
+                                    };
+                                    onChange({
+                                        aiConfig: {
+                                            ...component.aiConfig,
+                                            generators: [...(component.aiConfig?.generators || []), newGen]
+                                        }
+                                    });
+                                }}
+                                className="text-[10px] bg-primary/20 hover:bg-primary/30 text-primary px-2 py-1 rounded flex items-center gap-1 transition-colors"
+                            >
+                                <Plus className="w-3 h-3" />
+                                Add
+                            </button>
+                        </label>
+
+                        <div className="space-y-3">
+                            {component.aiConfig?.generators?.map((gen, index) => (
+                                <div key={gen.id} className="p-3 bg-white/5 border border-white/10 rounded-lg space-y-3 relative group">
+                                    <button
+                                        onClick={() => {
+                                            const newGens = component.aiConfig?.generators?.filter(g => g.id !== gen.id);
+                                            onChange({
+                                                aiConfig: { ...component.aiConfig, generators: newGens }
+                                            });
+                                        }}
+                                        className="absolute top-2 right-2 text-muted-foreground hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1"
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                    </button>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-muted-foreground">Name</label>
+                                        <input
+                                            value={gen.name}
+                                            onChange={(e) => {
+                                                const newGens = [...(component.aiConfig?.generators || [])];
+                                                newGens[index] = { ...gen, name: e.target.value };
+                                                onChange({ aiConfig: { ...component.aiConfig, generators: newGens } });
+                                            }}
+                                            className="w-full bg-background/50 border border-white/10 rounded px-2 py-1 text-xs"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-muted-foreground">Provider</label>
+                                        <select
+                                            value={gen.provider}
+                                            onChange={(e) => {
+                                                const newGens = [...(component.aiConfig?.generators || [])];
+                                                newGens[index] = { ...gen, provider: e.target.value as any };
+                                                onChange({ aiConfig: { ...component.aiConfig, generators: newGens } });
+                                            }}
+                                            className="w-full bg-background/50 border border-white/10 rounded px-2 py-1 text-xs"
+                                        >
+                                            <option value="platform">Platform Default</option>
+                                            <option value="openai">OpenAI (User Key)</option>
+                                            <option value="anthropic">Anthropic (User Key)</option>
+                                        </select>
+                                    </div>
+
+                                    {gen.provider !== 'platform' && (
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-muted-foreground">API Key</label>
+                                            <input
+                                                type="password"
+                                                value={gen.apiKey || ''}
+                                                onChange={(e) => {
+                                                    const newGens = [...(component.aiConfig?.generators || [])];
+                                                    newGens[index] = { ...gen, apiKey: e.target.value };
+                                                    onChange({ aiConfig: { ...component.aiConfig, generators: newGens } });
+                                                }}
+                                                placeholder="sk-..."
+                                                className="w-full bg-background/50 border border-white/10 rounded px-2 py-1 text-xs font-mono"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {gen.provider !== 'platform' && (
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-muted-foreground">Model Name</label>
+                                            <input
+                                                value={gen.model || ''}
+                                                onChange={(e) => {
+                                                    const newGens = [...(component.aiConfig?.generators || [])];
+                                                    newGens[index] = { ...gen, model: e.target.value };
+                                                    onChange({ aiConfig: { ...component.aiConfig, generators: newGens } });
+                                                }}
+                                                placeholder={gen.provider === 'openai' ? 'gpt-4' : 'claude-3-opus-20240229'}
+                                                className="w-full bg-background/50 border border-white/10 rounded px-2 py-1 text-xs font-mono"
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-muted-foreground">System Prompt</label>
+                                        <textarea
+                                            value={gen.systemPrompt || ''}
+                                            onChange={(e) => {
+                                                const newGens = [...(component.aiConfig?.generators || [])];
+                                                newGens[index] = { ...gen, systemPrompt: e.target.value };
+                                                onChange({ aiConfig: { ...component.aiConfig, generators: newGens } });
+                                            }}
+                                            rows={2}
+                                            className="w-full bg-background/50 border border-white/10 rounded px-2 py-1 text-xs resize-none"
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+
+                            {(!component.aiConfig?.generators?.length) && (
+                                <div className="text-center p-4 border border-dashed border-white/10 rounded-lg text-xs text-muted-foreground">
+                                    No generators configured.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+            );
 }
