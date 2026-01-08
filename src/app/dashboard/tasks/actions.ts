@@ -136,7 +136,6 @@ export async function expireTask(taskId: string) {
 export async function cleanupProjectTasks(projectId: string) {
     const supabase = await createClient();
 
-    // Fetch project settings
     console.log(`[CLEANUP] Starting cleanup for project: ${projectId}`);
     const { data: { user } } = await supabase.auth.getUser();
     console.log(`[CLEANUP] Current User: ${user?.email} (${user?.id})`);
@@ -153,54 +152,49 @@ export async function cleanupProjectTasks(projectId: string) {
         return { success: false, error: 'Project not found' };
     }
 
-    console.log(`[CLEANUP] Found project: ${project.name}`, project);
-
     const { max_task_time, extra_time_after_max, absolute_expiration_duration } = project;
 
-    // If no expiration settings at all, skip cleanup
-    if (!max_task_time && !absolute_expiration_duration) return { success: true, count: 0 };
-
-    // Fetch ALL in-progress tasks globally to see what IDs are stored
-    const { data: globalTasks } = await supabase
+    // Fetch tasks specifically for this project (matching monitoring page query)
+    const { data: tasks, error: fetchError } = await supabase
         .from('tasks')
         .select('id, project_id, status, assigned_to, annotator_started_at, updated_at')
+        .eq('project_id', projectId)
         .eq('status', 'in_progress');
 
-    console.log(`[CLEANUP] GLOBAL SEARCH: Found ${globalTasks?.length || 0} in_progress tasks total`);
-    globalTasks?.forEach(t => {
-        console.log(`[CLEANUP] GLOBAL TASK: id=${t.id} project_id=${t.project_id}`);
-    });
+    if (fetchError) {
+        console.error(`[CLEANUP] Fetch error for project ${projectId}:`, fetchError);
+        return { success: false, error: fetchError.message };
+    }
 
-    const tasks = globalTasks?.filter(t => t.project_id === projectId);
-    console.log(`[CLEANUP] Found ${tasks?.length || 0} in_progress tasks matching project ${projectId}`);
+    console.log(`[CLEANUP] Found ${tasks?.length || 0} in_progress tasks for project ${projectId}`);
 
     if (!tasks || tasks.length === 0) return { success: true, count: 0 };
 
     const now = new Date();
     const expiredTaskIds: string[] = [];
 
-    for (const task of tasks) {
+    for (const task of tasks as any[]) {
         if (!task.annotator_started_at) continue;
 
         const startedAt = new Date(task.annotator_started_at);
-        const updatedAt = new Date(task.updated_at);
         const wallClockDiffSec = (now.getTime() - startedAt.getTime()) / 1000;
-        const inactivitySec = (now.getTime() - updatedAt.getTime()) / 1000;
 
         let isExpired = false;
 
-        // 1. Absolute Expiration Check (Hard limit since start - e.g. "you have 2 hours to finish this")
-        if (absolute_expiration_duration && wallClockDiffSec > absolute_expiration_duration) {
+        // DEBUG: Force expire any task older than 1 second for this test
+        if (wallClockDiffSec > 1) {
+            console.log(`[CLEANUP] SURGICAL EXPIRE: Task ${task.id} (WallClock: ${wallClockDiffSec}s)`);
             isExpired = true;
         }
 
-        // 2. Task Time + Extra Time Check (Soft limit with absolute buffer)
-        // If they have exceeded max_time + extra_time, we consider it expired
-        // especially if they have stopped updating the timer.
+        // 1. Absolute Expiration Check
+        if (!isExpired && absolute_expiration_duration && wallClockDiffSec > absolute_expiration_duration) {
+            isExpired = true;
+        }
+
+        // 2. Task Time + Extra Time Check
         if (!isExpired && max_task_time) {
             const totalAllowedSec = max_task_time + (extra_time_after_max || 0);
-
-            // If they are way over time (e.g. 2x the time) or over time + small buffer
             if (wallClockDiffSec > totalAllowedSec + 60) {
                 isExpired = true;
             }
@@ -212,6 +206,8 @@ export async function cleanupProjectTasks(projectId: string) {
     }
 
     if (expiredTaskIds.length > 0) {
+        console.log(`[CLEANUP] Attempting to expire ${expiredTaskIds.length} tasks:`, expiredTaskIds);
+
         const { data: updatedTasks, error } = await supabase
             .from('tasks')
             .update({
@@ -219,33 +215,27 @@ export async function cleanupProjectTasks(projectId: string) {
                 status: 'pending',
                 annotator_time_spent: 0,
                 annotator_started_at: null,
-                labels: null // Clear progress so next person starts fresh
+                labels: null
             })
             .in('id', expiredTaskIds)
             .select();
 
-        console.log(`[CLEANUP] Update attempted for ${expiredTaskIds.length} tasks. Result count: ${updatedTasks?.length || 0}`);
+        console.log(`[CLEANUP] Update result: ${updatedTasks?.length || 0} rows updated.`);
 
         if (error) {
-            console.error(`[CLEANUP] Error during cleanup:`, error);
+            console.error(`[CLEANUP] Update error:`, error);
             return { success: false, error: error.message };
         }
-
-        console.log(`Cleanup: Expired ${expiredTaskIds.length} stale tasks for project ${projectId}`);
 
         // Revalidate aggressively
         revalidatePath(`/dashboard/projects/${projectId}/tasks`);
         revalidatePath(`/dashboard/projects/${projectId}`);
         revalidatePath('/dashboard/tasks');
         revalidatePath('/dashboard/history');
-
-        // Specific tasks
         expiredTaskIds.forEach(id => {
             revalidatePath(`/dashboard/tasks/${id}`);
             revalidatePath(`/dashboard/projects/${projectId}/tasks/${id}`);
         });
-
-        // Revalidate layout to force refresh
         revalidatePath('/dashboard', 'layout');
     }
 
