@@ -58,9 +58,10 @@ interface TaskMonitoringViewProps {
     reviewer: any;
     currentUserRole?: string;
     backUrl?: string; // Optional back URL override
+    childTaskId?: string;
 }
 
-export function TaskMonitoringView({ task, project, annotator, reviewer, currentUserRole, backUrl }: TaskMonitoringViewProps) {
+export function TaskMonitoringView({ task, project, annotator, reviewer, currentUserRole, backUrl, childTaskId }: TaskMonitoringViewProps) {
     const router = useRouter();
     const { showToast } = useToast();
     if (!task) return <div className="p-8 text-center text-red-400">Task data not found.</div>;
@@ -196,6 +197,15 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                                 View Original Task
                             </Link>
                         )}
+                        {childTaskId && (
+                            <Link
+                                href={`/dashboard/projects/${safeProject.id}/tasks/${childTaskId}`}
+                                className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold uppercase tracking-widest rounded-lg border border-primary/20 transition-all flex items-center gap-2"
+                            >
+                                <ChevronLeft className="w-3.5 h-3.5 rotate-180" />
+                                View New Attempt
+                            </Link>
+                        )}
                     </div>
                 )}
             </div>
@@ -217,10 +227,20 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
             {task.status === 'rejected_requeued' && (
                 <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
                     <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-sm">
-                        Questa è una versione <strong>storica</strong> di una task che è stata resettata e rimandata in coda.
-                        I dati sono stati preservati per fini amministrativi e di compenso.
-                    </p>
+                    <div className="flex-1">
+                        <p className="text-sm">
+                            Questa è una versione <strong>storica</strong> di una task che è stata resettata e rimandata in coda.
+                            I dati sono stati preservati per fini amministrativi e di compenso.
+                        </p>
+                        {childTaskId && (
+                            <p className="text-xs mt-2">
+                                <Link href={`/dashboard/projects/${safeProject.id}/tasks/${childTaskId}`} className="text-red-400 hover:text-red-300 underline font-bold flex items-center gap-1">
+                                    <ChevronLeft className="w-3 h-3 rotate-180" />
+                                    Vai alla nuova versione della task #{childTaskId.slice(0, 8)}
+                                </Link>
+                            </p>
+                        )}
+                    </div>
                 </div>
             )}
 

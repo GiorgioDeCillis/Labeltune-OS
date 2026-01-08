@@ -53,7 +53,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                     projects (name)
                 `)
                 .or(`assigned_to.eq.${user.id},reviewed_by.eq.${user.id}`)
-                .in('status', ['submitted', 'completed', 'approved', 'rejected'])
+                .in('status', ['submitted', 'completed', 'approved', 'rejected', 'rejected_requeued'])
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -89,7 +89,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
     );
 
     const stats = {
-        totalCompleted: tasks.filter(t => t.status === 'submitted' || t.status === 'completed' || t.status === 'approved').length,
+        totalCompleted: tasks.filter(t => t.status === 'submitted' || t.status === 'completed' || t.status === 'approved' || t.status === 'rejected_requeued').length,
         totalEarnings: tasks.reduce((acc, t) => acc + t.earnings, 0),
         avgRating: tasks.filter(t => t.review_rating !== null).length > 0
             ? tasks.filter(t => t.review_rating !== null).reduce((acc, t) => acc + (t.review_rating || 0), 0) / tasks.filter(t => t.review_rating !== null).length
@@ -356,6 +356,7 @@ function StatusBadge({ status }: { status: string }) {
         completed: { color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20', label: 'Completed' },
         approved: { color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20', label: 'Approved' },
         rejected: { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20', label: 'Rejected' },
+        rejected_requeued: { color: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20', label: 'Requeued' },
     };
 
     const config = configs[status] || configs.completed;

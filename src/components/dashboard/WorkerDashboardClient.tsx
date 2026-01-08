@@ -166,7 +166,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                 .from('tasks')
                 .select('*', { count: 'exact', head: true })
                 .eq('assigned_to', user.id)
-                .eq('status', 'completed');
+                .in('status', ['completed', 'approved', 'rejected_requeued']);
 
             if (!tasksError) {
                 setStats(prev => ({ ...prev, totalTasks: count || 0 }));

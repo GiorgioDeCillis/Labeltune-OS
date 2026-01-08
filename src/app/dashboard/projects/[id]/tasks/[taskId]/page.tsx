@@ -60,6 +60,13 @@ export default async function SingleTaskMonitoringPage({
     // Safety check: handle project join (if it comes back as an array)
     const project = Array.isArray(task.projects) ? task.projects[0] : task.projects;
 
+    // Fetch child task if this task was re-queued
+    const { data: childTask } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('parent_task_id', taskId)
+        .maybeSingle();
+
     return (
         <TaskMonitoringView
             task={task}
@@ -67,6 +74,7 @@ export default async function SingleTaskMonitoringPage({
             annotator={annotator}
             reviewer={reviewer}
             currentUserRole={currentUserProfile?.role || 'annotator'}
+            childTaskId={childTask?.id}
         />
     );
 }
