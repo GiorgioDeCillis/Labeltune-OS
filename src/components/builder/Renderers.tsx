@@ -938,7 +938,7 @@ export function AudioRecorderControl({ component, value, onChange, readOnly }: {
 
 // --- Pogo Rubrics Workflow Components ---
 
-import { Pin, ChevronDown, ChevronUp, AlertTriangle, GripVertical, X, Minus } from 'lucide-react';
+import { Pin, ChevronDown, ChevronUp, AlertTriangle, GripVertical, Minus } from 'lucide-react';
 
 export function InstructionBlock({ component, data }: { component: TaskComponent, data?: any }) {
     const [isCollapsed, setIsCollapsed] = React.useState(false);
@@ -1512,8 +1512,8 @@ export function AIResponseGeneratorObject({ component, readOnly }: { component: 
                                 <button
                                     onClick={() => setShowReferenceInput(!showReferenceInput)}
                                     className={`p-2 rounded-lg transition-colors flex items-center gap-2 text-xs font-bold ${showReferenceInput || referenceText
-                                            ? 'bg-primary/20 text-primary'
-                                            : 'hover:bg-white/10 text-muted-foreground hover:text-white'
+                                        ? 'bg-primary/20 text-primary'
+                                        : 'hover:bg-white/10 text-muted-foreground hover:text-white'
                                         }`}
                                     title="Add Reference Text"
                                 >
