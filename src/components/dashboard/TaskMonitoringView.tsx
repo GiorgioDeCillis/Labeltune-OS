@@ -45,7 +45,9 @@ import {
     FeedbackControl,
     AudioRecorderControl,
     ChecklistControl,
-    AccordionChoicesControl
+    AccordionChoicesControl,
+    ViewLayout,
+    HyperTextObject
 } from '@/components/builder/Renderers';
 
 interface TaskMonitoringViewProps {
@@ -342,7 +344,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                 <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-black/20">
                     <div className="max-w-4xl mx-auto space-y-8">
                         {schema.map((component) => (
-                            <div key={component.id} className="pointer-events-none opacity-90">
+                            <div key={component.id} className="opacity-90">
                                 {renderComponent(component, payload, currentLabels)}
                             </div>
                         ))}
@@ -380,7 +382,7 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
             </div>
 
             {/* Admin/PM Feedback Form to Reviewer */}
-            {(task.status === 'completed' && isPrivileged) && (
+            {((task.status === 'completed' || task.status === 'rejected') && isPrivileged) && (
                 <div className="glass-panel p-8 rounded-2xl border-2 border-primary/20 shadow-xl shadow-primary/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -494,10 +496,19 @@ function renderComponent(component: TaskComponent, payload: any, labels: any) {
         case 'Text': return <TextObject {...commonProps} />;
         case 'Audio': return <AudioObject {...commonProps} />;
         case 'Header': return <HeaderComponent component={component} />;
+        case 'HyperText': return <HyperTextObject {...commonProps} />;
         case 'Video': return <VideoObject {...commonProps} />;
         case 'TimeSeries': return <TimeSeriesObject {...commonProps} />;
         case 'PDF': return <PDFObject {...commonProps} />;
         case 'MultiMessage': return <MultiMessageObject {...commonProps} />;
+
+        // Layout
+        case 'View':
+            return (
+                <ViewLayout key={component.id} component={component}>
+                    {component.children?.map(child => renderComponent(child, payload, labels))}
+                </ViewLayout>
+            );
 
         // Pogo Workflow Components
         case 'InstructionBlock': return <InstructionBlock {...commonProps} />;
@@ -506,17 +517,17 @@ function renderComponent(component: TaskComponent, payload: any, labels: any) {
         case 'RubricTable': return <RubricTable component={component} />;
 
         // Controls (Read-only view)
-        case 'Choices': return <ChoicesControl component={component} value={value} onChange={() => { }} />;
-        case 'Rating': return <RatingControl component={component} value={value} onChange={() => { }} />;
-        case 'TextArea': return <TextAreaControl component={component} value={value} onChange={() => { }} />;
+        case 'Choices': return <ChoicesControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'Rating': return <RatingControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'TextArea': return <TextAreaControl component={component} value={value} onChange={() => { }} readOnly={true} />;
         case 'Labels':
-        case 'RectangleLabels': return <ImageLabelsControl component={component} value={value} onChange={() => { }} />;
-        case 'RubricScorer': return <RubricScorerControl component={component} value={value} onChange={() => { }} />;
-        case 'Ranking': return <RankingControl component={component} value={value} onChange={() => { }} />;
-        case 'Feedback': return <FeedbackControl component={component} value={value} onChange={() => { }} />;
-        case 'AudioRecorder': return <AudioRecorderControl component={component} value={value} onChange={() => { }} />;
-        case 'Checklist': return <ChecklistControl component={component} value={value} onChange={() => { }} />;
-        case 'AccordionChoices': return <AccordionChoicesControl component={component} value={value} onChange={() => { }} />;
+        case 'RectangleLabels': return <ImageLabelsControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'RubricScorer': return <RubricScorerControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'Ranking': return <RankingControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'Feedback': return <FeedbackControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'AudioRecorder': return <AudioRecorderControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'Checklist': return <ChecklistControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'AccordionChoices': return <AccordionChoicesControl component={component} value={value} onChange={() => { }} readOnly={true} />;
 
         default: return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
     }
