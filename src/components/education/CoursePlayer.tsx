@@ -8,7 +8,7 @@ import { QuizPlayer } from './QuizPlayer';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { completeLesson, getNextCourseId } from '@/app/dashboard/knowledge/knowledge/courses/actions';
+import { completeLesson, getNextCourseId } from '@/app/dashboard/knowledge/courses/actions';
 import { useToast } from '@/components/Toast';
 import confetti from 'canvas-confetti';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';

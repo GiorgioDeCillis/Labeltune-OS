@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Lesson, QuizQuestion } from '@/types/manual-types';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { gradeWithAI } from '@/app/dashboard/knowledge/courses/grading';
-import { completeLesson } from '@/app/dashboard/knowledge/knowledge/courses/actions';
+import { completeLesson } from '@/app/dashboard/knowledge/courses/actions';
 
 interface QuizPlayerProps {
     lesson: Lesson;
@@ -113,8 +113,8 @@ export function QuizPlayer({ lesson, onComplete }: QuizPlayerProps) {
                                     <label
                                         key={oIndex}
                                         className={`flex items-center gap-3 p-4 rounded-lg cursor-pointer border transition-all ${answers[q.id] === oIndex.toString()
-                                                ? 'bg-primary/20 border-primary'
-                                                : 'bg-black/20 border-transparent hover:bg-black/40'
+                                            ? 'bg-primary/20 border-primary'
+                                            : 'bg-black/20 border-transparent hover:bg-black/40'
                                             }`}
                                     >
                                         <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${answers[q.id] === oIndex.toString() ? 'border-primary' : 'border-muted-foreground'
