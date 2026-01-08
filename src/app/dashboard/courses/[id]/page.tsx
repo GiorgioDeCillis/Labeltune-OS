@@ -43,6 +43,26 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
 
     const isAdmin = profile?.role === 'admin' || profile?.role === 'pm';
 
+    // Fetch Project Guidelines if project_id exists
+    let guidelines = null;
+    if (courseData.project_id) {
+        const { data: projectData } = await supabase
+            .from('projects')
+            .select('guidelines')
+            .eq('id', courseData.project_id)
+            .single();
+
+        if (projectData?.guidelines) {
+            try {
+                guidelines = typeof projectData.guidelines === 'string'
+                    ? JSON.parse(projectData.guidelines)
+                    : projectData.guidelines;
+            } catch (e) {
+                console.error("Failed to parse guidelines", e);
+            }
+        }
+    }
+
     const fullCourse: Course & { lessons: Lesson[] } = {
         ...courseData,
         lessons: lessonsData || []
@@ -54,6 +74,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 course={fullCourse}
                 completedLessonIds={progressData?.completed_lessons || []}
                 isAdmin={isAdmin}
+                guidelines={guidelines}
             />
         </div>
     );

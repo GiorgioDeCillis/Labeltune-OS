@@ -10,14 +10,18 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { completeLesson, getNextCourseId } from '@/app/dashboard/courses/actions';
 import { useToast } from '@/components/Toast';
+import confetti from 'canvas-confetti';
+import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
+import { InstructionSection } from '@/app/dashboard/projects/new/steps/InstructionsStep';
 
 interface CoursePlayerProps {
     course: Course & { lessons: Lesson[] };
     completedLessonIds?: string[];
     isAdmin?: boolean;
+    guidelines?: InstructionSection[] | string;
 }
 
-export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false }: CoursePlayerProps) {
+export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false, guidelines }: CoursePlayerProps) {
     const router = useRouter();
     const { showToast } = useToast();
     const [activeLessonId, setActiveLessonId] = useState<string>(course.lessons?.[0]?.id || '');
@@ -77,6 +81,36 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
             setNextCourseId(nextId);
             setShowCompletionModal(true);
             showToast('Course completed!', 'success');
+
+            // Trigger confetti
+            const duration = 5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 60 };
+
+            const randomInRange = (min: number, max: number) => {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval: any = setInterval(function () {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+
+                confetti({
+                    ...defaults,
+                    particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                });
+                confetti({
+                    ...defaults,
+                    particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                });
+            }, 250);
         } catch (error: any) {
             console.error("Failed to complete course", error);
             showToast(`Error: ${error?.message || 'Failed to complete course'}`, 'error');
@@ -134,6 +168,14 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false 
                         <h3 className="font-bold text-white">{activeLesson?.title}</h3>
                     </div>
                     <div className="flex items-center gap-4">
+                        {guidelines && (
+                            <ProjectGuidelinesLink
+                                guidelines={guidelines}
+                                label="Course Guidelines"
+                                className="text-xs font-bold text-muted-foreground hover:text-white transition-colors flex items-center gap-1.5"
+                            />
+                        )}
+
                         {isAdmin && (
                             <Link href={`/dashboard/courses/${course.id}/edit`}>
                                 <button className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
