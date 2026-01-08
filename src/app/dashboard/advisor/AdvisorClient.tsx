@@ -232,7 +232,7 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
                                     platform: FileText,
                                     uploaded: Archive,
                                     project: Layout
-                                }[inst.type] || FileText;
+                                }[inst.type as 'platform' | 'uploaded' | 'project'] || FileText;
 
                                 return (
                                     <button
