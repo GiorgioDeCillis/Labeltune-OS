@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Course, Lesson } from '@/types/manual-types';
 import { createCourse, updateCourse, createLesson, updateLesson, deleteLesson } from '@/app/dashboard/courses/actions';
 import { useRouter } from 'next/navigation';
@@ -11,15 +11,25 @@ import { GripVertical, Plus, Trash2, Save, X, Video, FileText } from 'lucide-rea
 import { QuizBuilder } from './QuizBuilder';
 import { useToast } from '@/components/Toast';
 
+interface GeneratedCourseData {
+    course: {
+        title: string;
+        description: string;
+        duration: string;
+    };
+    lessons: Partial<Lesson>[];
+}
+
 interface CourseBuilderProps {
     projectId?: string;
     existingCourse?: Course & { lessons: Lesson[] };
     projects?: { id: string, name: string }[];
     onSaveSuccess?: (courseId: string) => void;
     onCancel?: () => void;
+    initialGeneratedData?: GeneratedCourseData | null;
 }
 
-export function CourseBuilder({ projectId: initialProjectId, existingCourse, projects, onSaveSuccess, onCancel }: CourseBuilderProps) {
+export function CourseBuilder({ projectId: initialProjectId, existingCourse, projects, onSaveSuccess, onCancel, initialGeneratedData }: CourseBuilderProps) {
     const router = useRouter();
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +45,20 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
         existingCourse?.lessons?.sort((a, b) => a.order - b.order) || []
     );
     const [activeLessonId, setActiveLessonId] = useState<string | null>(null); // For editing
+
+    // Apply AI-generated data when provided
+    useEffect(() => {
+        if (initialGeneratedData) {
+            setCourseTitle(initialGeneratedData.course.title);
+            setCourseDescription(initialGeneratedData.course.description);
+            setCourseDuration(initialGeneratedData.course.duration);
+            setLessons(initialGeneratedData.lessons.map((l, i) => ({
+                ...l,
+                id: l.id || `temp-${Date.now()}-${i}`,
+                order: i
+            })));
+        }
+    }, [initialGeneratedData]);
 
     const sensors = useSensors(
         useSensor(PointerSensor),

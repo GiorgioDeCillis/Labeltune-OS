@@ -1,22 +1,51 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle2, Circle, Plus, Search, GraduationCap, X } from 'lucide-react';
-import { Course } from '@/types/manual-types';
+import { BookOpen, CheckCircle2, Circle, Plus, Search, GraduationCap, X, Wand2, Loader2, Sparkles } from 'lucide-react';
+import { Course, Lesson } from '@/types/manual-types';
 import { CourseBuilder } from '@/components/education/CourseBuilder';
 import { createPortal } from 'react-dom';
+import { useToast } from '@/components/Toast';
+
+interface InstructionSection {
+    id: string;
+    title: string;
+    content: string;
+}
 
 interface CoursesStepProps {
     availableCourses: Course[];
     selectedCourseIds: string[];
     onToggleCourse: (id: string) => void;
     onCourseCreated: (courseId: string) => void;
+    instructions?: InstructionSection[];
 }
 
-export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCourse, onCourseCreated }: CoursesStepProps) {
+interface GeneratedCourseData {
+    course: {
+        title: string;
+        description: string;
+        duration: string;
+    };
+    lessons: Partial<Lesson>[];
+}
+
+export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCourse, onCourseCreated, instructions = [] }: CoursesStepProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const { showToast } = useToast();
+
+    // AI Generation states
+    const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generatedData, setGeneratedData] = useState<GeneratedCourseData | null>(null);
+    const [genOptions, setGenOptions] = useState({
+        lessonCount: 0,
+        questionsPerQuiz: 4,
+        includeIntro: true,
+        includeFinalAssessment: true
+    });
 
     useEffect(() => {
         setMounted(true);
@@ -31,7 +60,47 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
         onCourseCreated(courseId);
         onToggleCourse(courseId);
         setIsCreating(false);
+        setGeneratedData(null);
     };
+
+    const handleGenerateCourse = async () => {
+        if (instructions.length === 0) {
+            showToast('Please add instructions in the previous step first.', 'error');
+            return;
+        }
+
+        setIsGenerating(true);
+
+        try {
+            const response = await fetch('/api/courses/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    instructions,
+                    options: genOptions
+                }),
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to generate course');
+            }
+
+            const data = await response.json();
+            setGeneratedData(data);
+            setIsGenerateModalOpen(false);
+            setIsCreating(true); // Open the course builder with generated data
+            showToast('Course generated successfully! Review and save it.', 'success');
+
+        } catch (error) {
+            console.error('Generation failed:', error);
+            showToast(error instanceof Error ? error.message : 'Failed to generate course', 'error');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    const hasInstructions = instructions.length > 0;
 
     return (
         <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
@@ -40,25 +109,169 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
                     <h3 className="font-bold">Project Courses</h3>
                     <p className="text-sm text-muted-foreground">Select existing training courses or create new ones for this project.</p>
                 </div>
-                <button
-                    onClick={() => setIsCreating(true)}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:opacity-90 transition-all flex items-center gap-2"
-                >
-                    <Plus className="w-4 h-4" />
-                    Create New Course
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setIsGenerateModalOpen(true)}
+                        disabled={!hasInstructions}
+                        className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 text-purple-200 border border-purple-500/30 rounded-xl text-sm font-bold transition-all flex items-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={!hasInstructions ? 'Add instructions in the previous step first' : 'Generate a course from your instructions'}
+                    >
+                        <Wand2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                        Generate with AI
+                    </button>
+                    <button
+                        onClick={() => setIsCreating(true)}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:opacity-90 transition-all flex items-center gap-2"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Create New Course
+                    </button>
+                </div>
             </div>
+
+            {/* AI Generation Modal */}
+            {isGenerateModalOpen && mounted && createPortal(
+                <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-[#0a0a0c] border border-white/10 w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-purple-500/10 rounded-xl text-purple-400">
+                                    <Sparkles className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold">Generate Course with AI</h3>
+                                    <p className="text-sm text-muted-foreground">Create lessons & quizzes from instructions</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsGenerateModalOpen(false)}
+                                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-6">
+                            {/* Instructions Summary */}
+                            <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                                <div className="flex items-center gap-2 text-sm font-bold text-primary mb-2">
+                                    <BookOpen className="w-4 h-4" />
+                                    Based on {instructions.length} instruction section(s)
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {instructions.slice(0, 3).map(s => s.title).join(', ')}
+                                    {instructions.length > 3 && ` and ${instructions.length - 3} more...`}
+                                </p>
+                            </div>
+
+                            {/* Options */}
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold uppercase text-muted-foreground">Number of Lessons</label>
+                                        <select
+                                            value={genOptions.lessonCount}
+                                            onChange={(e) => setGenOptions(prev => ({ ...prev, lessonCount: Number(e.target.value) }))}
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-sm focus:outline-none focus:border-purple-500/50"
+                                        >
+                                            <option value={0}>Auto (recommended)</option>
+                                            <option value={4}>4 lessons</option>
+                                            <option value={6}>6 lessons</option>
+                                            <option value={8}>8 lessons</option>
+                                            <option value={10}>10 lessons</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold uppercase text-muted-foreground">Questions per Quiz</label>
+                                        <select
+                                            value={genOptions.questionsPerQuiz}
+                                            onChange={(e) => setGenOptions(prev => ({ ...prev, questionsPerQuiz: Number(e.target.value) }))}
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-sm focus:outline-none focus:border-purple-500/50"
+                                        >
+                                            <option value={3}>3 questions</option>
+                                            <option value={4}>4 questions</option>
+                                            <option value={5}>5 questions</option>
+                                            <option value={6}>6 questions</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                        <input
+                                            type="checkbox"
+                                            checked={genOptions.includeIntro}
+                                            onChange={(e) => setGenOptions(prev => ({ ...prev, includeIntro: e.target.checked }))}
+                                            className="w-4 h-4 accent-purple-500 rounded"
+                                        />
+                                        <span className="text-sm group-hover:text-white transition-colors">Include Introduction</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                        <input
+                                            type="checkbox"
+                                            checked={genOptions.includeFinalAssessment}
+                                            onChange={(e) => setGenOptions(prev => ({ ...prev, includeFinalAssessment: e.target.checked }))}
+                                            className="w-4 h-4 accent-purple-500 rounded"
+                                        />
+                                        <span className="text-sm group-hover:text-white transition-colors">Final Assessment Quiz</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Info */}
+                            <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-sm text-purple-200">
+                                <p>✨ AI will create explanatory lessons that synthesize your instructions, followed by quiz lessons to test comprehension.</p>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    onClick={() => setIsGenerateModalOpen(false)}
+                                    className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleGenerateCourse}
+                                    disabled={isGenerating}
+                                    className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isGenerating ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Generating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles className="w-4 h-4" />
+                                            Generate Course
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
 
             {isCreating && mounted && createPortal(
                 <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300">
                     <div className="bg-[#0a0a0c] border border-white/10 w-full max-w-7xl h-[90vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl relative">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
                             <div>
-                                <h2 className="text-2xl font-black">Create New Course</h2>
-                                <p className="text-sm text-muted-foreground">Add training material to one of your projects or create a global course.</p>
+                                <h2 className="text-2xl font-black flex items-center gap-2">
+                                    {generatedData ? <><Sparkles className="w-5 h-5 text-purple-400" /> AI-Generated Course</> : 'Create New Course'}
+                                </h2>
+                                <p className="text-sm text-muted-foreground">
+                                    {generatedData ? 'Review the generated content, make any edits, then save.' : 'Add training material to one of your projects or create a global course.'}
+                                </p>
                             </div>
                             <button
-                                onClick={() => setIsCreating(false)}
+                                onClick={() => {
+                                    setIsCreating(false);
+                                    setGeneratedData(null);
+                                }}
                                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
                             >
                                 <X className="w-6 h-6" />
@@ -67,7 +280,11 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
                         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                             <CourseBuilder
                                 onSaveSuccess={handleSaveSuccess}
-                                onCancel={() => setIsCreating(false)}
+                                onCancel={() => {
+                                    setIsCreating(false);
+                                    setGeneratedData(null);
+                                }}
+                                initialGeneratedData={generatedData}
                             />
                         </div>
                     </div>

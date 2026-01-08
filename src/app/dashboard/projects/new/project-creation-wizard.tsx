@@ -269,7 +269,9 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
                                 console.error('Error fetching new course:', err);
                             }
                         }}
+                        instructions={instructions}
                     />
+
                     <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/10">
                         <button onClick={prevStep} className="px-6 py-2 border border-white/10 hover:bg-white/5 rounded-xl font-bold transition-all flex items-center gap-2">
                             <ChevronLeft className="w-4 h-4" /> Back to Instructions
