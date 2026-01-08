@@ -182,7 +182,7 @@ export async function cleanupProjectTasks(projectId: string) {
         // We assume they closed the browser or gave up.
         if (!isExpired && max_task_time) {
             const totalAllowedSec = max_task_time + (extra_time_after_max || 0);
-            const inactivityBuffer = 300; // 5 minutes buffer for inactivity
+            const inactivityBuffer = 120; // 2 minutes buffer for inactivity
 
             if (wallClockDiffSec > (totalAllowedSec + inactivityBuffer)) {
                 isExpired = true;
@@ -211,6 +211,10 @@ export async function cleanupProjectTasks(projectId: string) {
         }
 
         console.log(`Cleanup: Expired ${expiredTaskIds.length} stale tasks for project ${projectId}`);
+
+        // Revalidate relevant paths
+        revalidatePath(`/dashboard/projects/${projectId}/tasks`);
+        revalidatePath('/dashboard/tasks');
     }
 
     return { success: true, count: expiredTaskIds.length };

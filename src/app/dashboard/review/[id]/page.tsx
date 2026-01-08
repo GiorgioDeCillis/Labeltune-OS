@@ -9,6 +9,7 @@ import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
 import { CopyableTaskId } from '@/components/CopyableTaskId';
 import { CopyableId } from '@/components/CopyableId';
 import { TaskMonitoringView } from '@/components/dashboard/TaskMonitoringView';
+import { cleanupProjectTasks } from '@/app/dashboard/tasks/actions';
 
 export default async function ReviewTaskPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -16,6 +17,22 @@ export default async function ReviewTaskPage({ params }: { params: Promise<{ id:
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) redirect('/login');
+
+    // Fetch task first to get project ID
+    const { data: initialTask } = await supabase
+        .from('tasks')
+        .select('project_id')
+        .eq('id', id)
+        .single();
+
+    if (initialTask?.project_id) {
+        // Cleanup stale tasks before fetching full data
+        try {
+            await cleanupProjectTasks(initialTask.project_id);
+        } catch (e) {
+            console.error('Error during cleanup in ReviewTaskPage:', e);
+        }
+    }
 
     const { data: rawTask } = await supabase
         .from('tasks')

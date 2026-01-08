@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import { TaskMonitoringView } from '@/components/dashboard/TaskMonitoringView';
+import { cleanupProjectTasks } from '@/app/dashboard/tasks/actions';
 
 export default async function SingleTaskMonitoringPage({
     params
@@ -12,6 +13,13 @@ export default async function SingleTaskMonitoringPage({
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) redirect('/login');
+
+    // Cleanup stale tasks before fetching
+    try {
+        await cleanupProjectTasks(projectId);
+    } catch (e) {
+        console.error('Error during cleanup in SingleTaskMonitoringPage:', e);
+    }
 
     // Fetch task with related project and profile data
     const { data: task, error } = await supabase
