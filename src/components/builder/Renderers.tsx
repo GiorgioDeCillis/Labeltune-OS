@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { TaskComponent } from './types';
-import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot, Mic, Square, Play, Pause, SkipBack, SkipForward, Search, Loader2, ChevronRight, Check, Copy, RefreshCcw, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot, Mic, Square, Play, Pause, SkipBack, SkipForward, Search, Loader2, ChevronRight, Check, Copy, RefreshCcw, Sparkles, Paperclip, X } from 'lucide-react';
 
 import { getDefaultAvatar } from '@/utils/avatar';
 import ReactMarkdown from 'react-markdown';
@@ -1431,14 +1431,17 @@ export function RubricTable({ component }: { component: TaskComponent }) {
 import { generateAIResponse } from '@/app/dashboard/projects/[id]/builder/actions';
 
 export function AIResponseGeneratorObject({ component, readOnly }: { component: TaskComponent, readOnly?: boolean }) {
+    const [userPrompt, setUserPrompt] = useState('');
     const [referenceText, setReferenceText] = useState('');
+    const [showReferenceInput, setShowReferenceInput] = useState(false);
+
+    // Generator states
     const [isGenerating, setIsGenerating] = useState<{ [key: string]: boolean }>({});
     const [responses, setResponses] = useState<{ [key: string]: string }>({});
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-    const handleGenerate = async (genId: string) => {
-        if (!referenceText.trim()) return;
-
+    // Generate response for a single generator (internal helper)
+    const generateSingle = async (genId: string) => {
         const generator = component.aiConfig?.generators?.find(g => g.id === genId);
         if (!generator) return;
 
@@ -1446,15 +1449,28 @@ export function AIResponseGeneratorObject({ component, readOnly }: { component: 
         setErrors(prev => ({ ...prev, [genId]: '' }));
 
         try {
-            const response = await generateAIResponse(referenceText, generator);
+            // Pass both prompt and reference text
+            const response = await generateAIResponse(userPrompt, generator, referenceText);
             setResponses(prev => ({ ...prev, [genId]: response }));
-        } catch (error) {
-            console.error('AI Generation Error:', error);
-            setErrors(prev => ({ ...prev, [genId]: 'Failed to generate response. Please check configuration.' }));
+        } catch (error: any) {
+            console.error(`AI Generation Error (${genId}):`, error);
+            setErrors(prev => ({ ...prev, [genId]: error.message || 'Failed to generate response.' }));
         } finally {
             setIsGenerating(prev => ({ ...prev, [genId]: false }));
         }
     };
+
+    // Trigger all generators
+    const handleGenerateAll = async () => {
+        if (!userPrompt.trim()) return;
+
+        const generators = component.aiConfig?.generators || [];
+        // Trigger all in parallel
+        generators.forEach(gen => generateSingle(gen.id));
+    };
+
+    // Check if any generator is currently running
+    const isAnyGenerating = Object.values(isGenerating).some(Boolean);
 
     return (
         <div className="space-y-6">
@@ -1469,66 +1485,131 @@ export function AIResponseGeneratorObject({ component, readOnly }: { component: 
                 )}
             </div>
 
-            <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs text-muted-foreground font-bold uppercase tracking-wider">
-                    <span>Reference Text</span>
-                    <span className={`${referenceText.length > (component.aiConfig?.referenceTextLimit || 500) ? 'text-red-400' : ''}`}>
-                        {referenceText.length} / {component.aiConfig?.referenceTextLimit || 500} chars
-                    </span>
-                </div>
-                <textarea
-                    value={referenceText}
-                    onChange={(e) => setReferenceText(e.target.value)}
-                    disabled={readOnly}
-                    rows={6}
-                    placeholder="Enter the text you want the AI to analyze..."
-                    className="w-full bg-background/50 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-primary/50 resize-y"
-                />
-            </div>
+            {/* Main Prompt Area */}
+            <div className="space-y-4">
+                <div className="relative group">
+                    <div className="flex justify-between items-center text-xs text-muted-foreground font-bold uppercase tracking-wider mb-2">
+                        <span>User Prompt</span>
+                        <span className={`${userPrompt.length > (component.aiConfig?.referenceTextLimit || 1000) ? 'text-red-400' : ''}`}>
+                            {userPrompt.length} chars
+                        </span>
+                    </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {component.aiConfig?.generators?.map((gen) => (
-                    <div key={gen.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden flex flex-col">
-                        <div className="p-3 border-b border-white/10 bg-white/5 flex items-center justify-between">
+                    <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden focus-within:border-primary/50 transition-colors">
+                        <textarea
+                            value={userPrompt}
+                            onChange={(e) => setUserPrompt(e.target.value)}
+                            disabled={readOnly || isAnyGenerating}
+                            rows={4}
+                            placeholder="Ask the AI models something..."
+                            className="w-full bg-transparent border-none p-4 text-sm focus:outline-none resize-y min-h-[100px]"
+                        />
+
+                        {/* Footer Bar */}
+                        <div className="bg-white/5 border-t border-white/10 p-2 flex items-center justify-between">
+                            {/* Left: Attachments */}
                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center">
-                                    <Bot className="w-4 h-4 text-primary" />
-                                </div>
-                                <span className="font-bold text-sm">{gen.name}</span>
+                                <button
+                                    onClick={() => setShowReferenceInput(!showReferenceInput)}
+                                    className={`p-2 rounded-lg transition-colors flex items-center gap-2 text-xs font-bold ${showReferenceInput || referenceText
+                                            ? 'bg-primary/20 text-primary'
+                                            : 'hover:bg-white/10 text-muted-foreground hover:text-white'
+                                        }`}
+                                    title="Add Reference Text"
+                                >
+                                    <Paperclip className="w-4 h-4" />
+                                    {referenceText && (
+                                        <span>Reference Added</span>
+                                    )}
+                                </button>
                             </div>
+
+                            {/* Right: Generate Button */}
                             <button
-                                onClick={() => handleGenerate(gen.id)}
-                                disabled={readOnly || isGenerating[gen.id] || !referenceText.trim() || referenceText.length > (component.aiConfig?.referenceTextLimit || 500)}
-                                className="flex items-center gap-2 px-3 py-1.5 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-xs font-bold text-primary-foreground transition-all"
+                                onClick={handleGenerateAll}
+                                disabled={readOnly || isAnyGenerating || !userPrompt.trim()}
+                                className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-xs font-bold text-primary-foreground transition-all shadow-lg shadow-primary/20"
                             >
-                                {isGenerating[gen.id] ? (
+                                {isAnyGenerating ? (
                                     <>
-                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                        <Loader2 className="w-4 h-4 animate-spin" />
                                         Generating...
                                     </>
                                 ) : (
                                     <>
-                                        <Sparkles className="w-3 h-3" />
+                                        <Sparkles className="w-4 h-4" />
                                         Generate
                                     </>
                                 )}
                             </button>
                         </div>
+                    </div>
+                </div>
 
-                        <div className="flex-1 p-4 min-h-[200px] bg-black/20 text-sm relative">
+                {/* Reference Text Input (Collapsible) */}
+                {showReferenceInput && (
+                    <div className="animate-in slide-in-from-top-2 duration-200">
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-2 relative">
+                            <button
+                                onClick={() => setShowReferenceInput(false)}
+                                className="absolute top-2 right-2 p-1.5 hover:bg-white/10 rounded-lg text-muted-foreground hover:text-white transition-colors"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+
+                            <div className="flex justify-between items-center text-xs text-muted-foreground font-bold uppercase tracking-wider">
+                                <span>Reference Context</span>
+                                <span>{referenceText.length} / {component.aiConfig?.referenceTextLimit || 2000} chars</span>
+                            </div>
+                            <textarea
+                                value={referenceText}
+                                onChange={(e) => setReferenceText(e.target.value)}
+                                disabled={readOnly || isAnyGenerating}
+                                rows={6}
+                                placeholder="Paste relevant context, articles, or data here..."
+                                className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-sm focus:outline-none focus:border-primary/50 resize-y"
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Generated Responses Grid */}
+            <div className={`grid grid-cols-1 ${component.aiConfig?.generators?.length && component.aiConfig.generators.length > 1 ? 'md:grid-cols-2' : ''} gap-4`}>
+                {component.aiConfig?.generators?.map((gen) => (
+                    <div key={gen.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden flex flex-col h-full min-h-[300px]">
+                        <div className="p-3 border-b border-white/10 bg-white/5 flex items-center gap-2">
+                            <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center">
+                                <Bot className="w-4 h-4 text-primary" />
+                            </div>
+                            <span className="font-bold text-sm">{gen.name}</span>
+                            <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-muted-foreground uppercase tracking-wider ml-auto">
+                                {gen.provider === 'platform' ? 'Platform' : gen.model || gen.provider}
+                            </span>
+                        </div>
+
+                        <div className="flex-1 p-4 bg-black/20 text-sm relative overflow-y-auto max-h-[500px] custom-scrollbar">
                             {/* Empty State */}
                             {!responses[gen.id] && !isGenerating[gen.id] && !errors[gen.id] && (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground gap-2 p-4 text-center opacity-50">
-                                    <Sparkles className="w-8 h-8" />
-                                    <span>Enter reference text and click generate to see AI response.</span>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground gap-2 p-4 text-center opacity-30">
+                                    <Bot className="w-8 h-8" />
+                                    <span>Waiting for prompt...</span>
+                                </div>
+                            )}
+
+                            {/* Loading State - independent per card */}
+                            {isGenerating[gen.id] && !responses[gen.id] && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
+                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                    <span className="text-xs text-muted-foreground animate-pulse">Thinking...</span>
                                 </div>
                             )}
 
                             {/* Error State */}
                             {errors[gen.id] && (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-red-400 gap-2 p-4 text-center">
-                                    <span className="font-bold">Error</span>
-                                    <span>{errors[gen.id]}</span>
+                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs">
+                                    <p className="font-bold mb-1">Generation Failed</p>
+                                    <p>{errors[gen.id]}</p>
                                 </div>
                             )}
 
@@ -1545,7 +1626,7 @@ export function AIResponseGeneratorObject({ component, readOnly }: { component: 
                             <div className="p-2 border-t border-white/10 bg-white/5 flex justify-end">
                                 <button
                                     onClick={() => navigator.clipboard.writeText(responses[gen.id])}
-                                    className="p-2 hover:bg-white/10 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                                    className="p-2 hover:bg-white/10 rounded-lg text-muted-foreground hover:text-white transition-colors"
                                     title="Copy to clipboard"
                                 >
                                     <Copy className="w-4 h-4" />

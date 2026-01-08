@@ -10,14 +10,22 @@ const platformOpenAI = new OpenAI({
 });
 
 export async function generateAIResponse(
-    text: string,
-    config: AIGeneratorConfig
+    prompt: string,
+    config: AIGeneratorConfig,
+    referenceText?: string
 ) {
     try {
         const systemPrompt = config.systemPrompt || 'You are a helpful assistant.';
+
+        // Construct the full user content with reference text if provided
+        let userContent = prompt;
+        if (referenceText) {
+            userContent = `Reference Text:\n${referenceText}\n\nUser Request:\n${prompt}`;
+        }
+
         const messages: any[] = [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: text }
+            { role: 'user', content: userContent }
         ];
 
         let openaiClient = platformOpenAI;
