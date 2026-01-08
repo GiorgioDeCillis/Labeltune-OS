@@ -42,6 +42,7 @@ export interface Project {
     absolute_expiration_duration?: number | null;
     payment_mode?: 'hourly' | 'task';
     pay_per_task?: string;
+    review_pay_per_task?: string;
     organization_id?: string;
 }
 

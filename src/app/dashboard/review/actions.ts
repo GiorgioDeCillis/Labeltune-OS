@@ -4,6 +4,12 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+function parseRate(rate: string): number {
+    const matches = rate.toString().match(/(\d+(?:[.,]\d+)?)/);
+    const cleanRate = matches ? matches[0].replace(',', '.') : '0';
+    return parseFloat(cleanRate) || 0;
+}
+
 export async function approveTask(taskId: string, finalLabels: any, rating: number, timeSpent: number, feedback?: string) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -13,7 +19,7 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
     // Get project pay rate
     const { data: task, error: fetchError } = await supabase
         .from('tasks')
-        .select('project_id, projects(pay_rate)')
+        .select('project_id, projects(pay_rate, payment_mode, review_pay_per_task)')
         .eq('id', taskId)
         .single();
 
@@ -23,15 +29,17 @@ export async function approveTask(taskId: string, finalLabels: any, rating: numb
     }
 
     const projectsData = task.projects as any;
-    const rawRate = (Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0';
+    const paymentMode = projectsData?.payment_mode || 'hourly';
 
-    // Robust parsing: extract numbers and handle decimal points
-    const matches = rawRate.toString().match(/(\d+(?:[.,]\d+)?)/);
-    const cleanRate = matches ? matches[0].replace(',', '.') : '0';
-    const payRate = parseFloat(cleanRate) || 0;
-
-    // Reviewer earnings
-    const earnings = (timeSpent / 3600) * payRate;
+    let earnings = 0;
+    if (paymentMode === 'task') {
+        const reviewRate = projectsData?.review_pay_per_task || '0';
+        earnings = parseRate(reviewRate);
+    } else {
+        const rawRate = projectsData?.pay_rate || '0';
+        const payRate = parseRate(rawRate);
+        earnings = (timeSpent / 3600) * payRate;
+    }
 
     // Update the task. 
     const { error } = await supabase
@@ -106,18 +114,23 @@ export async function updateReviewTimer(taskId: string, timeSpent: number) {
     // Get project pay rate for real-time earnings update
     const { data: task } = await supabase
         .from('tasks')
-        .select('project_id, reviewer_started_at, projects(pay_rate)')
+        .select('project_id, reviewer_started_at, projects(pay_rate, payment_mode, review_pay_per_task)')
         .eq('id', taskId)
         .single();
 
     let earnings = 0;
     if (task?.projects) {
         const projectsData = task.projects as any;
-        const rawRate = (Array.isArray(projectsData) ? projectsData[0]?.pay_rate : projectsData?.pay_rate) || '0';
-        const matches = rawRate.toString().match(/(\d+(?:[.,]\d+)?)/);
-        const cleanRate = matches ? matches[0].replace(',', '.') : '0';
-        const payRate = parseFloat(cleanRate) || 0;
-        earnings = (timeSpent / 3600) * payRate;
+        const paymentMode = projectsData?.payment_mode || 'hourly';
+
+        if (paymentMode === 'task') {
+            const reviewRate = projectsData?.review_pay_per_task || '0';
+            earnings = parseRate(reviewRate);
+        } else {
+            const rawRate = projectsData?.pay_rate || '0';
+            const payRate = parseRate(rawRate);
+            earnings = (timeSpent / 3600) * payRate;
+        }
     }
 
     // Track starting time if not already set

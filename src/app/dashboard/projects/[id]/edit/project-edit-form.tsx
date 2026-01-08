@@ -109,13 +109,23 @@ export function ProjectEditForm({ project }: ProjectEditFormProps) {
                             />
                         </div>
                     ) : (
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold uppercase text-muted-foreground">Pay Per Task</label>
-                            <input
-                                name="pay_per_task"
-                                defaultValue={project.pay_per_task || '€0.50 / task'}
-                                className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary"
-                            />
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold uppercase text-muted-foreground">Annotator Pay Per Task</label>
+                                <input
+                                    name="pay_per_task"
+                                    defaultValue={project.pay_per_task || '€0.50 / task'}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold uppercase text-muted-foreground">Reviewer Pay Per Task</label>
+                                <input
+                                    name="review_pay_per_task"
+                                    defaultValue={project.review_pay_per_task || '€0.25 / task'}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary"
+                                />
+                            </div>
                         </div>
                     )}
                 </div>

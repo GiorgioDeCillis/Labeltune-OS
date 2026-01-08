@@ -36,6 +36,7 @@ export async function saveProjectDraft(formData: FormData, draftId?: string) {
     const abs_expire_min = formData.get('absolute_expiration_duration') ? Number(formData.get('absolute_expiration_duration')) : null;
     const payment_mode = formData.get('payment_mode') as string || 'hourly';
     const pay_per_task = formData.get('pay_per_task') as string;
+    const review_pay_per_task = formData.get('review_pay_per_task') as string;
 
     const max_task_time = max_task_time_min ? max_task_time_min * 60 : null;
     const extra_time_after_max = extra_time_min * 60;
@@ -81,7 +82,8 @@ export async function saveProjectDraft(formData: FormData, draftId?: string) {
         review_extra_time,
         absolute_expiration_duration,
         payment_mode,
-        pay_per_task
+        pay_per_task,
+        review_pay_per_task
     };
 
     let project;
@@ -148,6 +150,7 @@ export async function createProject(formData: FormData) {
     const abs_expire_min = formData.get('absolute_expiration_duration') ? Number(formData.get('absolute_expiration_duration')) : null;
     const payment_mode = formData.get('payment_mode') as string || 'hourly';
     const pay_per_task = formData.get('pay_per_task') as string;
+    const review_pay_per_task = formData.get('review_pay_per_task') as string;
 
     const max_task_time = max_task_time_min ? max_task_time_min * 60 : null;
     const extra_time_after_max = extra_time_min * 60;
@@ -202,7 +205,8 @@ export async function createProject(formData: FormData) {
         review_extra_time,
         absolute_expiration_duration,
         payment_mode,
-        pay_per_task
+        pay_per_task,
+        review_pay_per_task
     };
 
     let project;
@@ -379,6 +383,7 @@ export async function updateProject(id: string, formData: FormData) {
     const abs_expire_min = formData.get('absolute_expiration_duration') ? Number(formData.get('absolute_expiration_duration')) : null;
     const payment_mode = formData.get('payment_mode') as string || 'hourly';
     const pay_per_task = formData.get('pay_per_task') as string;
+    const review_pay_per_task = formData.get('review_pay_per_task') as string;
 
     const max_task_time = max_task_time_min ? max_task_time_min * 60 : null;
     const extra_time_after_max = extra_time_min * 60;
@@ -402,7 +407,8 @@ export async function updateProject(id: string, formData: FormData) {
             review_extra_time,
             absolute_expiration_duration,
             payment_mode,
-            pay_per_task
+            pay_per_task,
+            review_pay_per_task
         })
         .eq('id', id);
 

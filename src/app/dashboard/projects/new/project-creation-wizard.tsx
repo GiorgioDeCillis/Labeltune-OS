@@ -66,7 +66,8 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
         review_extra_time: initialData?.review_extra_time ? initialData.review_extra_time / 60 : 0,
         absolute_expiration_duration: initialData?.absolute_expiration_duration ? initialData.absolute_expiration_duration / 60 : 0,
         payment_mode: initialData?.payment_mode || 'hourly',
-        pay_per_task: initialData?.pay_per_task || ''
+        pay_per_task: initialData?.pay_per_task || '',
+        review_pay_per_task: initialData?.review_pay_per_task || ''
     });
 
     const formRef = useRef<HTMLFormElement>(null);
@@ -104,6 +105,7 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
             formData.append('absolute_expiration_duration', details.absolute_expiration_duration ? details.absolute_expiration_duration.toString() : '');
             formData.append('payment_mode', details.payment_mode);
             formData.append('pay_per_task', details.pay_per_task);
+            formData.append('review_pay_per_task', details.review_pay_per_task);
 
             const savedDraft = await saveProjectDraft(formData, draftId || undefined);
             if (savedDraft) {
@@ -481,15 +483,27 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
                                         />
                                     </div>
                                 ) : (
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold uppercase text-muted-foreground">Pay Per Task</label>
-                                        <input
-                                            name="pay_per_task"
-                                            value={details.pay_per_task}
-                                            onChange={(e) => setDetails(prev => ({ ...prev, pay_per_task: e.target.value }))}
-                                            placeholder="€0.50 / task"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
-                                        />
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold uppercase text-muted-foreground">Annotator Pay Per Task</label>
+                                            <input
+                                                name="pay_per_task"
+                                                value={details.pay_per_task}
+                                                onChange={(e) => setDetails(prev => ({ ...prev, pay_per_task: e.target.value }))}
+                                                placeholder="€0.50 / task"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold uppercase text-muted-foreground">Reviewer Pay Per Task</label>
+                                            <input
+                                                name="review_pay_per_task"
+                                                value={details.review_pay_per_task}
+                                                onChange={(e) => setDetails(prev => ({ ...prev, review_pay_per_task: e.target.value }))}
+                                                placeholder="€0.25 / task"
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
+                                            />
+                                        </div>
                                     </div>
                                 )}
                             </div>
