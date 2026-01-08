@@ -14,7 +14,8 @@ import {
     Timer,
     AlertCircle,
     User,
-    Play
+    Play,
+    Copy
 } from 'lucide-react';
 import { Task } from '@/types/manual-types';
 import { archiveTask } from '@/app/dashboard/tasks/actions';
