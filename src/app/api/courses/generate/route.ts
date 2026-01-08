@@ -9,11 +9,7 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-interface InstructionSection {
-    id: string;
-    title: string;
-    content: string;
-}
+import { InstructionSection } from '@/types/manual-types';
 
 interface GenerationOptions {
     lessonCount?: number;

@@ -2,18 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { BookOpen, CheckCircle2, Circle, Plus, Search, GraduationCap, X, Wand2, Loader2, Sparkles } from 'lucide-react';
-import { Course, Lesson } from '@/types/manual-types';
+import { Course, Lesson, InstructionSection } from '@/types/manual-types';
 import { CourseBuilder } from '@/components/education/CourseBuilder';
 import { createPortal } from 'react-dom';
 import { useToast } from '@/components/Toast';
 import { getInstructionSets } from '@/app/dashboard/instructions/actions';
 import CustomSelect from '@/components/CustomSelect';
-
-interface InstructionSection {
-    id: string;
-    title: string;
-    content: string;
-}
 
 interface CoursesStepProps {
     availableCourses: Course[];

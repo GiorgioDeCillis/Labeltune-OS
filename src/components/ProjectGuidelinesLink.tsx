@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { GuidelinesViewer } from '@/components/GuidelinesViewer';
-import { InstructionSection } from '@/app/dashboard/projects/new/steps/InstructionsStep';
+import { InstructionSection } from '@/types/manual-types';
 
 interface ProjectGuidelinesLinkProps {
     guidelines: InstructionSection[] | string;

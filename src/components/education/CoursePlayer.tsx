@@ -12,7 +12,7 @@ import { completeLesson, getNextCourseId } from '@/app/dashboard/courses/actions
 import { useToast } from '@/components/Toast';
 import confetti from 'canvas-confetti';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
-import { InstructionSection } from '@/app/dashboard/projects/new/steps/InstructionsStep';
+import { InstructionSection } from '@/types/manual-types';
 
 interface CoursePlayerProps {
     course: Course & { lessons: Lesson[] };

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { X, FileText, Download, ChevronRight, Search } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { InstructionSection } from '@/app/dashboard/projects/new/steps/InstructionsStep';
+import { InstructionSection } from '@/types/manual-types';
 
 interface GuidelinesViewerProps {
     guidelines: InstructionSection[] | string;
