@@ -93,79 +93,80 @@ export default function InstructionsClient({ instructions }: InstructionsClientP
     );
 
     return (
-        <div className="space-y-12">
-            {/* Uploaded Instructions Section */}
-            {uploadedInstructions.length > 0 && (
+        <>
+            <div className="space-y-12">
+                {/* Uploaded Instructions Section */}
+                {uploadedInstructions.length > 0 && (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-4">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <span className="w-2 h-8 bg-purple-500 rounded-full inline-block"></span>
+                                Uploaded Instructions
+                            </h2>
+                            <div className="h-px bg-white/10 flex-1"></div>
+                        </div>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {uploadedInstructions.map((instruction) => (
+                                <InstructionCard key={instruction.id} instruction={instruction} />
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Platform Instructions Section */}
                 <div className="space-y-6">
                     <div className="flex items-center gap-4">
                         <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            <span className="w-2 h-8 bg-purple-500 rounded-full inline-block"></span>
-                            Uploaded Instructions
+                            <span className="w-2 h-8 bg-indigo-500 rounded-full inline-block"></span>
+                            Platform Instructions
                         </h2>
                         <div className="h-px bg-white/10 flex-1"></div>
                     </div>
+
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {uploadedInstructions.map((instruction) => (
-                            <InstructionCard key={instruction.id} instruction={instruction} />
-                        ))}
+                        {platformInstructions.length > 0 ? (
+                            platformInstructions.map((instruction) => (
+                                <InstructionCard key={instruction.id} instruction={instruction} />
+                            ))
+                        ) : (
+                            <div className="col-span-full py-12 flex flex-col items-center justify-center glass-panel rounded-3xl border-dashed border-2 border-white/5 opacity-50">
+                                <FileText className="w-16 h-16 text-muted-foreground mb-4" />
+                                <h3 className="text-xl font-medium">No platform instructions found</h3>
+                                <p className="text-sm text-muted-foreground">Create a new instruction set to get started.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
-            )}
+            </div>
 
-            {/* Platform Instructions Section */}
-            <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        <span className="w-2 h-8 bg-indigo-500 rounded-full inline-block"></span>
-                        Platform Instructions
-                    </h2>
-                    <div className="h-px bg-white/10 flex-1"></div>
-                </div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {platformInstructions.length > 0 ? (
-                        platformInstructions.map((instruction) => (
-                            <InstructionCard key={instruction.id} instruction={instruction} />
-                        ))
-                    ) : (
-                        <div className="col-span-full py-12 flex flex-col items-center justify-center glass-panel rounded-3xl border-dashed border-2 border-white/5 opacity-50">
-                            <FileText className="w-16 h-16 text-muted-foreground mb-4" />
-                            <h3 className="text-xl font-medium">No platform instructions found</h3>
-                            <p className="text-sm text-muted-foreground">Create a new instruction set to get started.</p>
+            {/* Delete Confirmation Dialog */}
+            {
+                deleteDialogOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                        <div className="glass-panel p-6 rounded-2xl max-w-md w-full mx-4 border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
+                            <h3 className="text-xl font-bold mb-2">Conferma eliminazione</h3>
+                            <p className="text-muted-foreground mb-6">
+                                Sei sicuro di voler eliminare le istruzioni &quot;{instructionToDelete?.name}&quot;? Questa azione non può essere annullata.
+                            </p>
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={() => setDeleteDialogOpen(false)}
+                                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors font-medium"
+                                >
+                                    Annulla
+                                </button>
+                                <button
+                                    onClick={handleConfirmDelete}
+                                    disabled={isDeleting}
+                                    className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 transition-colors font-bold text-white disabled:opacity-50"
+                                >
+                                    {isDeleting ? 'Eliminazione...' : 'Elimina'}
+                                </button>
+                            </div>
                         </div>
-                    )}
-                </div>
-            </div>
-        </div>
-
-            {/* Delete Confirmation Dialog */ }
-    {
-        deleteDialogOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                <div className="glass-panel p-6 rounded-2xl max-w-md w-full mx-4 border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
-                    <h3 className="text-xl font-bold mb-2">Conferma eliminazione</h3>
-                    <p className="text-muted-foreground mb-6">
-                        Sei sicuro di voler eliminare le istruzioni &quot;{instructionToDelete?.name}&quot;? Questa azione non può essere annullata.
-                    </p>
-                    <div className="flex gap-3 justify-end">
-                        <button
-                            onClick={() => setDeleteDialogOpen(false)}
-                            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors font-medium"
-                        >
-                            Annulla
-                        </button>
-                        <button
-                            onClick={handleConfirmDelete}
-                            disabled={isDeleting}
-                            className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 transition-colors font-bold text-white disabled:opacity-50"
-                        >
-                            {isDeleting ? 'Eliminazione...' : 'Elimina'}
-                        </button>
                     </div>
-                </div>
-            </div>
-        )
-    }
+                )
+            }
         </>
     );
 }
