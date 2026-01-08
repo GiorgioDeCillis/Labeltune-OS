@@ -157,14 +157,24 @@ export async function cleanupProjectTasks(projectId: string) {
     // If no expiration settings at all, skip cleanup
     if (!max_task_time && !absolute_expiration_duration) return { success: true, count: 0 };
 
-    // Fetch in_progress tasks for this project
-    const { data: tasks } = await supabase
+    // Fetch ALL tasks for this project briefly to see if ID matches
+    const { data: allTasks } = await supabase
         .from('tasks')
-        .select('id, assigned_to, annotator_started_at, updated_at')
-        .eq('project_id', projectId)
-        .eq('status', 'in_progress');
+        .select('id, status, assigned_to, annotator_started_at, updated_at')
+        .eq('project_id', projectId);
 
-    console.log(`[CLEANUP] Found ${tasks?.length || 0} in_progress tasks`);
+    console.log(`[CLEANUP] Total tasks found for project ${projectId}: ${allTasks?.length || 0}`);
+    if (allTasks) {
+        allTasks.forEach(t => {
+            if (t.status === 'in_progress') {
+                console.log(`[CLEANUP] Task ${t.id} is IN_PROGRESS. StartedAt: ${t.annotator_started_at}, AssignedTo: ${t.assigned_to}`);
+            }
+        });
+    }
+
+    const tasks = allTasks?.filter(t => t.status === 'in_progress');
+
+    console.log(`[CLEANUP] Found ${tasks?.length || 0} in_progress tasks after filtering`);
     if (!tasks || tasks.length === 0) return { success: true, count: 0 };
 
     const now = new Date();
@@ -178,7 +188,7 @@ export async function cleanupProjectTasks(projectId: string) {
         const wallClockDiffSec = (now.getTime() - startedAt.getTime()) / 1000;
         const inactivitySec = (now.getTime() - updatedAt.getTime()) / 1000;
 
-        let isExpired = false;
+        let isExpired = true; // FORCE EXPIRE FOR DEBUGGING
 
         // 1. Absolute Expiration Check (Hard limit since start - e.g. "you have 2 hours to finish this")
         if (absolute_expiration_duration && wallClockDiffSec > absolute_expiration_duration) {
@@ -226,6 +236,12 @@ export async function cleanupProjectTasks(projectId: string) {
         revalidatePath(`/dashboard/projects/${projectId}`);
         revalidatePath('/dashboard/tasks');
         revalidatePath('/dashboard/history');
+
+        // Specific tasks
+        expiredTaskIds.forEach(id => {
+            revalidatePath(`/dashboard/tasks/${id}`);
+            revalidatePath(`/dashboard/projects/${projectId}/tasks/${id}`);
+        });
 
         // Revalidate layout to force refresh
         revalidatePath('/dashboard', 'layout');
