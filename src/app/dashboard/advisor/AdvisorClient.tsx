@@ -7,6 +7,8 @@ import { createInstructionSet, UnifiedInstructionItem } from '../instructions/ac
 import { useToast } from '@/components/Toast';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Image from 'next/image';
+import { getDefaultAvatar } from '@/utils/avatar';
 
 // Use dynamic import for pdfjs to avoid server-side issues
 const getPdfJs = async () => {
@@ -21,9 +23,10 @@ interface Message {
     content: string;
 }
 
-export default function AdvisorClient({ instructions }: { instructions: UnifiedInstructionItem[] }) {
+export default function AdvisorClient({ instructions, user }: { instructions: UnifiedInstructionItem[], user: any }) {
     const router = useRouter();
     const { showToast } = useToast();
+    const [avatarError, setAvatarError] = useState(false);
 
     // State
     const [selectedInstruction, setSelectedInstruction] = useState<UnifiedInstructionItem | null>(null);
@@ -242,9 +245,9 @@ export default function AdvisorClient({ instructions }: { instructions: UnifiedI
                                         className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/30 transition-all group flex items-start gap-4"
                                     >
                                         <div className={`p-3 rounded-xl bg-black/40 text-muted-foreground group-hover:text-primary transition-colors ${inst.type === 'platform' ? 'text-blue-400' :
-                                                inst.type === 'uploaded' ? 'text-purple-400' :
-                                                    inst.type === 'project' ? 'text-amber-400' :
-                                                        'text-emerald-400'
+                                            inst.type === 'uploaded' ? 'text-purple-400' :
+                                                inst.type === 'project' ? 'text-amber-400' :
+                                                    'text-emerald-400'
                                             }`}>
                                             <Icon className="w-5 h-5" />
                                         </div>
@@ -252,9 +255,9 @@ export default function AdvisorClient({ instructions }: { instructions: UnifiedI
                                             <div className="font-bold text-white group-hover:text-primary transition-colors truncate">{inst.name}</div>
                                             <div className="text-xs text-muted-foreground/60 flex items-center gap-2 mt-1">
                                                 <span className={`uppercase font-black tracking-tighter text-[9px] px-1.5 py-0.5 rounded ${inst.type === 'platform' ? 'bg-blue-500/10 text-blue-400' :
-                                                        inst.type === 'uploaded' ? 'bg-purple-500/10 text-purple-400' :
-                                                            inst.type === 'project' ? 'bg-amber-500/10 text-amber-400' :
-                                                                'bg-emerald-500/10 text-emerald-400'
+                                                    inst.type === 'uploaded' ? 'bg-purple-500/10 text-purple-400' :
+                                                        inst.type === 'project' ? 'bg-amber-500/10 text-amber-400' :
+                                                            'bg-emerald-500/10 text-emerald-400'
                                                     }`}>
                                                     {inst.type}
                                                 </span>
@@ -357,9 +360,28 @@ export default function AdvisorClient({ instructions }: { instructions: UnifiedI
                         </div>
 
                         {msg.role === 'user' && (
-                            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 mt-1 shadow-lg">
-                                <User className="w-5.5 h-5.5 text-white" />
-                            </div>
+                            {
+                                msg.role === 'user' && (
+                                    <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 mt-1 shadow-lg relative border-2 border-white/10">
+                                        {user?.user_metadata?.avatar_url && !avatarError ? (
+                                            <Image
+                                                src={user.user_metadata.avatar_url}
+                                                alt="Profile"
+                                                fill
+                                                className="object-cover"
+                                                onError={() => setAvatarError(true)}
+                                            />
+                                        ) : (
+                                            <Image
+                                                src={getDefaultAvatar(user?.user_metadata?.full_name)}
+                                                alt="Default Profile"
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        )}
+                                    </div>
+                                )
+                            }
                         )}
                     </div>
                 ))}

@@ -19,7 +19,7 @@ export default async function AdvisorPage() {
 
     return (
         <div className="max-w-7xl mx-auto h-full pb-8">
-            <AdvisorClient instructions={instructions} />
+            <AdvisorClient instructions={instructions} user={user} />
         </div>
     );
 }
