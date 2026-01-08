@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { ProjectTasksClient } from '@/components/dashboard/ProjectTasksClient';
+import { cleanupProjectTasks } from '@/app/dashboard/tasks/actions';
 
 export default async function ProjectTasksPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -10,6 +11,13 @@ export default async function ProjectTasksPage({ params }: { params: Promise<{ i
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) redirect('/login');
+
+    // Cleanup stale tasks before fetching
+    try {
+        await cleanupProjectTasks(id);
+    } catch (e) {
+        console.error('Error during cleanup in ProjectTasksPage:', e);
+    }
 
     const { data: project } = await supabase
         .from('projects')

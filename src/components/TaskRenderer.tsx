@@ -42,6 +42,9 @@ export function TaskRenderer({
     initialData,
     isReadOnly = false,
     maxTime,
+    extraTime = 0,
+    absoluteExpiration = 0,
+    startedAt,
     initialTimeSpent = 0,
     projectId,
     initialEarnings = 0,
@@ -52,6 +55,9 @@ export function TaskRenderer({
     initialData?: any,
     isReadOnly?: boolean,
     maxTime?: number | null,
+    extraTime?: number,
+    absoluteExpiration?: number,
+    startedAt?: string | null,
     initialTimeSpent?: number,
     projectId: string,
     initialEarnings?: number,
@@ -62,6 +68,7 @@ export function TaskRenderer({
     const [seconds, setSeconds] = useState(initialTimeSpent);
     const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
     const [isExpired, setIsExpired] = useState(false);
+    const [expirationReason, setExpirationReason] = useState<'task' | 'absolute' | null>(null);
     const [showConfirm, setShowConfirm] = useState(false);
 
     // Initialize submission results if task is already completed
@@ -80,25 +87,36 @@ export function TaskRenderer({
 
     // Max time logic
     useEffect(() => {
-        if (!isReadOnly && maxTime) {
-            // Soft limit: Show warning
-            if (seconds === maxTime) {
+        if (!isReadOnly) {
+            // 1. Soft warning at maxTime
+            if (maxTime && seconds === maxTime) {
                 setShowTimeoutWarning(true);
             }
 
-            // Hard limit: Double time -> Expire
-            if (seconds >= maxTime * 2) {
-                // Clear timer to prevent multiple calls
+            // 2. Hard limit: maxTime + extraTime
+            if (maxTime && seconds >= (maxTime + extraTime)) {
                 if (timerRef.current) clearInterval(timerRef.current);
-
-                // Set Expired State (Show blocking modal)
+                setExpirationReason('task');
                 setIsExpired(true);
-
-                // Call expire in background (fire and forget, or handle error)
                 handleExpire();
+                return;
+            }
+
+            // 3. Absolute expiration check (Hard limit since task reservation)
+            if (absoluteExpiration && startedAt) {
+                const startTime = new Date(startedAt).getTime();
+                const now = new Date().getTime();
+                const diffSec = (now - startTime) / 1000;
+
+                if (diffSec >= absoluteExpiration) {
+                    if (timerRef.current) clearInterval(timerRef.current);
+                    setExpirationReason('absolute');
+                    setIsExpired(true);
+                    handleExpire();
+                }
             }
         }
-    }, [seconds, maxTime, isReadOnly]);
+    }, [seconds, maxTime, extraTime, absoluteExpiration, startedAt, isReadOnly]);
 
     const handleExpire = async () => {
         // Just notify server, don't block UI here (modal blocks it)
@@ -345,9 +363,15 @@ export function TaskRenderer({
                         </div>
 
                         <h2 className="text-3xl font-bold mb-2">Task Expired</h2>
-                        <p className="text-muted-foreground mb-8 text-lg">
-                            The time limit for this task has been exceeded significantly.
-                            It is no longer available.
+                        <p className="text-muted-foreground mb-4 text-lg">
+                            {expirationReason === 'absolute'
+                                ? "The reservation period for this task has expired."
+                                : "The maximum allowed work time for this task has been exceeded."}
+                        </p>
+                        <p className="text-sm text-red-400/60 mb-8 lowercase tracking-tight">
+                            {expirationReason === 'absolute'
+                                ? "Absolute duration was set to " + formatTime(absoluteExpiration)
+                                : "Task work limit + extra time was " + formatTime(maxTime! + extraTime)}
                         </p>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -382,17 +406,27 @@ export function TaskRenderer({
 
                             <h3 className="text-xl font-bold text-white">Time Limit Reached</h3>
 
-                            <p className="text-muted-foreground">
-                                You have exceeded the allocated time for this task.
-                                <br />
-                                <span className="text-yellow-500 font-bold block mt-2">
-                                    Additional time will not be paid.
-                                </span>
-                            </p>
+                            <div className="text-muted-foreground space-y-2">
+                                <p>You have reached the primary time limit.</p>
+                                {extraTime > 0 ? (
+                                    <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-lg mt-2">
+                                        <p className="text-yellow-500 text-sm font-bold">
+                                            Extra time available: {formatTime(extraTime)}
+                                        </p>
+                                        <p className="text-[10px] opacity-70">
+                                            Warning: This extra time will not be paid.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <p className="text-yellow-500 font-bold block mt-2">
+                                        Additional time will not be paid.
+                                    </p>
+                                )}
+                            </div>
 
                             <div className="w-full grid grid-cols-2 gap-3 pt-4">
                                 <button
-                                    onClick={() => handleSkip()} // This handles skip + redirect
+                                    onClick={() => handleSkip()}
                                     className="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-muted-foreground hover:text-white transition-all font-medium"
                                 >
                                     Skip Task
@@ -405,9 +439,18 @@ export function TaskRenderer({
                                 </button>
                             </div>
 
-                            <p className="text-xs text-white/20 pt-2">
-                                Task will expire automatically in {maxTime ? formatTime(maxTime) : 'a while'}.
-                            </p>
+                            {(maxTime || absoluteExpiration) && (
+                                <p className="text-xs text-white/20 pt-2">
+                                    Task will expire in {
+                                        formatTime(
+                                            Math.min(
+                                                (maxTime ? (maxTime + extraTime - seconds) : Infinity),
+                                                (absoluteExpiration && startedAt ? (absoluteExpiration - (Date.now() - new Date(startedAt).getTime()) / 1000) : Infinity)
+                                            )
+                                        )
+                                    }
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>

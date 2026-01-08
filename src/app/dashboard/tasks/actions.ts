@@ -102,9 +102,120 @@ export async function skipTask(taskId: string) {
 }
 
 export async function expireTask(taskId: string) {
-    // Functionally same as skip for now, but we might want to distinguish later
-    return skipTask(taskId);
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'Unauthorized' };
+
+    // Functionally similar to skip, but specifically for expiration
+    // We reset assignment and status so it goes back to the queue
+    const { error } = await supabase
+        .from('tasks')
+        .update({
+            assigned_to: null,
+            status: 'pending',
+            annotator_time_spent: 0,
+            annotator_started_at: null
+        })
+        .eq('id', taskId)
+        .eq('assigned_to', user.id);
+
+    if (error) {
+        console.error('Error expiring task:', error);
+        throw new Error('Failed to expire task');
+    }
+
+    revalidatePath('/dashboard/tasks');
+    return { success: true };
 }
+
+/**
+ * Server-side cleanup of tasks that have stayed "in_progress" for too long.
+ * Should be called before assigning new tasks or viewing project monitoring.
+ */
+export async function cleanupProjectTasks(projectId: string) {
+    const supabase = await createClient();
+
+    // Fetch project settings
+    const { data: project } = await supabase
+        .from('projects')
+        .select('max_task_time, extra_time_after_max, absolute_expiration_duration')
+        .eq('id', projectId)
+        .single();
+
+    if (!project) return { success: false, error: 'Project not found' };
+
+    const { max_task_time, extra_time_after_max, absolute_expiration_duration } = project;
+
+    // If no expiration settings at all, skip cleanup
+    if (!max_task_time && !absolute_expiration_duration) return { success: true, count: 0 };
+
+    // Fetch in_progress tasks for this project
+    const { data: tasks } = await supabase
+        .from('tasks')
+        .select('id, assigned_to, annotator_started_at, updated_at')
+        .eq('project_id', projectId)
+        .eq('status', 'in_progress');
+
+    if (!tasks || tasks.length === 0) return { success: true, count: 0 };
+
+    const now = new Date();
+    const expiredTaskIds: string[] = [];
+
+    for (const task of tasks) {
+        if (!task.annotator_started_at) continue;
+
+        const startedAt = new Date(task.annotator_started_at);
+        const updatedAt = new Date(task.updated_at);
+        const wallClockDiffSec = (now.getTime() - startedAt.getTime()) / 1000;
+        const inactivitySec = (now.getTime() - updatedAt.getTime()) / 1000;
+
+        let isExpired = false;
+
+        // 1. Absolute Expiration Check (Hard limit since start - e.g. "you have 2 hours to finish this")
+        if (absolute_expiration_duration && wallClockDiffSec > absolute_expiration_duration) {
+            isExpired = true;
+        }
+
+        // 2. Task Time + Extra Time Check (Soft limit with inactivity buffer)
+        // If they have exceeded max_time + extra_time AND they haven't pinged the server lately (e.g. 5 mins buffer)
+        // We assume they closed the browser or gave up.
+        if (!isExpired && max_task_time) {
+            const totalAllowedSec = max_task_time + (extra_time_after_max || 0);
+            const inactivityBuffer = 300; // 5 minutes buffer for inactivity
+
+            if (wallClockDiffSec > (totalAllowedSec + inactivityBuffer)) {
+                isExpired = true;
+            }
+        }
+
+        if (isExpired) {
+            expiredTaskIds.push(task.id);
+        }
+    }
+
+    if (expiredTaskIds.length > 0) {
+        const { error } = await supabase
+            .from('tasks')
+            .update({
+                assigned_to: null,
+                status: 'pending',
+                annotator_time_spent: 0,
+                annotator_started_at: null
+            })
+            .in('id', expiredTaskIds);
+
+        if (error) {
+            console.error(`Error during cleanup of ${expiredTaskIds.length} tasks for project ${projectId}:`, error);
+            return { success: false, error: error.message };
+        }
+
+        console.log(`Cleanup: Expired ${expiredTaskIds.length} stale tasks for project ${projectId}`);
+    }
+
+    return { success: true, count: expiredTaskIds.length };
+}
+
 
 export async function archiveTask(projectId: string, taskId: string) {
     const supabase = await createClient();

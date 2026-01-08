@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { cleanupProjectTasks } from '@/app/dashboard/tasks/actions';
 
 export async function getProject(id: string) {
     const supabase = await createClient();
@@ -736,6 +737,13 @@ export async function startTasking(projectId: string) {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) redirect('/login');
+
+    // 0. Cleanup stale tasks for this project
+    try {
+        await cleanupProjectTasks(projectId);
+    } catch (e) {
+        console.error('Error during cleanup in startTasking:', e);
+    }
 
     // 1. Check if user is assigned to project (status active)
     const { data: assignment } = await supabase

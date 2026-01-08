@@ -72,6 +72,9 @@ export default async function TaskLabelingPage({ params }: { params: Promise<{ i
                                     initialData={{ ...(typeof task.payload === 'string' ? JSON.parse(task.payload) : task.payload || {}), ...(typeof task.labels === 'string' ? JSON.parse(task.labels) : task.labels || {}) }}
                                     isReadOnly={!isAssignedToMe}
                                     maxTime={task.projects?.max_task_time}
+                                    extraTime={task.projects?.extra_time_after_max}
+                                    absoluteExpiration={task.projects?.absolute_expiration_duration}
+                                    startedAt={task.annotator_started_at}
                                     initialTimeSpent={task.annotator_time_spent || 0}
                                     projectId={task.project_id}
                                     initialEarnings={task.annotator_earnings || 0}
