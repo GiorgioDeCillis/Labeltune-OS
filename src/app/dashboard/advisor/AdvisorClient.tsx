@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Upload, Send, User, ChevronLeft, ChevronRight, Loader2, FileText, Layout, GraduationCap, Archive } from 'lucide-react';
+import { Bot, Upload, Send, User, ChevronLeft, ChevronRight, Loader2, FileText, Layout, Archive } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createInstructionSet, UnifiedInstructionItem } from '../instructions/actions';
 import { useToast } from '@/components/Toast';
@@ -180,7 +180,7 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
                     <Bot className="w-16 h-16 mx-auto text-primary mb-4" />
                     <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">AI Instruction Advisor</h1>
                     <p className="text-white/60 max-w-2xl mx-auto text-lg leading-relaxed">
-                        Select an instruction set, project guideline, or course to start chatting with our advanced AI.
+                        Select an instruction set or project guideline to start chatting with our advanced AI.
                         Ask questions, clarify guidelines, or resolve ambiguities in seconds.
                     </p>
                 </div>
@@ -231,8 +231,7 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
                                 const Icon = {
                                     platform: FileText,
                                     uploaded: Archive,
-                                    project: Layout,
-                                    course: GraduationCap
+                                    project: Layout
                                 }[inst.type] || FileText;
 
                                 return (
@@ -246,8 +245,7 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
                                     >
                                         <div className={`p-3 rounded-xl bg-black/40 text-muted-foreground group-hover:text-primary transition-colors ${inst.type === 'platform' ? 'text-blue-400' :
                                             inst.type === 'uploaded' ? 'text-purple-400' :
-                                                inst.type === 'project' ? 'text-amber-400' :
-                                                    'text-emerald-400'
+                                                'text-amber-400'
                                             }`}>
                                             <Icon className="w-5 h-5" />
                                         </div>
@@ -256,8 +254,7 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
                                             <div className="text-xs text-muted-foreground/60 flex items-center gap-2 mt-1">
                                                 <span className={`uppercase font-black tracking-tighter text-[9px] px-1.5 py-0.5 rounded ${inst.type === 'platform' ? 'bg-blue-500/10 text-blue-400' :
                                                     inst.type === 'uploaded' ? 'bg-purple-500/10 text-purple-400' :
-                                                        inst.type === 'project' ? 'bg-amber-500/10 text-amber-400' :
-                                                            'bg-emerald-500/10 text-emerald-400'
+                                                        'bg-amber-500/10 text-amber-400'
                                                     }`}>
                                                     {inst.type}
                                                 </span>

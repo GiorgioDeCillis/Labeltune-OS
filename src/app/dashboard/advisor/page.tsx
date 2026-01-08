@@ -21,7 +21,7 @@ export default async function AdvisorPage() {
         .eq('id', user.id)
         .single();
 
-    const instructions = await getUnifiedInstructions();
+    const instructions = (await getUnifiedInstructions()).filter(i => i.type !== 'course');
 
     return (
         <div className="max-w-7xl mx-auto h-full pb-8">
