@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Upload, Send, User, ChevronLeft, Loader2, FileText, CheckCircle2 } from 'lucide-react';
+import { Bot, Upload, Send, User, ChevronLeft, ChevronRight, Loader2, FileText, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createInstructionSet } from '../instructions/actions';
 import { useToast } from '@/components/Toast';
