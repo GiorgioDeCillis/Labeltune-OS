@@ -9,7 +9,7 @@ import {
     History as HistoryIcon,
     ChevronRight,
     Search,
-    DollarSign,
+    Euro,
     X
 } from 'lucide-react';
 import Link from 'next/link';
@@ -140,11 +140,11 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
 
                 <div className="glass-panel p-6 rounded-2xl border border-white/5 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                        <DollarSign className="w-6 h-6 text-emerald-400" />
+                        <Euro className="w-6 h-6 text-emerald-400" />
                     </div>
                     <div>
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Total Earnings</p>
-                        <h3 className="text-2xl font-bold text-white">${stats.totalEarnings.toFixed(2)}</h3>
+                        <h3 className="text-2xl font-bold text-white">€{stats.totalEarnings.toFixed(2)}</h3>
                     </div>
                 </div>
 
@@ -214,7 +214,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <span className="text-sm font-bold text-emerald-400">
-                                                ${task.earnings.toFixed(2)}
+                                                €{task.earnings.toFixed(2)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
@@ -327,7 +327,7 @@ export default function HistoryClient({ user, profile }: { user: any, profile: a
                                 <div className="flex flex-col gap-2 pt-2 border-t border-white/5">
                                     <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest">
                                         <span className="text-white/40">Earnings Earned</span>
-                                        <span className="text-emerald-400">${selectedTask.earnings.toFixed(2)}</span>
+                                        <span className="text-emerald-400">€{selectedTask.earnings.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest">
                                         <span className="text-white/40">Time Spent</span>

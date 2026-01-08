@@ -23,7 +23,7 @@ export default async function ClientDashboardPage() {
 
     // --- Mock Data Calculation (Replace with real aggregations) ---
     // In a real app, you would fetch tasks grouped by project and sum up costs
-    const totalSpend = "$12,450";
+    const totalSpend = "€12,450";
     const tasksCompleted = "8,932";
     const hoursLogged = "430 hrs";
     const qualityScore = "98.5%";

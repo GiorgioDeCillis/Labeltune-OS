@@ -125,7 +125,7 @@ export default function ProjectQueueModal({ isOpen, onClose, userId }: ProjectQu
                                                             <span className="font-mono font-bold">
                                                                 {project.payment_mode === 'task'
                                                                     ? `${project.pay_per_task || '—'}/task`
-                                                                    : (project.pay_rate || '$15.00/hr')}
+                                                                    : (project.pay_rate || '€15.00/hr')}
                                                             </span>
                                                         </div>
                                                     </div>

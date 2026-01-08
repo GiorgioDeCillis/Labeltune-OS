@@ -318,7 +318,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                     <span className="text-3xl font-bold text-white">
                                                         {activeProject.payment_mode === 'task'
                                                             ? (activeProject.pay_per_task ? `${activeProject.pay_per_task}` : '—')
-                                                            : (activeProject.pay_rate?.split('/')[0] || '$15.00')}
+                                                            : (activeProject.pay_rate?.split('/')[0] || '€15.00')}
                                                     </span>
                                                     <span className="text-sm text-white/40">
                                                         {activeProject.payment_mode === 'task' ? '/ task' : '/ hr'}
@@ -359,7 +359,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                 />
                 <StatCard
                     title="Avg. Rate"
-                    value={`$${stats.avgRate.toFixed(2)}`}
+                    value={`€${stats.avgRate.toFixed(2)}`}
                     icon={TrendingUp}
                 />
             </div>
@@ -374,7 +374,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                 <Wallet className="w-4 h-4" />
                                 <span className="font-bold uppercase tracking-wider text-[10px]">Total Earnings</span>
                             </div>
-                            <div className="text-5xl font-bold text-white tracking-tighter">$2,824</div>
+                            <div className="text-5xl font-bold text-white tracking-tighter">€2,824</div>
                             <p className="text-white/40 text-[10px] font-medium uppercase tracking-wide">Earnings (Aug 2025 - Jan 2026)</p>
                         </div>
 
@@ -423,14 +423,14 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                 <div className="bg-[#0A0A0A]/95 backdrop-blur-2xl border border-white/10 p-4 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col min-w-[180px] gap-3">
                                                     <div className="flex flex-col">
                                                         <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">{bar.m} Breakdown</span>
-                                                        <span className="text-xl font-bold text-white tracking-tighter">${bar.amount}</span>
+                                                        <span className="text-xl font-bold text-white tracking-tighter">€{bar.amount}</span>
                                                     </div>
 
                                                     <div className="space-y-2 border-t border-white/5 pt-2">
                                                         {bar.projects.map((p, pi) => (
                                                             <div key={pi} className="flex justify-between items-center gap-4">
                                                                 <span className="text-[10px] text-white/60 font-medium">{p.n}</span>
-                                                                <span className="text-[10px] text-primary font-bold">${p.a}</span>
+                                                                <span className="text-[10px] text-primary font-bold">€{p.a}</span>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -464,7 +464,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                 className="text-[10px] font-black tracking-tighter text-white/90 relative z-10 whitespace-nowrap px-1"
                                                 style={{ opacity: bar.v > 15 ? 1 : 0 }}
                                             >
-                                                ${bar.amount}
+                                                €{bar.amount}
                                             </span>
                                         </motion.div>
                                     </div>

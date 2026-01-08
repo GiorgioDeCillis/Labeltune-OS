@@ -476,7 +476,7 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
                                             name="pay_rate"
                                             value={details.pay_rate}
                                             onChange={(e) => setDetails(prev => ({ ...prev, pay_rate: e.target.value }))}
-                                            placeholder="$15.00 / hr"
+                                            placeholder="€15.00 / hr"
                                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
                                         />
                                     </div>
@@ -487,7 +487,7 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
                                             name="pay_per_task"
                                             value={details.pay_per_task}
                                             onChange={(e) => setDetails(prev => ({ ...prev, pay_per_task: e.target.value }))}
-                                            placeholder="$0.50 / task"
+                                            placeholder="€0.50 / task"
                                             className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
                                         />
                                     </div>

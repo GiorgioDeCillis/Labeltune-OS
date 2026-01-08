@@ -27,7 +27,7 @@ export function SpendChart({ data, total }: SpendChartProps) {
                             style={{ height: `${(item.value / maxValue) * 100}%` }}
                         >
                             <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs font-bold whitespace-nowrap transition-opacity">
-                                ${item.value}
+                                €{item.value}
                             </div>
                         </div>
                     </div>

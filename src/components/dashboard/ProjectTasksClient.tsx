@@ -8,7 +8,7 @@ import {
     Archive,
     ExternalLink,
     Clock,
-    DollarSign,
+    Euro,
     Star,
     CheckCircle2,
     Timer,
@@ -186,7 +186,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate, userRole 
                                                                 {formatTime(task.annotator_time_spent)}
                                                             </span>
                                                             <span className="text-[10px] text-green-500/80 font-bold flex items-center gap-0.5">
-                                                                <DollarSign className="w-3 h-3" />
+                                                                <Euro className="w-3 h-3" />
                                                                 {task.annotator_earnings?.toFixed(2) || '0.00'}
                                                             </span>
                                                         </div>
@@ -214,7 +214,7 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate, userRole 
                                                                 {formatTime(task.reviewer_time_spent)}
                                                             </span>
                                                             <span className="text-[10px] text-green-500/80 font-bold flex items-center gap-0.5">
-                                                                <DollarSign className="w-3 h-3" />
+                                                                <Euro className="w-3 h-3" />
                                                                 {task.reviewer_earnings?.toFixed(2) || '0.00'}
                                                             </span>
                                                         </div>

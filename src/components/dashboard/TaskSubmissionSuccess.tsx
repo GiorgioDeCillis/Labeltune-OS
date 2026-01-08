@@ -51,7 +51,7 @@ export function TaskSubmissionSuccess({
                             <Wallet className="w-4 h-4 text-emerald-400" />
                         </div>
                         <span className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Earnings</span>
-                        <span className="text-2xl font-bold text-white">${earnings.toFixed(2)}</span>
+                        <span className="text-2xl font-bold text-white">€{earnings.toFixed(2)}</span>
                     </div>
 
                     <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex flex-col items-center">

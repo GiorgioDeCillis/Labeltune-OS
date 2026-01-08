@@ -104,7 +104,7 @@ export function ProjectEditForm({ project }: ProjectEditFormProps) {
                             <label className="text-sm font-bold uppercase text-muted-foreground">Hourly Rate</label>
                             <input
                                 name="pay_rate"
-                                defaultValue={project.pay_rate || '$15.00 / hr'}
+                                defaultValue={project.pay_rate || '€15.00 / hr'}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary"
                             />
                         </div>
@@ -113,7 +113,7 @@ export function ProjectEditForm({ project }: ProjectEditFormProps) {
                             <label className="text-sm font-bold uppercase text-muted-foreground">Pay Per Task</label>
                             <input
                                 name="pay_per_task"
-                                defaultValue={project.pay_per_task || '$0.50 / task'}
+                                defaultValue={project.pay_per_task || '€0.50 / task'}
                                 className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary"
                             />
                         </div>
