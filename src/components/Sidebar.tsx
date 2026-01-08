@@ -33,8 +33,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
     const pmLinks = [
         { href: '/dashboard/projects', label: 'Projects', icon: FolderPlus },
         { href: '/dashboard/datasets', label: 'Dataset Explorer', icon: Search },
-        { href: '/dashboard/courses', label: 'Courses', icon: GraduationCap },
-        { href: '/dashboard/instructions', label: 'Instructions', icon: FileText },
+        { href: '/dashboard/knowledge', label: 'Knowledge', icon: FileText },
         { href: '/dashboard/advisor', label: 'AI Advisor', icon: Bot },
     ];
 

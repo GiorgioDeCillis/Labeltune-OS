@@ -33,7 +33,7 @@ export default function NewInstructionPage() {
                 content: sections
             });
             showToast('Instruction set created successfully!', 'success');
-            router.push('/dashboard/instructions');
+            router.push('/dashboard/knowledge');
         } catch (error) {
             console.error('Failed to create instruction set:', error);
             showToast('Failed to create instruction set.', 'error');
@@ -47,7 +47,7 @@ export default function NewInstructionPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard/instructions" className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <Link href="/dashboard/knowledge" className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                         <ChevronLeft className="w-5 h-5" />
                     </Link>
                     <div>

@@ -68,7 +68,7 @@ export default async function CertificationsPage() {
                                     <CheckCircle className="w-3 h-3" /> VERIFIED
                                 </div>
                             </div>
-                            <Link href={`/dashboard/courses/${cert.id}`}>
+                            <Link href={`/dashboard/knowledge/courses/${cert.id}`}>
                                 <button className="px-4 py-2 text-xs font-bold border border-white/10 rounded-lg hover:bg-white/10 transition-colors">
                                     Review
                                 </button>
@@ -102,7 +102,7 @@ export default async function CertificationsPage() {
                                     )}
                                 </div>
                             </div>
-                            <Link href={`/dashboard/courses/${cert.id}`}>
+                            <Link href={`/dashboard/knowledge/courses/${cert.id}`}>
                                 <button className="px-4 py-2 bg-white text-black font-bold text-xs rounded-lg hover:bg-white/90 transition-colors">
                                     {cert.status === 'in_progress' ? 'Resume' : 'Start'}
                                 </button>

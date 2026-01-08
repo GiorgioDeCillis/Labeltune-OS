@@ -18,7 +18,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
         .single();
 
     if (profile?.role !== 'pm' && profile?.role !== 'admin') {
-        redirect('/dashboard/courses');
+        redirect('/dashboard/knowledge/courses');
     }
 
     // Fetch Course details

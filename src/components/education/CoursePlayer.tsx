@@ -8,7 +8,7 @@ import { QuizPlayer } from './QuizPlayer';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { completeLesson, getNextCourseId } from '@/app/dashboard/courses/actions';
+import { completeLesson, getNextCourseId } from '@/app/dashboard/knowledge/courses/actions';
 import { useToast } from '@/components/Toast';
 import confetti from 'canvas-confetti';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
@@ -177,13 +177,13 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false,
                         )}
 
                         {isAdmin && (
-                            <Link href={`/dashboard/courses/${course.id}/edit`}>
+                            <Link href={`/dashboard/knowledge/courses/${course.id}/edit`}>
                                 <button className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
                                     <Pencil className="w-3 h-3" /> Edit Course
                                 </button>
                             </Link>
                         )}
-                        <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/courses'}>
+                        <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/knowledge/courses'}>
                             <button className="text-xs font-bold text-muted-foreground hover:text-white transition-colors">
                                 Exit Course
                             </button>
@@ -287,14 +287,14 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false,
 
                             <div className="flex flex-col gap-3 w-full pt-4">
                                 {nextCourseId ? (
-                                    <Link href={`/dashboard/courses/${nextCourseId}`}>
+                                    <Link href={`/dashboard/knowledge/courses/${nextCourseId}`}>
                                         <button className="w-full py-3.5 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2">
                                             Start Next Course <ChevronRight className="w-4 h-4" />
                                         </button>
                                     </Link>
                                 ) : null}
 
-                                <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/courses'}>
+                                <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/knowledge/courses'}>
                                     <button className={`w-full py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${nextCourseId
                                         ? 'bg-white/5 hover:bg-white/10 text-white'
                                         : 'bg-primary text-primary-foreground hover:opacity-90'

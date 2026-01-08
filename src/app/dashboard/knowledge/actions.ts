@@ -32,7 +32,7 @@ export async function createInstructionSet(data: Partial<InstructionSet>) {
         .single();
 
     if (error) throw new Error(error.message);
-    revalidatePath('/dashboard/instructions');
+    revalidatePath('/dashboard/knowledge');
     return instructionSet;
 }
 
@@ -52,8 +52,8 @@ export async function updateInstructionSet(id: string, data: Partial<Instruction
         .eq('id', id);
 
     if (error) throw new Error(error.message);
-    revalidatePath(`/dashboard/instructions/${id}`);
-    revalidatePath('/dashboard/instructions');
+    revalidatePath(`/dashboard/knowledge/${id}`);
+    revalidatePath('/dashboard/knowledge');
 }
 
 export async function deleteInstructionSet(id: string) {
@@ -81,7 +81,7 @@ export async function deleteInstructionSet(id: string) {
     if (error) throw new Error(error.message);
     if (count === 0) throw new Error('Instruction set not found or permission denied');
 
-    revalidatePath('/dashboard/instructions');
+    revalidatePath('/dashboard/knowledge');
     return { success: true };
 }
 

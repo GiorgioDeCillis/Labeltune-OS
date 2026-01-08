@@ -51,7 +51,7 @@ export default function EditInstructionClient({ instructionSet }: EditInstructio
         try {
             await deleteInstructionSet(instructionSet.id);
             showToast('Instruction set deleted successfully!', 'success');
-            router.push('/dashboard/instructions');
+            router.push('/dashboard/knowledge');
         } catch (error) {
             console.error('Failed to delete instruction set:', error);
             showToast('Failed to delete instruction set.', 'error');
@@ -64,7 +64,7 @@ export default function EditInstructionClient({ instructionSet }: EditInstructio
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard/instructions" className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <Link href="/dashboard/knowledge" className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                         <ChevronLeft className="w-5 h-5" />
                     </Link>
                     <div>

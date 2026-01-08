@@ -296,7 +296,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                         </div>
                     ) : (
                         <Link
-                            href={`/dashboard/courses/${firstIncompleteCourseId}`}
+                            href={`/dashboard/knowledge/courses/${firstIncompleteCourseId}`}
                             className="ml-auto text-white hover:opacity-80 text-sm font-bold flex items-center gap-1"
                         >
                             {onboardingStarted ? 'Continue Onboarding' : 'Start Onboarding'} <ChevronRight className="w-4 h-4" />
@@ -315,7 +315,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                 <div className="space-y-1">
                     {courses && courses.length > 0 ? courses.map((course) => (
                         <div key={course.id} className="relative group">
-                            <Link href={`/dashboard/courses/${course.id}`}>
+                            <Link href={`/dashboard/knowledge/courses/${course.id}`}>
                                 <div className="p-4 -mx-4 rounded-xl hover:bg-white/5 transition-all cursor-pointer flex items-center justify-between">
                                     <div className="space-y-1">
                                         <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{course.title}</h3>

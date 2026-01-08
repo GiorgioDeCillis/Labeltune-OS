@@ -297,7 +297,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                     <span className="text-red-400 font-bold">Assessment Failed</span>
                                                 ) : (
                                                     <Link
-                                                        href={`/dashboard/courses/${onboardingInfo.firstIncompleteCourseId}`}
+                                                        href={`/dashboard/knowledge/courses/${onboardingInfo.firstIncompleteCourseId}`}
                                                         className="text-primary hover:underline hover:text-primary/80 transition-colors"
                                                     >
                                                         {onboardingInfo.onboardingStarted ? 'Continue Onboarding' : 'Start Onboarding'}

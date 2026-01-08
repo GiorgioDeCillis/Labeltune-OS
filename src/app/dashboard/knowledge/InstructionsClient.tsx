@@ -69,10 +69,10 @@ export default function InstructionsClient({ instructions }: InstructionsClientP
         }[instruction.type]) || FileText;
 
         const href = {
-            platform: `/dashboard/instructions/${instruction.id}`,
-            uploaded: `/dashboard/instructions/${instruction.id}`,
+            platform: `/dashboard/knowledge/${instruction.id}`,
+            uploaded: `/dashboard/knowledge/${instruction.id}`,
             project: `/dashboard/projects/${instruction.id}`,
-            course: `/dashboard/courses/${instruction.id}`
+            course: `/dashboard/knowledge/courses/${instruction.id}`
         }[instruction.type] || '#';
 
         return (
@@ -100,9 +100,9 @@ export default function InstructionsClient({ instructions }: InstructionsClientP
                             </span>
                         </div>
                         <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${instruction.type === 'platform' ? 'border-blue-500/20 text-blue-400 bg-blue-500/5' :
-                                instruction.type === 'uploaded' ? 'border-purple-500/20 text-purple-400 bg-purple-500/5' :
-                                    instruction.type === 'project' ? 'border-amber-500/20 text-amber-400 bg-amber-500/5' :
-                                        'border-emerald-500/20 text-emerald-400 bg-emerald-500/5'
+                            instruction.type === 'uploaded' ? 'border-purple-500/20 text-purple-400 bg-purple-500/5' :
+                                instruction.type === 'project' ? 'border-amber-500/20 text-amber-400 bg-amber-500/5' :
+                                    'border-emerald-500/20 text-emerald-400 bg-emerald-500/5'
                             }`}>
                             {instruction.type}
                         </span>

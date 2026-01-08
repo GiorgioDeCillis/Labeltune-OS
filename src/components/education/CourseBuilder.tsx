@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Course, Lesson } from '@/types/manual-types';
-import { createCourse, updateCourse, createLesson, updateLesson, deleteLesson, saveCourseWithLessons } from '@/app/dashboard/courses/actions';
+import { createCourse, updateCourse, createLesson, updateLesson, deleteLesson, saveCourseWithLessons } from '@/app/dashboard/knowledge/courses/actions';
 import { useRouter } from 'next/navigation';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -125,7 +125,7 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
                     if (selectedProjectId) {
                         router.push(`/dashboard/projects/${selectedProjectId}`);
                     } else {
-                        router.push('/dashboard/courses');
+                        router.push('/dashboard/knowledge/courses');
                     }
                     router.refresh();
                 }

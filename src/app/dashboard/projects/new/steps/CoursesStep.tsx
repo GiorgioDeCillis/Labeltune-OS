@@ -6,7 +6,7 @@ import { Course, Lesson, InstructionSection } from '@/types/manual-types';
 import { CourseBuilder } from '@/components/education/CourseBuilder';
 import { createPortal } from 'react-dom';
 import { useToast } from '@/components/Toast';
-import { getInstructionSets } from '@/app/dashboard/instructions/actions';
+import { getInstructionSets } from '@/app/dashboard/knowledge/actions';
 import CustomSelect from '@/components/CustomSelect';
 
 interface CoursesStepProps {
