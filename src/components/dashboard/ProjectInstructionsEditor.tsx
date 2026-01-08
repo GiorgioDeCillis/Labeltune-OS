@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, GripVertical, FileText, Download, Eye, Upload, Loader2, Wand2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { InstructionSection } from '@/types/manual-types';
 import {
     DndContext,
     closestCenter,
@@ -31,11 +32,7 @@ const getPdfJs = async () => {
     return pdfjs;
 };
 
-export interface InstructionSection {
-    id: string;
-    title: string;
-    content: string;
-}
+
 
 interface ProjectInstructionsEditorProps {
     sections: InstructionSection[];

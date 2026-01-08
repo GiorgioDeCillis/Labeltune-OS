@@ -88,11 +88,17 @@ export interface UserCourseProgress {
     updated_at: string;
 }
 
+export interface InstructionSection {
+    id: string;
+    title: string;
+    content: string;
+}
+
 export interface InstructionSet {
     id: string;
     name: string;
     description: string | null;
-    content: any; // InstructionSection[]
+    content: InstructionSection[] | any;
     created_at: string;
     updated_at: string;
     project_id?: string | null;
