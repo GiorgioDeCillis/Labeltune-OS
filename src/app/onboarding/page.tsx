@@ -496,7 +496,7 @@ export default function OnboardingPage() {
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <span className="text-sm font-bold opacity-80 group-hover:opacity-100 transition-opacity">Trattamento Dati Personali</span>
+                                                <span className="text-sm font-bold opacity-80 group-hover:opacity-100 transition-opacity">Trattamento dati personali</span>
                                                 <p className="text-xs opacity-40 leading-relaxed">Autorizzo il trattamento dei dati personali ai sensi del D.Lgs. 101/2018 e del GDPR (Regolamento UE 2016/679)</p>
                                             </div>
                                         </label>
