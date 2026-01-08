@@ -1,38 +1,71 @@
 'use server';
 
+import OpenAI from 'openai';
 import { AIGeneratorConfig } from "@/components/builder/types";
 
-// Mocking the AI generation for now as requested/implied by "connect their api keys"
-// In a real implementation, this would use the OpenAI/Anthropic SDKs.
-// Since I don't have the SDKs installed or configured in this environment context,
-// I will simulate the API calls.
+// Initialize the platform client
+// Note: client-side usage of this action ensures secrets are kept on server
+const platformOpenAI = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function generateAIResponse(
     text: string,
     config: AIGeneratorConfig
 ) {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+        const systemPrompt = config.systemPrompt || 'You are a helpful assistant.';
+        const messages: any[] = [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: text }
+        ];
 
-    const prompt = `System: ${config.systemPrompt || 'You are a helpful assistant.'}\nUser: ${text}`;
+        let openaiClient = platformOpenAI;
+        let model = config.model;
 
-    if (config.provider === 'platform') {
-        // Platform internal model logic
-        // In reality: await openai.chat.completions.create(...) using env var
-        return `[Platform AIGen] Processing your request using our internal model.\n\nHere is a generated response based on: "${text}".\n\n(Simulated Output)`;
-    } else if (config.provider === 'openai') {
-        if (!config.apiKey?.startsWith('sk-')) {
-            throw new Error("Invalid OpenAI API Key provided.");
+        // Configuration Logic
+        if (config.provider === 'platform') {
+            if (!process.env.OPENAI_API_KEY) {
+                throw new Error("Platform AI is not configured (Missing API Key).");
+            }
+            // Default platform model if none specified
+            model = 'gpt-4o';
+
+        } else if (config.provider === 'openai') {
+            if (!config.apiKey?.startsWith('sk-')) {
+                throw new Error("Invalid OpenAI API Key provided.");
+            }
+            // Initialize a temporary client for this request with user's key
+            openaiClient = new OpenAI({
+                apiKey: config.apiKey,
+            });
+            model = config.model || 'gpt-4o';
+
+        } else if (config.provider === 'anthropic') {
+            // Placeholder: Anthropic SDK not installed yet
+            throw new Error("Anthropic provider is not yet supported in this environment.");
+        } else {
+            throw new Error(`Unknown provider: ${config.provider}`);
         }
-        // Client OpenAI logic
-        return `[OpenAI AIGen] (Model: ${config.model || 'gpt-4'}) \n\nResponse generated using your personal API key.\n\nInput: "${text}"`;
-    } else if (config.provider === 'anthropic') {
-        if (!config.apiKey?.startsWith('sk-ant')) {
-            throw new Error("Invalid Anthropic API Key provided.");
+
+        // Call OpenAI API
+        const completion = await openaiClient.chat.completions.create({
+            model: model || 'gpt-4o',
+            messages: messages,
+            max_tokens: 1000,
+        });
+
+        const content = completion.choices[0]?.message?.content;
+
+        if (!content) {
+            throw new Error("AI returned empty response.");
         }
-        // Client Anthropic logic
-        return `[Anthropic AIGen] (Model: ${config.model || 'claude-3-opus'}) \n\nResponse generated using your personal API key.\n\nInput: "${text}"`;
+
+        return content;
+
+    } catch (error: any) {
+        console.error("AI Generation failed:", error);
+        // Return a user-friendly error string
+        throw new Error(error.message || "Failed to generate response.");
     }
-
-    return "Unknown provider configuration.";
 }
