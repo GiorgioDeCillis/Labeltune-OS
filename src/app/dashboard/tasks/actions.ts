@@ -205,35 +205,54 @@ export async function requeueTask(taskId: string) {
         throw new Error('Unauthorized');
     }
 
-    const { error } = await supabase
+    // Fetch the original task data
+    const { data: originalTask, error: fetchError } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('id', taskId)
+        .single();
+
+    if (fetchError || !originalTask) {
+        throw new Error('Original task not found');
+    }
+
+    // 1. Create a NEW task as a clone of the original (clean state)
+    // We copy the project_id, payload, and priority, and link it via parent_task_id
+    const { data: newTask, error: insertError } = await supabase
+        .from('tasks')
+        .insert({
+            project_id: originalTask.project_id,
+            payload: originalTask.payload,
+            priority: originalTask.priority,
+            status: 'pending',
+            parent_task_id: taskId
+        })
+        .select()
+        .single();
+
+    if (insertError) {
+        console.error('Error creating re-queued task:', insertError);
+        throw new Error('Failed to create new task');
+    }
+
+    // 2. Update the ORIGINAL task status to 'rejected_requeued'
+    // This preserves all labels, earnings, time spent, etc.
+    const { error: updateError } = await supabase
         .from('tasks')
         .update({
-            status: 'pending',
-            assigned_to: null,
-            labels: null,
-            annotator_labels: null,
-            annotator_time_spent: 0,
-            annotator_earnings: 0,
-            annotator_started_at: null,
-            annotator_completed_at: null,
-            reviewed_by: null,
-            reviewer_time_spent: 0,
-            reviewer_earnings: 0,
-            reviewer_started_at: null,
-            reviewer_completed_at: null,
-            review_rating: null,
-            review_feedback: null,
-            reviewer_rating: null,
-            reviewer_feedback: null
+            status: 'rejected_requeued'
         })
         .eq('id', taskId);
 
-    if (error) {
-        console.error('Error requeueing task:', error);
-        throw new Error('Failed to requeue task');
+    if (updateError) {
+        console.error('Error updating original task status:', updateError);
+        throw new Error('Failed to update original task status');
     }
 
-    // revalidatePath(`/dashboard/projects/[id]/tasks/[taskId]`); // Can't easily get project ID here without fetch, but we can revalidate broadly
+    // Revalidate paths to reflect changes
     revalidatePath('/dashboard/projects', 'layout');
-    return { success: true };
+    revalidatePath(`/dashboard/projects/${originalTask.project_id}/tasks`);
+
+    return { success: true, newTaskId: newTask.id };
 }
+

@@ -175,19 +175,54 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
                 </div>
 
                 {/* Admin/PM Actions */}
-                {(isPrivileged && task.status === 'rejected') && (
+                {(isPrivileged && (task.status === 'rejected' || task.status === 'rejected_requeued')) && (
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setShowRequeueConfirm(true)}
-                            disabled={isRequeueing}
-                            className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold uppercase tracking-widest rounded-lg border border-red-500/20 transition-all flex items-center gap-2"
-                        >
-                            {isRequeueing ? <Timer className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
-                            Reset Task & Re-Queue
-                        </button>
+                        {task.status === 'rejected' && (
+                            <button
+                                onClick={() => setShowRequeueConfirm(true)}
+                                disabled={isRequeueing}
+                                className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold uppercase tracking-widest rounded-lg border border-red-500/20 transition-all flex items-center gap-2"
+                            >
+                                {isRequeueing ? <Timer className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
+                                Reset Task & Re-Queue
+                            </button>
+                        )}
+                        {task.parent_task_id && (
+                            <Link
+                                href={`/dashboard/projects/${safeProject.id}/tasks/${task.parent_task_id}`}
+                                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-muted-foreground text-xs font-bold uppercase tracking-widest rounded-lg border border-white/10 transition-all flex items-center gap-2"
+                            >
+                                <Copy className="w-3.5 h-3.5" />
+                                View Original Task
+                            </Link>
+                        )}
                     </div>
                 )}
             </div>
+
+            {/* Requeue info for results of a requeue */}
+            {task.parent_task_id && (
+                <div className="bg-primary/5 border border-primary/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle className="w-5 h-5 text-primary" />
+                    <p className="text-sm">
+                        Questatask è stata rigenerata da una task precedente.
+                        <Link href={`/dashboard/projects/${safeProject.id}/tasks/${task.parent_task_id}`} className="text-primary hover:underline ml-1 font-bold">
+                            Visualizza la task originale #{task.parent_task_id.slice(0, 8)}
+                        </Link>
+                    </p>
+                </div>
+            )}
+
+            {/* Requeue info for historical tasks */}
+            {task.status === 'rejected_requeued' && (
+                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle className="w-5 h-5 text-red-500" />
+                    <p className="text-sm">
+                        Questa è una versione <strong>storica</strong> di una task che è stata resettata e rimandata in coda.
+                        I dati sono stati preservati per fini amministrativi e di compenso.
+                    </p>
+                </div>
+            )}
 
             <ConfirmDialog
                 isOpen={showRequeueConfirm}
@@ -477,6 +512,7 @@ function StatusBadge({ status }: { status?: string }) {
         completed: 'bg-primary/10 text-primary border-primary/20',
         approved: 'bg-green-500/10 text-green-400 border-green-500/20',
         rejected: 'bg-red-500/10 text-red-400 border-red-500/20',
+        rejected_requeued: 'bg-red-500/10 text-red-400 border-red-500/20 opacity-60',
     };
 
     const icons: Record<string, any> = {
@@ -486,6 +522,7 @@ function StatusBadge({ status }: { status?: string }) {
         completed: AlertCircle,
         approved: CheckCircle2,
         rejected: AlertCircle,
+        rejected_requeued: AlertCircle,
     };
 
     const Icon = icons[rawStatus] || Clock;

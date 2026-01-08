@@ -115,7 +115,8 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate, userRole 
                                 { code: 'submitted', name: 'Submitted' },
                                 { code: 'completed', name: 'Completed' },
                                 { code: 'approved', name: 'Approved' },
-                                { code: 'rejected', name: 'Rejected' }
+                                { code: 'rejected', name: 'Rejected' },
+                                { code: 'rejected_requeued', name: 'Requeued (History)' }
                             ]}
                             value={statusFilter}
                             onChange={setStatusFilter}
@@ -156,8 +157,9 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate, userRole 
                                     <tr key={task.id} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <Link href={`/dashboard/projects/${projectId}/tasks/${task.id}`} className="hover:text-primary transition-colors">
+                                                <Link href={`/dashboard/projects/${projectId}/tasks/${task.id}`} className="hover:text-primary transition-colors flex items-center gap-2">
                                                     <span className="font-mono text-sm">#{task.id.slice(0, 8)}</span>
+                                                    {task.parent_task_id && <Copy className="w-3 h-3 text-primary/50" title="Requeued from original" />}
                                                 </Link>
                                                 <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-1" suppressHydrationWarning>
                                                     <Clock className="w-3 h-3" />
@@ -282,6 +284,7 @@ function StatusBadge({ status }: { status: string }) {
         completed: 'bg-primary/10 text-primary border-primary/20',
         approved: 'bg-green-500/10 text-green-400 border-green-500/20',
         rejected: 'bg-red-500/10 text-red-400 border-red-500/20',
+        rejected_requeued: 'bg-red-500/10 text-red-400 border-red-500/20 opacity-60',
     };
 
     const icons: Record<string, any> = {
@@ -291,6 +294,7 @@ function StatusBadge({ status }: { status: string }) {
         completed: AlertCircle,
         approved: CheckCircle2,
         rejected: AlertCircle,
+        rejected_requeued: AlertCircle,
     };
 
     const Icon = icons[status] || Clock;
