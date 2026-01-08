@@ -62,13 +62,16 @@ export async function deleteInstructionSet(id: string) {
         throw new Error('Cannot delete instruction set linked to a project');
     }
 
-    const { error } = await supabase
+    const { error, count } = await supabase
         .from('instructions')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', id);
 
     if (error) throw new Error(error.message);
+    if (count === 0) throw new Error('Instruction set not found or permission denied');
+
     revalidatePath('/dashboard/instructions');
+    return { success: true };
 }
 
 export async function getInstructionSet(id: string) {

@@ -37,8 +37,9 @@ export default function InstructionsClient({ instructions }: InstructionsClientP
         try {
             await deleteInstructionSet(instructionToDelete.id);
             router.refresh();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to delete instruction set:', error);
+            alert(`Errore durante l'eliminazione: ${error.message || 'Impossibile eliminare le istruzioni'}`);
         } finally {
             setIsDeleting(false);
             setDeleteDialogOpen(false);
@@ -77,8 +78,8 @@ export default function InstructionsClient({ instructions }: InstructionsClientP
                                         onClick={(e) => handleDeleteClick(e, instruction)}
                                         disabled={!!instruction.project_id}
                                         className={`p-2 rounded-full transition-all ${instruction.project_id
-                                                ? 'bg-white/5 text-muted-foreground/50 cursor-not-allowed'
-                                                : 'bg-white/5 text-red-400 hover:bg-red-500/20 hover:text-red-300'
+                                            ? 'bg-white/5 text-muted-foreground/50 cursor-not-allowed'
+                                            : 'bg-white/5 text-red-400 hover:bg-red-500/20 hover:text-red-300'
                                             }`}
                                         title={instruction.project_id ? 'Collegato a un progetto' : 'Elimina istruzione'}
                                     >

@@ -38,8 +38,9 @@ export default function CoursesClient({ courses, isAdmin }: CoursesClientProps) 
         try {
             await deleteCourse(courseToDelete.id);
             router.refresh();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to delete course:', error);
+            alert(`Errore durante l'eliminazione: ${error.message || 'Impossibile eliminare il corso'}`);
         } finally {
             setIsDeleting(false);
             setDeleteDialogOpen(false);
@@ -79,8 +80,8 @@ export default function CoursesClient({ courses, isAdmin }: CoursesClientProps) 
                                             onClick={(e) => handleDeleteClick(e, course)}
                                             disabled={!!course.project_id}
                                             className={`p-2 rounded-full transition-all ${course.project_id
-                                                    ? 'bg-white/5 text-muted-foreground/50 cursor-not-allowed'
-                                                    : 'bg-white/5 text-red-400 hover:bg-red-500/20 hover:text-red-300'
+                                                ? 'bg-white/5 text-muted-foreground/50 cursor-not-allowed'
+                                                : 'bg-white/5 text-red-400 hover:bg-red-500/20 hover:text-red-300'
                                                 }`}
                                             title={course.project_id ? 'Collegato a un progetto' : 'Elimina corso'}
                                         >

@@ -64,20 +64,28 @@ export async function deleteCourse(courseId: string) {
         throw new Error('Cannot delete course linked to a project');
     }
 
-    // Delete associated lessons first
-    await supabase.from('lessons').delete().eq('course_id', courseId);
+    try {
+        // Delete associated lessons first
+        await supabase.from('lessons').delete().eq('course_id', courseId);
 
-    // Delete course progress records
-    await supabase.from('user_course_progress').delete().eq('course_id', courseId);
+        // Delete course progress records
+        await supabase.from('user_course_progress').delete().eq('course_id', courseId);
 
-    // Delete the course
-    const { error } = await supabase
-        .from('courses')
-        .delete()
-        .eq('id', courseId);
+        // Delete the course
+        const { error, count } = await supabase
+            .from('courses')
+            .delete({ count: 'exact' })
+            .eq('id', courseId);
 
-    if (error) throw new Error(error.message);
+        if (error) throw new Error(error.message);
+        if (count === 0) throw new Error('Course not found or permission denied');
+
+    } catch (error: any) {
+        throw new Error(error.message);
+    }
+
     revalidatePath('/dashboard/courses');
+    return { success: true };
 }
 
 export async function createLesson(courseId: string, data: Partial<Lesson>) {
