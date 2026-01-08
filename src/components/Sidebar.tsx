@@ -16,7 +16,8 @@ import {
     Menu,
     X,
     User,
-    FileText
+    FileText,
+    Bot
 } from 'lucide-react';
 
 export function Sidebar({ userRole }: { userRole: string }) {
@@ -34,6 +35,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
         { href: '/dashboard/datasets', label: 'Dataset Explorer', icon: Search },
         { href: '/dashboard/courses', label: 'Courses', icon: GraduationCap },
         { href: '/dashboard/instructions', label: 'Instructions', icon: FileText },
+        { href: '/dashboard/advisor', label: 'AI Advisor', icon: Bot },
     ];
 
     const reviewLinks: { href: string; label: string; icon: any }[] = [];

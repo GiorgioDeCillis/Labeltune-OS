@@ -15,7 +15,8 @@ export async function createInstructionSet(data: Partial<InstructionSet>) {
             name: data.name!,
             description: data.description,
             content: data.content,
-            project_id: data.project_id || null
+            project_id: data.project_id || null,
+            is_uploaded: data.is_uploaded || false
         })
         .select()
         .single();

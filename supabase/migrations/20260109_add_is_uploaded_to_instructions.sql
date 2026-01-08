@@ -1,0 +1,1 @@
+ALTER TABLE instructions ADD COLUMN is_uploaded BOOLEAN DEFAULT FALSE;

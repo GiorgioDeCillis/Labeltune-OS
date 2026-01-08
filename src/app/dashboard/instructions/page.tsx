@@ -11,7 +11,7 @@ export default async function InstructionsPage() {
     // Fetch instructions with project_id to check if deletable
     const { data: instructions } = await supabase
         .from('instructions')
-        .select('id, name, description, content, project_id')
+        .select('id, name, description, content, project_id, is_uploaded')
         .order('created_at', { ascending: false });
 
     return (
