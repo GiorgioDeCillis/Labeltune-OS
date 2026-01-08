@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Upload, Send, User, ChevronLeft, ChevronRight, Loader2, FileText, CheckCircle2 } from 'lucide-react';
+import { Bot, Upload, Send, User, ChevronLeft, ChevronRight, Loader2, FileText, Layout, GraduationCap, Archive } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { createInstructionSet } from '../instructions/actions';
+import { createInstructionSet, UnifiedInstructionItem } from '../instructions/actions';
 import { useToast } from '@/components/Toast';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -16,24 +16,17 @@ const getPdfJs = async () => {
     return pdfjs;
 };
 
-interface InstructionSet {
-    id: string;
-    name: string;
-    content: any;
-    is_uploaded?: boolean;
-}
-
 interface Message {
     role: 'user' | 'assistant';
     content: string;
 }
 
-export default function AdvisorClient({ instructions }: { instructions: InstructionSet[] }) {
+export default function AdvisorClient({ instructions }: { instructions: UnifiedInstructionItem[] }) {
     const router = useRouter();
     const { showToast } = useToast();
 
     // State
-    const [selectedInstruction, setSelectedInstruction] = useState<InstructionSet | null>(null);
+    const [selectedInstruction, setSelectedInstruction] = useState<UnifiedInstructionItem | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -119,13 +112,16 @@ export default function AdvisorClient({ instructions }: { instructions: Instruct
             showToast('Instructions uploaded successfully!', 'success');
             router.refresh();
 
-            // Auto-select the new instruction (we assume refresh puts it in the list, but for immediate UX we might need it from return)
             if (newInst) {
-                // We need to wait for parent refresh, or just set it locally if compatible
-                // Since this is a client component receiving props, strict sync requires refresh.
-                // However, createInstructionSet returns the object.
-                // We can optimistically select it, but 'content' type might mismatch if not careful.
-                const castInst = newInst as InstructionSet;
+                const castInst = {
+                    id: newInst.id,
+                    name: newInst.name,
+                    description: newInst.description,
+                    content: newInst.content,
+                    type: 'uploaded',
+                    updated_at: new Date().toISOString()
+                } as UnifiedInstructionItem;
+
                 setSelectedInstruction(castInst);
                 setMessages([{ role: 'assistant', content: `Hello! I'm ready to discuss the instructions found in "${castInst.name}". \n\nWhat would you like to know?` }]);
             }
@@ -154,7 +150,7 @@ export default function AdvisorClient({ instructions }: { instructions: Instruct
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    messages: [...messages, userMsg], // Send history + new message
+                    messages: [...messages, userMsg],
                     instructionContent: selectedInstruction.content
                 })
             });
@@ -179,71 +175,103 @@ export default function AdvisorClient({ instructions }: { instructions: Instruct
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="glass-panel p-8 rounded-2xl border border-white/5 text-center space-y-4 bg-gradient-to-b from-primary/10 to-transparent">
                     <Bot className="w-16 h-16 mx-auto text-primary mb-4" />
-                    <h1 className="text-3xl font-black tracking-tight text-white">AI Instruction Advisor</h1>
-                    <p className="text-white/60 max-w-2xl mx-auto text-lg">
-                        Select an instruction set to start chatting using our advanced AI.
-                        You can ask questions, clarify guidelines, or resolve ambiguities.
+                    <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">AI Instruction Advisor</h1>
+                    <p className="text-white/60 max-w-2xl mx-auto text-lg leading-relaxed">
+                        Select an instruction set, project guideline, or course to start chatting with our advanced AI.
+                        Ask questions, clarify guidelines, or resolve ambiguities in seconds.
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                    {/* Upload Card */}
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                        className="glass-panel p-6 rounded-2xl border border-dashed border-white/20 hover:bg-white/5 hover:border-primary/50 transition-all group flex flex-col items-center justify-center text-center gap-4 min-h-[240px]"
-                    >
-                        {isUploading ? (
-                            <>
-                                <Loader2 className="w-12 h-12 text-primary animate-spin" />
-                                <div className="space-y-1">
-                                    <h3 className="font-bold text-lg">Uploading...</h3>
-                                    <p className="text-sm text-muted-foreground">{uploadStatus}</p>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <Upload className="w-8 h-8 text-primary" />
-                                </div>
-                                <div className="space-y-1">
-                                    <h3 className="font-bold text-lg">Upload Watermarked Instructions</h3>
-                                    <p className="text-sm text-muted-foreground">PDF format supported • AI parsing enabled</p>
-                                </div>
-                            </>
-                        )}
-                    </button>
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden" />
+                <div className="grid lg:grid-cols-3 gap-8">
+                    {/* Left Column: Upload */}
+                    <div className="lg:col-span-1">
+                        <h3 className="font-bold text-lg text-white/80 px-2 mb-4 uppercase tracking-widest flex items-center gap-2">
+                            <Upload className="w-4 h-4 text-primary" />
+                            Upload New
+                        </h3>
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="w-full glass-panel p-8 rounded-2xl border border-dashed border-white/20 hover:bg-white/5 hover:border-primary/50 transition-all group flex flex-col items-center justify-center text-center gap-4 aspect-square"
+                        >
+                            {isUploading ? (
+                                <>
+                                    <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                                    <div className="space-y-1">
+                                        <h3 className="font-bold text-lg">Processing...</h3>
+                                        <p className="text-sm text-muted-foreground">{uploadStatus}</p>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xl">
+                                        <Upload className="w-10 h-10 text-primary" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="font-bold text-lg">Upload PDF</h3>
+                                        <p className="text-sm text-muted-foreground max-w-[200px]">AI will parse and extract rules automatically</p>
+                                    </div>
+                                </>
+                            )}
+                        </button>
+                        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden" />
+                    </div>
 
-                    {/* Existing Instructions */}
-                    <div className="space-y-4">
-                        <h3 className="font-bold text-lg text-white/80 px-2">Select from Library</h3>
-                        <div className="space-y-3 h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                            {instructions.map(inst => (
-                                <button
-                                    key={inst.id}
-                                    onClick={() => {
-                                        setSelectedInstruction(inst);
-                                        setMessages([{ role: 'assistant', content: `Hello! I'm ready to discuss "${inst.name}". What do you need help with?` }]);
-                                    }}
-                                    className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/30 transition-all group flex items-start gap-4"
-                                >
-                                    <div className="p-2 rounded-lg bg-black/20 text-muted-foreground group-hover:text-primary transition-colors">
-                                        <FileText className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-white group-hover:text-primary transition-colors">{inst.name}</div>
-                                        <div className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
-                                            {inst.is_uploaded && <span className="bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded">Uploaded</span>}
-                                            <span>{(inst.content || []).length} Sections</span>
+                    {/* Right Columns: Library */}
+                    <div className="lg:col-span-2 space-y-4">
+                        <h3 className="font-bold text-lg text-white/80 px-2 mb-4 uppercase tracking-widest flex items-center gap-2">
+                            <Archive className="w-4 h-4 text-primary" />
+                            Knowledge Library
+                        </h3>
+                        <div className="space-y-3 h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                            {instructions.map(inst => {
+                                const Icon = {
+                                    platform: FileText,
+                                    uploaded: Archive,
+                                    project: Layout,
+                                    course: GraduationCap
+                                }[inst.type] || FileText;
+
+                                return (
+                                    <button
+                                        key={`${inst.type}-${inst.id}`}
+                                        onClick={() => {
+                                            setSelectedInstruction(inst);
+                                            setMessages([{ role: 'assistant', content: `Hello! I'm ready to discuss "${inst.name}". What do you need help with?` }]);
+                                        }}
+                                        className="w-full text-left p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/30 transition-all group flex items-start gap-4"
+                                    >
+                                        <div className={`p-3 rounded-xl bg-black/40 text-muted-foreground group-hover:text-primary transition-colors ${inst.type === 'platform' ? 'text-blue-400' :
+                                                inst.type === 'uploaded' ? 'text-purple-400' :
+                                                    inst.type === 'project' ? 'text-amber-400' :
+                                                        'text-emerald-400'
+                                            }`}>
+                                            <Icon className="w-5 h-5" />
                                         </div>
-                                    </div>
-                                    <ChevronRight className="w-5 h-5 text-white/20 ml-auto group-hover:text-white transition-colors self-center" />
-                                </button>
-                            ))}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-bold text-white group-hover:text-primary transition-colors truncate">{inst.name}</div>
+                                            <div className="text-xs text-muted-foreground/60 flex items-center gap-2 mt-1">
+                                                <span className={`uppercase font-black tracking-tighter text-[9px] px-1.5 py-0.5 rounded ${inst.type === 'platform' ? 'bg-blue-500/10 text-blue-400' :
+                                                        inst.type === 'uploaded' ? 'bg-purple-500/10 text-purple-400' :
+                                                            inst.type === 'project' ? 'bg-amber-500/10 text-amber-400' :
+                                                                'bg-emerald-500/10 text-emerald-400'
+                                                    }`}>
+                                                    {inst.type}
+                                                </span>
+                                                <span className="w-1 h-1 rounded-full bg-white/10" />
+                                                <span>{Array.isArray(inst.content) ? `${inst.content.length} sections` : '1 document'}</span>
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-white/20 ml-auto group-hover:text-white transition-colors self-center" />
+                                    </button>
+                                );
+                            })}
+
                             {instructions.length === 0 && (
-                                <div className="text-center p-8 text-muted-foreground text-sm">
-                                    No instructions found. Upload one to get started!
+                                <div className="text-center p-12 glass-panel rounded-2xl border-dashed border-2 border-white/5 opacity-50">
+                                    <Archive className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                                    <h3 className="font-bold">Library is empty</h3>
+                                    <p className="text-sm text-muted-foreground">Upload or create instructions to see them here.</p>
                                 </div>
                             )}
                         </div>
@@ -255,64 +283,72 @@ export default function AdvisorClient({ instructions }: { instructions: Instruct
 
     // Chat View
     return (
-        <div className="h-[calc(100vh-120px)] flex flex-col glass-panel rounded-2xl border border-white/5 overflow-hidden animate-in fade-in duration-300">
+        <div className="h-[calc(100vh-140px)] flex flex-col glass-panel rounded-2xl border border-white/5 overflow-hidden animate-in fade-in duration-300 shadow-2xl">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/20 backdrop-blur-md">
+            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/40 backdrop-blur-xl">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => setSelectedInstruction(null)}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors text-muted-foreground hover:text-white"
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors text-muted-foreground hover:text-white shadow-inner"
                         title="Back to selection"
                     >
                         <ChevronLeft className="w-5 h-5" />
                     </button>
                     <div>
-                        <h2 className="font-bold text-white flex items-center gap-2">
+                        <h2 className="font-bold text-white flex items-center gap-2 tracking-tight">
                             <Bot className="w-5 h-5 text-primary" />
                             {selectedInstruction.name}
                         </h2>
-                        <p className="text-xs text-muted-foreground flex items-center gap-2">
-                            {selectedInstruction.is_uploaded ? 'Uploaded Instruction' : 'Platform Instruction'}
-                            <span className="w-1 h-1 rounded-full bg-white/20" />
-                            AI Advisor Active
-                        </p>
+                        <div className="text-[10px] text-muted-foreground flex items-center gap-2 uppercase font-black tracking-widest">
+                            <span className={
+                                selectedInstruction.type === 'platform' ? 'text-blue-400' :
+                                    selectedInstruction.type === 'uploaded' ? 'text-purple-400' :
+                                        selectedInstruction.type === 'project' ? 'text-amber-400' :
+                                            'text-emerald-400'
+                            }>{selectedInstruction.type} KNOWLEDGE</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-emerald-500/80">AI Active</span>
+                        </div>
                     </div>
                 </div>
                 <button
                     onClick={() => setSelectedInstruction(null)}
-                    className="text-xs font-bold text-primary hover:text-primary/80 transition-colors"
+                    className="text-xs font-black text-primary hover:text-primary/80 transition-all uppercase tracking-widest border border-primary/20 px-3 py-1.5 rounded-lg bg-primary/5 hover:bg-primary/10"
                 >
-                    CHANGE INSTRUCTION
+                    Switch Source
                 </button>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-black/10">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-gradient-to-b from-black/20 to-transparent">
                 {messages.map((msg, idx) => (
                     <div
                         key={idx}
-                        className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}
                     >
                         {msg.role === 'assistant' && (
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
-                                <Bot className="w-5 h-5 text-primary" />
+                            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1 shadow-lg">
+                                <Bot className="w-5.5 h-5.5 text-primary" />
                             </div>
                         )}
 
                         <div className={`
-                            max-w-[80%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm
+                            max-w-[80%] rounded-2xl p-5 text-sm leading-relaxed shadow-xl
                             ${msg.role === 'user'
                                 ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                                : 'bg-white/5 border border-white/5 text-white rounded-tl-sm'
+                                : 'bg-white/5 border border-white/5 text-white rounded-tl-sm backdrop-blur-sm'
                             }
                         `}>
-                            <div className="prose prose-invert prose-sm max-w-none">
+                            <div className="prose prose-invert prose-sm max-w-none prose-headings:text-primary prose-a:text-primary prose-strong:text-white">
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
                                     components={{
-                                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                                        ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
-                                        ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                                        p: ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed opacity-90">{children}</p>,
+                                        ul: ({ children }) => <ul className="list-disc pl-4 mb-3 space-y-1 opacity-90">{children}</ul>,
+                                        ol: ({ children }) => <ol className="list-decimal pl-4 mb-3 space-y-1 opacity-90">{children}</ol>,
+                                        h1: ({ children }) => <h1 className="text-lg font-black mb-2 uppercase tracking-tight">{children}</h1>,
+                                        h2: ({ children }) => <h2 className="text-base font-black mb-2 uppercase tracking-tight">{children}</h2>,
+                                        h3: ({ children }) => <h3 className="text-sm font-black mb-1 uppercase tracking-tight">{children}</h3>,
                                     }}
                                 >
                                     {msg.content}
@@ -321,8 +357,8 @@ export default function AdvisorClient({ instructions }: { instructions: Instruct
                         </div>
 
                         {msg.role === 'user' && (
-                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 mt-1">
-                                <User className="w-5 h-5 text-white" />
+                            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 mt-1 shadow-lg">
+                                <User className="w-5.5 h-5.5 text-white" />
                             </div>
                         )}
                     </div>
@@ -330,12 +366,12 @@ export default function AdvisorClient({ instructions }: { instructions: Instruct
 
                 {isLoading && (
                     <div className="flex gap-4">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
-                            <Bot className="w-5 h-5 text-primary" />
+                        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1 shadow-lg">
+                            <Bot className="w-5.5 h-5.5 text-primary" />
                         </div>
-                        <div className="bg-white/5 border border-white/5 text-white rounded-2xl rounded-tl-sm p-4 flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                            <span className="text-sm text-muted-foreground">Thinking...</span>
+                        <div className="bg-white/5 border border-white/5 text-white rounded-2xl rounded-tl-sm p-5 flex items-center gap-3 shadow-xl backdrop-blur-sm">
+                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                            <span className="text-sm font-bold text-white/50 animate-pulse tracking-widest uppercase text-[10px]">Consulting Guidelines...</span>
                         </div>
                     </div>
                 )}
@@ -343,26 +379,28 @@ export default function AdvisorClient({ instructions }: { instructions: Instruct
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-black/20 border-t border-white/10 backdrop-blur-md">
-                <form onSubmit={handleSendMessage} className="flex gap-3 relative max-w-4xl mx-auto">
-                    <input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Ask a question about these instructions..."
-                        className="flex-1 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none transition-colors"
-                        disabled={isLoading}
-                    />
+            <div className="p-6 bg-black/40 border-t border-white/10 backdrop-blur-2xl">
+                <form onSubmit={handleSendMessage} className="flex gap-4 relative max-w-5xl mx-auto items-center">
+                    <div className="relative flex-1 group">
+                        <input
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Type your question about these guidelines..."
+                            className="w-full bg-white/5 border border-white/10 group-hover:border-white/20 focus:border-primary/50 rounded-2xl px-6 py-4 text-white placeholder:text-muted-foreground/40 focus:outline-none transition-all shadow-inner"
+                            disabled={isLoading}
+                        />
+                    </div>
                     <button
                         type="submit"
                         disabled={!input.trim() || isLoading}
-                        className="p-3 bg-primary text-primary-foreground rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20"
+                        className="w-14 h-14 bg-primary text-primary-foreground rounded-2xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xl shadow-primary/20 flex items-center justify-center group"
                     >
-                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                        {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Send className="w-6 h-6 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />}
                     </button>
                 </form>
-                <div className="text-center mt-2">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                        AI can make mistakes. Check important guidelines manually.
+                <div className="text-center mt-4">
+                    <p className="text-[9px] text-muted-foreground/40 uppercase font-black tracking-[0.2em]">
+                        Labeltune AI Advisor • Powered by GPT-4o-mini
                     </p>
                 </div>
             </div>

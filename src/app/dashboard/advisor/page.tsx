@@ -1,9 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import AdvisorClient from './AdvisorClient';
+import { getUnifiedInstructions } from '../instructions/actions';
 
 export const metadata = {
     title: 'AI Advisor | Labeltune',
-    description: 'Chat with your labeling instructions using AI.',
+    description: 'Chat with your labeling instructions and knowledge base using AI.',
 };
 
 export default async function AdvisorPage() {
@@ -14,14 +15,11 @@ export default async function AdvisorPage() {
         return <div className="p-8 text-center text-red-400">Please log in to access the Advisor.</div>;
     }
 
-    const { data: instructions } = await supabase
-        .from('instructions')
-        .select('id, name, content, is_uploaded, description')
-        .order('created_at', { ascending: false });
+    const instructions = await getUnifiedInstructions();
 
     return (
         <div className="max-w-7xl mx-auto h-full pb-8">
-            <AdvisorClient instructions={instructions || []} />
+            <AdvisorClient instructions={instructions} />
         </div>
     );
 }

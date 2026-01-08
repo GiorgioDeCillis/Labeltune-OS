@@ -2,7 +2,17 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { InstructionSet } from '@/types/manual-types';
+import { InstructionSet, InstructionSection } from '@/types/manual-types';
+
+export interface UnifiedInstructionItem {
+    id: string;
+    name: string;
+    description: string | null;
+    content: any;
+    type: 'platform' | 'uploaded' | 'project' | 'course';
+    project_id?: string | null;
+    updated_at: string;
+}
 
 export async function createInstructionSet(data: Partial<InstructionSet>) {
     const supabase = await createClient();
@@ -91,15 +101,105 @@ export async function getInstructionSet(id: string) {
 }
 
 export async function getInstructionSets() {
+    return getUnifiedInstructions();
+}
+
+export async function getUnifiedInstructions(): Promise<UnifiedInstructionItem[]> {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Unauthorized');
 
-    const { data: instructionSets, error } = await supabase
+    // 1. Fetch standalone instructions
+    const { data: instructions, error: instError } = await supabase
         .from('instructions')
-        .select('id, name, content, updated_at')
+        .select('*')
         .order('created_at', { ascending: false });
 
-    if (error) throw new Error(error.message);
-    return instructionSets || [];
+    if (instError) throw new Error(instError.message);
+
+    const mappedInstructions: UnifiedInstructionItem[] = (instructions || []).map(inst => ({
+        id: inst.id,
+        name: inst.name,
+        description: inst.description,
+        content: inst.content,
+        type: inst.is_uploaded ? 'uploaded' : 'platform',
+        project_id: inst.project_id,
+        updated_at: inst.updated_at
+    }));
+
+    // 2. Fetch project guidelines
+    const { data: projects, error: projError } = await supabase
+        .from('projects')
+        .select('id, name, description, guidelines, updated_at')
+        .neq('status', 'draft');
+
+    if (projError) console.error('Error fetching projects for guidelines:', projError);
+
+    const projectInstructions: UnifiedInstructionItem[] = (projects || [])
+        .filter(p => p.guidelines && p.guidelines !== '[]' && p.guidelines !== '')
+        .map(p => {
+            let content = p.guidelines;
+            try {
+                if (typeof content === 'string' && (content.startsWith('[') || content.startsWith('{'))) {
+                    content = JSON.parse(content);
+                }
+            } catch (e) {
+                // If parsing fails, treat as raw text
+            }
+
+            return {
+                id: p.id,
+                name: `Instructions: ${p.name}`,
+                description: p.description,
+                content: content,
+                type: 'project',
+                project_id: p.id,
+                updated_at: p.updated_at
+            };
+        });
+
+    // 3. Fetch courses and lessons
+    const { data: courses, error: courseError } = await supabase
+        .from('courses')
+        .select(`
+            id, 
+            title, 
+            description, 
+            updated_at,
+            project_id,
+            lessons (
+                id,
+                title,
+                content,
+                order
+            )
+        `)
+        .order('created_at', { ascending: false });
+
+    if (courseError) console.error('Error fetching courses for instructions:', courseError);
+
+    const courseInstructions: UnifiedInstructionItem[] = (courses || []).map(c => {
+        // Aggregate lesson content into InstructionSections
+        const sections: InstructionSection[] = (c.lessons || [])
+            .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+            .map((l: any) => ({
+                id: l.id,
+                title: l.title,
+                content: l.content || ''
+            }));
+
+        return {
+            id: c.id,
+            name: `Course: ${c.title}`,
+            description: c.description,
+            content: sections,
+            type: 'course',
+            project_id: c.project_id,
+            updated_at: c.updated_at
+        };
+    });
+
+    return [...mappedInstructions, ...projectInstructions, ...courseInstructions].sort(
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    );
 }
