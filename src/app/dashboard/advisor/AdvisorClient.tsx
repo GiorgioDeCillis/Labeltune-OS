@@ -360,28 +360,24 @@ export default function AdvisorClient({ instructions, user }: { instructions: Un
                         </div>
 
                         {msg.role === 'user' && (
-                            {
-                                msg.role === 'user' && (
-                                    <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 mt-1 shadow-lg relative border-2 border-white/10">
-                                        {user?.user_metadata?.avatar_url && !avatarError ? (
-                                            <Image
-                                                src={user.user_metadata.avatar_url}
-                                                alt="Profile"
-                                                fill
-                                                className="object-cover"
-                                                onError={() => setAvatarError(true)}
-                                            />
-                                        ) : (
-                                            <Image
-                                                src={getDefaultAvatar(user?.user_metadata?.full_name)}
-                                                alt="Default Profile"
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        )}
-                                    </div>
-                                )
-                            }
+                            <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 mt-1 shadow-lg relative border-2 border-white/10">
+                                {user?.user_metadata?.avatar_url && !avatarError ? (
+                                    <Image
+                                        src={user.user_metadata.avatar_url}
+                                        alt="Profile"
+                                        fill
+                                        className="object-cover"
+                                        onError={() => setAvatarError(true)}
+                                    />
+                                ) : (
+                                    <Image
+                                        src={getDefaultAvatar(user?.user_metadata?.full_name)}
+                                        alt="Default Profile"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                )}
+                            </div>
                         )}
                     </div>
                 ))}
