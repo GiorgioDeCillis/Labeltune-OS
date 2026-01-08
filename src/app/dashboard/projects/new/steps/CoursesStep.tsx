@@ -210,13 +210,13 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
                                 <button
                                     onClick={() => setInstructionSource('wizard')}
                                     disabled={!hasInstructions}
-                                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${instructionSource === 'wizard' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-white disabled:opacity-30'}`}
+                                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${instructionSource === 'wizard' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground hover:text-white disabled:opacity-30'}`}
                                 >
                                     Current Project Instructions
                                 </button>
                                 <button
                                     onClick={() => setInstructionSource('saved')}
-                                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${instructionSource === 'saved' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-white'}`}
+                                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-md transition-all ${instructionSource === 'saved' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground hover:text-white'}`}
                                 >
                                     Load from Library
                                 </button>
@@ -243,17 +243,16 @@ export function CoursesStep({ availableCourses, selectedCourseIds, onToggleCours
                                         </div>
 
                                         {savedInstructionSets.length > 0 ? (
-                                            <select
-                                                value={selectedSavedId}
-                                                onChange={(e) => setSelectedSavedId(e.target.value)}
-                                                className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-sm focus:outline-none focus:border-purple-500/50"
-                                            >
-                                                {savedInstructionSets.map(set => (
-                                                    <option key={set.id} value={set.id}>
-                                                        {set.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <div className="relative">
+                                                <CustomSelect
+                                                    name="instruction_set"
+                                                    label="Instruction Set"
+                                                    placeholder="Select saved instructions"
+                                                    options={savedInstructionSets.map(s => ({ code: s.id, name: s.name }))}
+                                                    value={selectedSavedId}
+                                                    onChange={(val) => setSelectedSavedId(val)}
+                                                />
+                                            </div>
                                         ) : (
                                             <p className="text-sm text-muted-foreground text-center italic">No saved instructions found.</p>
                                         )}
