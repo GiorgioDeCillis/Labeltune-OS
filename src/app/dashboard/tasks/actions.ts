@@ -157,7 +157,7 @@ export async function cleanupProjectTasks(projectId: string) {
     // Fetch tasks specifically for this project (matching monitoring page query)
     const { data: tasks, error: fetchError } = await supabase
         .from('tasks')
-        .select('id, project_id, status, assigned_to, annotator_started_at, updated_at')
+        .select('id, project_id, status, assigned_to, annotator_started_at')
         .eq('project_id', projectId)
         .eq('status', 'in_progress');
 
@@ -166,7 +166,7 @@ export async function cleanupProjectTasks(projectId: string) {
         return { success: false, error: fetchError.message };
     }
 
-    console.log(`[CLEANUP] Found ${tasks?.length || 0} in_progress tasks for project ${projectId}`);
+    // console.log(`[CLEANUP] Found ${tasks?.length || 0} in_progress tasks for project ${projectId}`);
 
     if (!tasks || tasks.length === 0) return { success: true, count: 0 };
 
@@ -178,24 +178,21 @@ export async function cleanupProjectTasks(projectId: string) {
 
         const startedAt = new Date(task.annotator_started_at);
         const wallClockDiffSec = (now.getTime() - startedAt.getTime()) / 1000;
+        const wallClockDiffMin = wallClockDiffSec / 60;
 
         let isExpired = false;
 
-        // DEBUG: Force expire any task older than 1 second for this test
-        if (wallClockDiffSec > 1) {
-            console.log(`[CLEANUP] SURGICAL EXPIRE: Task ${task.id} (WallClock: ${wallClockDiffSec}s)`);
+        // 1. Absolute Expiration Check (Hard limit since start)
+        if (absolute_expiration_duration && wallClockDiffMin > absolute_expiration_duration) {
             isExpired = true;
         }
 
-        // 1. Absolute Expiration Check
-        if (!isExpired && absolute_expiration_duration && wallClockDiffSec > absolute_expiration_duration) {
-            isExpired = true;
-        }
-
-        // 2. Task Time + Extra Time Check
+        // 2. Task Time + Extra Time Check (Soft limit)
         if (!isExpired && max_task_time) {
-            const totalAllowedSec = max_task_time + (extra_time_after_max || 0);
-            if (wallClockDiffSec > totalAllowedSec + 60) {
+            const totalAllowedMin = max_task_time + (extra_time_after_max || 0);
+
+            // Allow a small buffer (e.g. 1 minute)
+            if (wallClockDiffMin > totalAllowedMin + 1) {
                 isExpired = true;
             }
         }
