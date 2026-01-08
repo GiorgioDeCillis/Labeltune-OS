@@ -160,7 +160,11 @@ export function ProjectTasksClient({ initialTasks, projectId, payRate, userRole 
                                             <div className="flex flex-col">
                                                 <Link href={`/dashboard/projects/${projectId}/tasks/${task.id}`} className="hover:text-primary transition-colors flex items-center gap-2">
                                                     <span className="font-mono text-sm">#{task.id.slice(0, 8)}</span>
-                                                    {task.parent_task_id && <Copy className="w-3 h-3 text-primary/50" title="Requeued from original" />}
+                                                    {task.parent_task_id && (
+                                                        <span title="Requeued from original">
+                                                            <Copy className="w-3 h-3 text-primary/50" />
+                                                        </span>
+                                                    )}
                                                 </Link>
                                                 <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-1" suppressHydrationWarning>
                                                     <Clock className="w-3 h-3" />
