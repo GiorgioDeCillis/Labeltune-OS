@@ -23,7 +23,7 @@ interface Message {
     content: string;
 }
 
-export default function AdvisorClient({ instructions, user }: { instructions: UnifiedInstructionItem[], user: any }) {
+export default function AdvisorClient({ instructions, user, userProfile }: { instructions: UnifiedInstructionItem[], user: any, userProfile: any }) {
     const router = useRouter();
     const { showToast } = useToast();
     const [avatarError, setAvatarError] = useState(false);
@@ -338,7 +338,7 @@ export default function AdvisorClient({ instructions, user }: { instructions: Un
                         <div className={`
                             max-w-[80%] rounded-2xl p-5 text-sm leading-relaxed shadow-xl
                             ${msg.role === 'user'
-                                ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                                ? 'bg-primary/20 border border-white/20 text-white rounded-tr-sm backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]'
                                 : 'bg-white/5 border border-white/5 text-white rounded-tl-sm backdrop-blur-sm'
                             }
                         `}>
@@ -361,9 +361,9 @@ export default function AdvisorClient({ instructions, user }: { instructions: Un
 
                         {msg.role === 'user' && (
                             <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 mt-1 shadow-lg relative border-2 border-white/10">
-                                {user?.user_metadata?.avatar_url && !avatarError ? (
+                                {userProfile?.avatar_url && !avatarError ? (
                                     <Image
-                                        src={user.user_metadata.avatar_url}
+                                        src={userProfile.avatar_url}
                                         alt="Profile"
                                         fill
                                         className="object-cover"
@@ -371,7 +371,7 @@ export default function AdvisorClient({ instructions, user }: { instructions: Un
                                     />
                                 ) : (
                                     <Image
-                                        src={getDefaultAvatar(user?.user_metadata?.full_name)}
+                                        src={getDefaultAvatar(userProfile?.full_name || user?.user_metadata?.full_name)}
                                         alt="Default Profile"
                                         fill
                                         className="object-cover"
@@ -418,7 +418,7 @@ export default function AdvisorClient({ instructions, user }: { instructions: Un
                 </form>
                 <div className="text-center mt-4">
                     <p className="text-[9px] text-muted-foreground/40 uppercase font-black tracking-[0.2em]">
-                        Labeltune AI Advisor • Powered by GPT-4o-mini
+                        Labeltune AI Advisor
                     </p>
                 </div>
             </div>
