@@ -265,6 +265,11 @@ export async function getNextCourseId(currentCourseId: string) {
     return courses[currentIndex + 1].id;
 }
 
+const isValidUUID = (id: string) => {
+    const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return regex.test(id);
+};
+
 export async function saveCourseWithLessons(
     projectId: string | null,
     courseData: Partial<Course>,
@@ -312,9 +317,10 @@ export async function saveCourseWithLessons(
         // 2. Handle Lessons
         // First delete existing lessons not present in the new list (if updating)
         if (courseId) {
+            // CRITICAL FIX: Only include valid UUIDs in the filter to avoid Postgres "invalid input syntax for uuid" error
             const currentIds = lessons
-                .filter(l => l.id && !l.id.startsWith('temp-'))
-                .map(l => l.id);
+                .map(l => l.id)
+                .filter((id): id is string => !!id && isValidUUID(id));
 
             // Get all lessons for course, identify which to delete.
             const { data: allExisting } = await supabase.from('lessons').select('id').eq('course_id', finalCourseId);
@@ -330,7 +336,8 @@ export async function saveCourseWithLessons(
         // We handle this sequentially to ensure order and avoid complexity with bulk upsert of mixed new/old
         for (let i = 0; i < lessons.length; i++) {
             const l = lessons[i];
-            const isNew = !l.id || l.id.startsWith('temp-');
+            // Treat as new if ID is missing OR if it is not a valid UUID (e.g. temp-..., lesson-...)
+            const isNew = !l.id || !isValidUUID(l.id);
 
             const lessonPayload = {
                 course_id: finalCourseId,
@@ -372,4 +379,3 @@ export async function saveCourseWithLessons(
 
     return { success: true, courseId: finalCourseId };
 }
-
