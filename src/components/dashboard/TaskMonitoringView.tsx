@@ -590,7 +590,8 @@ function renderComponent(component: TaskComponent, payload: any, labels: any) {
         case 'Rating': return <RatingControl component={component} value={value} onChange={() => { }} readOnly={true} />;
         case 'TextArea': return <TextAreaControl component={component} value={value} onChange={() => { }} readOnly={true} />;
         case 'Labels':
-        case 'RectangleLabels': return <ImageLabelsControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'RectangleLabels':
+        case 'PolygonLabels': return <ImageLabelsControl component={component} value={value} onChange={() => { }} readOnly={true} data={payload} />;
         case 'RubricScorer': return <RubricScorerControl component={component} value={value} onChange={() => { }} readOnly={true} />;
         case 'Ranking': return <RankingControl component={component} value={value} onChange={() => { }} readOnly={true} />;
         case 'Feedback': return <FeedbackControl component={component} value={value} onChange={() => { }} readOnly={true} />;
