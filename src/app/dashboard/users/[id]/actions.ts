@@ -53,20 +53,20 @@ export async function getUserDetails(userId: string) {
     const { data: tasks, error: tasksError } = await adminSupabase
         .from('tasks')
         .select('*')
-        .or(`annotator_id.eq.${userId},reviewer_id.eq.${userId}`);
+        .or(`assigned_to.eq.${userId},reviewed_by.eq.${userId}`);
 
     if (tasksError) {
         console.error('Error fetching tasks:', tasksError);
     }
 
     // Calculate stats
-    const annotatorTasks = tasks?.filter(t => t.annotator_id === userId) || [];
-    const reviewerTasks = tasks?.filter(t => t.reviewer_id === userId) || [];
+    const annotatorTasks = tasks?.filter(t => t.assigned_to === userId) || [];
+    const reviewerTasks = tasks?.filter(t => t.reviewed_by === userId) || [];
 
     const totalEarnings = (tasks || []).reduce((acc, task) => {
         let earning = 0;
-        if (task.annotator_id === userId) earning += (task.annotator_earnings || 0);
-        if (task.reviewer_id === userId) earning += (task.reviewer_earnings || 0);
+        if (task.assigned_to === userId) earning += (task.annotator_earnings || 0);
+        if (task.reviewed_by === userId) earning += (task.reviewer_earnings || 0);
         return acc + earning;
     }, 0);
 
