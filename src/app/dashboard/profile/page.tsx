@@ -607,6 +607,33 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
+                {/* Wallpaper Selection */}
+                <div className="space-y-4 pt-10 border-t border-white/5">
+                    <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Sfondo Desktop</label>
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                        {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
+                            <button
+                                key={wp.id}
+                                onClick={() => setWallpaper(wp.url)}
+                                className={`relative h-24 rounded-2xl overflow-hidden border-2 transition-all group ${wallpaper.includes(wp.id) ? 'border-primary ring-4 ring-primary/20 scale-105' : 'border-transparent opacity-60 hover:opacity-100'
+                                    }`}
+                            >
+                                <Image
+                                    src={wp.url}
+                                    alt="Wallpaper"
+                                    fill
+                                    className="object-cover transition-transform group-hover:scale-110"
+                                />
+                                {wallpaper.includes(wp.id) && (
+                                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                                        <Zap className="w-5 h-5 text-primary-foreground fill-primary" />
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 <div className="grid lg:grid-cols-2 gap-12 pt-10 border-t border-white/5">
                     {/* Trail Mode Selection */}
                     <div className="space-y-6">
@@ -667,33 +694,6 @@ export default function ProfilePage() {
                                 </button>
                             ))}
                         </div>
-                    </div>
-                </div>
-
-                {/* Wallpaper Selection */}
-                <div className="space-y-4 pt-6 border-t border-white/5">
-                    <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Sfondo Desktop</label>
-                    <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-                        {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
-                            <button
-                                key={wp.id}
-                                onClick={() => setWallpaper(wp.url)}
-                                className={`relative h-24 rounded-2xl overflow-hidden border-2 transition-all group ${wallpaper.includes(wp.id) ? 'border-primary ring-4 ring-primary/20 scale-105' : 'border-transparent opacity-60 hover:opacity-100'
-                                    }`}
-                            >
-                                <Image
-                                    src={wp.url}
-                                    alt="Wallpaper"
-                                    fill
-                                    className="object-cover transition-transform group-hover:scale-110"
-                                />
-                                {wallpaper.includes(wp.id) && (
-                                    <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                                        <Zap className="w-5 h-5 text-primary-foreground fill-primary" />
-                                    </div>
-                                )}
-                            </button>
-                        ))}
                     </div>
                 </div>
             </motion.section>
