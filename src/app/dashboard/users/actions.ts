@@ -24,22 +24,33 @@ export async function getUsers() {
 
     const adminSupabase = await createAdminClient();
 
-    // Fetch all auth users
-    const { data: { users }, error: usersError } = await adminSupabase.auth.admin.listUsers();
+    console.log('Fetching auth users...');
+    const { data: usersData, error: usersError } = await adminSupabase.auth.admin.listUsers();
 
     if (usersError) {
-        throw usersError;
+        console.error('Error fetching auth users:', usersError);
+        throw new Error(`Failed to fetch auth users: ${usersError.message}`);
     }
 
+    if (!usersData || !usersData.users) {
+        console.error('No users data returned from Supabase Auth');
+        throw new Error('No users data returned from Supabase Auth');
+    }
+
+    const { users } = usersData;
+
+    console.log(`Fetched ${users.length} auth users. Fetching profiles...`);
     // Fetch all profiles
     const { data: profiles, error: profilesError } = await adminSupabase
         .from('profiles')
         .select('*');
 
     if (profilesError) {
-        throw profilesError;
+        console.error('Error fetching profiles:', profilesError);
+        throw new Error(`Failed to fetch profiles: ${profilesError.message}`);
     }
 
+    console.log(`Fetched ${profiles?.length || 0} profiles. Merging data...`);
     // Merge data
     const combinedUsers = users.map(authUser => {
         const profile = profiles?.find(p => p.id === authUser.id);
@@ -54,7 +65,7 @@ export async function getUsers() {
         return {
             id: authUser.id,
             email: authUser.email,
-            full_name: profile?.full_name || profile?.first_name ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'N/A',
+            full_name: profile?.full_name || (profile?.first_name ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'N/A'),
             avatar_url: profile?.avatar_url,
             role: profile?.role || 'user',
             status,
