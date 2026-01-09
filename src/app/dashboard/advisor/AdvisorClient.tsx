@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Image from 'next/image';
 import { getDefaultAvatar } from '@/utils/avatar';
+import { GuidelinesViewer } from '@/components/GuidelinesViewer';
 
 // Use dynamic import for pdfjs to avoid server-side issues
 const getPdfJs = async () => {
@@ -43,6 +44,7 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
     const [isEditingName, setIsEditingName] = useState(false);
     const [editedName, setEditedName] = useState('');
     const [isRenaming, setIsRenaming] = useState(false);
+    const [showGuidelines, setShowGuidelines] = useState(false);
 
     const isAdmin = userProfile?.role === 'admin';
     const isPM = userProfile?.role === 'pm';
@@ -403,12 +405,21 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
                         </div>
                     </div>
                 </div>
-                <button
-                    onClick={() => setSelectedInstruction(null)}
-                    className="text-xs font-black text-primary hover:text-primary/80 transition-all uppercase tracking-widest border border-primary/20 px-3 py-1.5 rounded-lg bg-primary/5 hover:bg-primary/10"
-                >
-                    Switch Source
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setShowGuidelines(true)}
+                        className="text-xs font-black text-blue-400 hover:text-blue-300 transition-all uppercase tracking-widest border border-blue-400/20 px-3 py-1.5 rounded-lg bg-blue-400/5 hover:bg-blue-400/10 flex items-center gap-2"
+                    >
+                        <FileText className="w-3.5 h-3.5" />
+                        View Instructions
+                    </button>
+                    <button
+                        onClick={() => setSelectedInstruction(null)}
+                        className="text-xs font-black text-primary hover:text-primary/80 transition-all uppercase tracking-widest border border-primary/20 px-3 py-1.5 rounded-lg bg-primary/5 hover:bg-primary/10"
+                    >
+                        Switch Source
+                    </button>
+                </div>
             </div>
 
             {/* Messages */}
@@ -511,6 +522,13 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
                     </p>
                 </div>
             </div>
+            {selectedInstruction && (
+                <GuidelinesViewer
+                    guidelines={selectedInstruction.content}
+                    isOpen={showGuidelines}
+                    onClose={() => setShowGuidelines(false)}
+                />
+            )}
         </div>
     );
 }
