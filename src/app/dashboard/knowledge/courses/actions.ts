@@ -379,3 +379,54 @@ export async function saveCourseWithLessons(
 
     return { success: true, courseId: finalCourseId };
 }
+
+export async function duplicateCourse(courseId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    // 1. Fetch original course and lessons
+    const { data: originalCourse, error: courseError } = await supabase
+        .from('courses')
+        .select('*, lessons (*)')
+        .eq('id', courseId)
+        .single();
+
+    if (courseError) throw new Error(courseError.message);
+
+    // 2. Create duplicate course
+    const { data: newCourse, error: insertCourseError } = await supabase
+        .from('courses')
+        .insert({
+            title: `${originalCourse.title} (Copy)`,
+            description: originalCourse.description,
+            duration: originalCourse.duration,
+            project_id: null, // Never link to a project
+        })
+        .select()
+        .single();
+
+    if (insertCourseError) throw new Error(insertCourseError.message);
+
+    // 3. Duplicate lessons
+    if (originalCourse.lessons && originalCourse.lessons.length > 0) {
+        const duplicateLessons = originalCourse.lessons.map((l: any) => ({
+            course_id: newCourse.id,
+            title: l.title,
+            content: l.content,
+            order: l.order,
+            video_url: l.video_url,
+            type: l.type,
+            quiz_data: l.quiz_data
+        }));
+
+        const { error: lessonsError } = await supabase
+            .from('lessons')
+            .insert(duplicateLessons);
+
+        if (lessonsError) throw new Error(lessonsError.message);
+    }
+
+    revalidatePath('/dashboard/knowledge');
+    return newCourse;
+}

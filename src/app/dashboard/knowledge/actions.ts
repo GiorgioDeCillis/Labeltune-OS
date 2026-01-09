@@ -238,3 +238,42 @@ export async function renameInstruction(id: string, newName: string, role: strin
 
     return { success: true };
 }
+
+export async function duplicateInstructionSet(id: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    // 1. Fetch original instruction
+    const { data: original, error: fetchError } = await supabase
+        .from('instructions')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (fetchError) throw new Error(fetchError.message);
+
+    // 2. Prepare duplicate data
+    const duplicateData = {
+        name: `${original.name} (Copy)`,
+        description: original.description,
+        content: original.content,
+        project_id: null, // Never link to a project
+        is_uploaded: false, // Always becomes a platform template
+        organization_id: original.organization_id,
+        user_id: user.id,
+        admin_name: original.admin_name ? `${original.admin_name} (Copy)` : null
+    };
+
+    // 3. Insert duplicate
+    const { data: duplicate, error: insertError } = await supabase
+        .from('instructions')
+        .insert(duplicateData)
+        .select()
+        .single();
+
+    if (insertError) throw new Error(insertError.message);
+
+    revalidatePath('/dashboard/knowledge');
+    return duplicate;
+}

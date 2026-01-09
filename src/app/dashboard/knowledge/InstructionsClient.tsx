@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ChevronRight, FileText, Trash2, BookOpen, Layout, GraduationCap, Archive, Search, Pencil, Check, X, Loader2 } from 'lucide-react';
-import { deleteInstructionSet, UnifiedInstructionItem, renameInstruction } from './actions';
-import { deleteCourse } from './courses/actions';
+import { ChevronRight, FileText, Trash2, BookOpen, Layout, GraduationCap, Archive, Search, Pencil, Check, X, Loader2, Copy } from 'lucide-react';
+import { deleteInstructionSet, UnifiedInstructionItem, renameInstruction, duplicateInstructionSet } from './actions';
+import { deleteCourse, duplicateCourse } from './courses/actions';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 
@@ -25,6 +25,7 @@ export default function InstructionsClient({ instructions, userProfile }: Instru
     const [renamingId, setRenamingId] = useState<string | null>(null);
     const [editedName, setEditedName] = useState('');
     const [isRenaming, setIsRenaming] = useState(false);
+    const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
     const isAdmin = userProfile?.role === 'admin';
     const isPM = userProfile?.role === 'pm';
@@ -89,7 +90,26 @@ export default function InstructionsClient({ instructions, userProfile }: Instru
         } finally {
             setIsDeleting(false);
             setDeleteDialogOpen(false);
-            setInstructionToDelete(null);
+        }
+    };
+
+    const handleDuplicate = async (e: React.MouseEvent, instruction: UnifiedInstructionItem) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        setDuplicatingId(instruction.id);
+        try {
+            if (instruction.type === 'course') {
+                await duplicateCourse(instruction.id);
+            } else {
+                await duplicateInstructionSet(instruction.id);
+            }
+            showToast(`${instruction.type === 'course' ? 'Course' : 'Instruction set'} duplicated successfully`, 'success');
+            router.refresh();
+        } catch (error: any) {
+            showToast(error.message || `Failed to duplicate ${instruction.type === 'course' ? 'course' : 'instruction set'}`, 'error');
+        } finally {
+            setDuplicatingId(null);
         }
     };
 
@@ -203,9 +223,23 @@ export default function InstructionsClient({ instructions, userProfile }: Instru
                             <button
                                 onClick={(e) => handleDeleteClick(e, instruction)}
                                 className="p-2 rounded-full bg-white/5 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all sm:opacity-0 group-hover:opacity-100"
-                                title="Delete Instruction"
+                                title="Delete"
                             >
                                 <Trash2 className="w-4 h-4" />
+                            </button>
+                        )}
+                        {(isAdmin || isPM) && (instruction.type === 'platform' || instruction.type === 'uploaded' || instruction.type === 'course') && (
+                            <button
+                                onClick={(e) => handleDuplicate(e, instruction)}
+                                disabled={duplicatingId === instruction.id}
+                                className="p-2 rounded-full bg-white/5 text-primary hover:bg-primary/20 hover:text-primary transition-all sm:opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                                title="Duplicate"
+                            >
+                                {duplicatingId === instruction.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Copy className="w-4 h-4" />
+                                )}
                             </button>
                         )}
                         <div className="p-1.5 rounded-full bg-white/5 text-primary group-hover:translate-x-1 transition-transform">
