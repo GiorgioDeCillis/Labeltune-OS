@@ -23,6 +23,7 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
     const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
     const [brightness, setBrightness] = useState(100);
     const [contrast, setContrast] = useState(100);
+    const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
     // Tools: 'select' | 'rect' | 'polygon' | 'pan'
     const [tool, setTool] = useState<'select' | 'rect' | 'polygon' | 'pan'>('select');
@@ -111,13 +112,15 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
         }
     };
 
-    const handleStageMouseMove = () => {
+    const handleStageMouseMove = (e: any) => {
         if (readOnly) return;
+        const [x, y] = getMousePos();
+        setCursorPos({ x, y });
+
         if (tool === 'rect' && newRegionPoints.length > 0) {
             const [startX, startY] = newRegionPoints;
-            const [currX, currY] = getMousePos();
-            const width = currX - startX;
-            const height = currY - startY;
+            const width = x - startX;
+            const height = y - startY;
             setNewRegionPoints([startX, startY, width, height]);
         }
     };
@@ -179,6 +182,8 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
     // Keydown handlers for delete, etc.
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;
+
             if (selectedId && (e.key === 'Delete' || e.key === 'Backspace')) {
                 onChange(value.filter(r => r.id !== selectedId));
                 setSelectedId(null);
@@ -190,10 +195,25 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
                 setTool('select');
                 setSelectedId(null);
             }
+
+            // Tool Shortcuts
+            if (e.key === 'v') setTool('select');
+            if (e.key === 'm') setTool('pan');
+            if (e.key === 'r') setTool('rect');
+            if (e.key === 'p') setTool('polygon');
+
+            // Label Shortcuts (1-9)
+            if (e.key >= '1' && e.key <= '9') {
+                const index = parseInt(e.key) - 1;
+                const labels = component.imageConfig?.labels || [];
+                if (labels[index]) {
+                    setActiveLabel(labels[index].value);
+                }
+            }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedId, value]);
+    }, [selectedId, value, component.imageConfig?.labels]);
 
 
     // Styles for image filters (applied via CSS filter)
@@ -230,6 +250,28 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
 
                     <div className="w-px h-6 bg-white/10" />
 
+                    {/* Brightness/Contrast UI */}
+                    {component.imageConfig?.canBrightnessContrast && (
+                        <div className="flex items-center gap-3 px-3 border-x border-white/10">
+                            <div className="flex items-center gap-2">
+                                <Sun className="w-3.5 h-3.5 text-muted-foreground" />
+                                <input
+                                    type="range" min="50" max="200" value={brightness}
+                                    onChange={(e) => setBrightness(parseInt(e.target.value))}
+                                    className="w-16 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <FileCode className="w-3.5 h-3.5 text-muted-foreground rotate-90" />
+                                <input
+                                    type="range" min="50" max="200" value={contrast}
+                                    onChange={(e) => setContrast(parseInt(e.target.value))}
+                                    className="w-16 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     {/* Zoom Controls */}
                     <div className="flex items-center bg-black/30 rounded-lg border border-white/5 p-1 gap-1">
                         <button onClick={() => setStageScale(s => Math.max(0.1, s - 0.1))} className="p-1 hover:bg-white/10 rounded"><ZoomOut className="w-3 h-3" /></button>
@@ -246,6 +288,7 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
                     width={800} // This should be responsive, but for now fixed/flexible container
                     height={600}
                     className="w-full h-full"
+                    style={{ filter: `brightness(${brightness}%) contrast(${contrast}%)` }}
                     scaleX={stageScale}
                     scaleY={stageScale}
                     x={stagePos.x}
@@ -349,16 +392,32 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
                         {tool === 'polygon' && newRegionPoints.length > 0 && (
                             <>
                                 <Line
+                                    points={[...newRegionPoints, cursorPos.x, cursorPos.y]}
+                                    stroke="yellow"
+                                    strokeWidth={2 / stageScale}
+                                    dash={[4, 4]}
+                                    closed={false}
+                                />
+                                <Line
                                     points={newRegionPoints}
                                     stroke="yellow"
                                     strokeWidth={2 / stageScale}
                                     closed={false}
                                 />
                                 {newRegionPoints.map((p, i) => (
-                                    i % 2 === 0 ? <Circle key={i} x={newRegionPoints[i]} y={newRegionPoints[i + 1]} radius={3 / stageScale} fill="yellow" /> : null
+                                    i % 2 === 0 ? (
+                                        <Circle
+                                            key={i}
+                                            x={newRegionPoints[i]}
+                                            y={newRegionPoints[i + 1]}
+                                            radius={i === 0 ? 6 / stageScale : 3 / stageScale} // Larger anchor for first point
+                                            fill={i === 0 ? "white" : "yellow"}
+                                            stroke="black"
+                                            strokeWidth={1 / stageScale}
+                                            onClick={handlePolygonPointClick}
+                                        />
+                                    ) : null
                                 ))}
-                                {/* Guide line to cursor */}
-                                {/* Need cursor pos in stage coords for this, simplified for now */}
                             </>
                         )}
 
