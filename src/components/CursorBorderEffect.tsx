@@ -1,14 +1,27 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { useTheme } from '@/context/ThemeContext';
 
 export const CursorBorderEffect: React.FC = () => {
+    const { trailMode, trailSize } = useTheme();
     const containerRef = useRef<HTMLDivElement>(null);
     const currentTargetRef = useRef<HTMLElement | null>(null);
     const lastMousePos = useRef({ x: 0, y: 0 });
     const isVisibleRef = useRef(false);
 
     useEffect(() => {
+        if (trailMode === 'disabled') {
+            if (currentTargetRef.current) {
+                currentTargetRef.current = null;
+                isVisibleRef.current = false;
+                if (containerRef.current) {
+                    containerRef.current.style.setProperty('--opacity', '0');
+                }
+            }
+            return;
+        }
+
         const container = containerRef.current;
         if (!container) return;
 
@@ -47,7 +60,11 @@ export const CursorBorderEffect: React.FC = () => {
         };
 
         const findTarget = (el: HTMLElement): HTMLElement | null => {
-            const interactive = el.closest('button, a, input, select, textarea, [role="button"], .glass-panel, .hyprland-window, .cursor-pointer, .card') as HTMLElement;
+            const selector = trailSize === 'large'
+                ? '.glass-panel, .hyprland-window, .card'
+                : 'button, a, input, select, textarea, [role="button"], .glass-panel, .hyprland-window, .cursor-pointer, .card';
+
+            const interactive = el.closest(selector) as HTMLElement;
             const inSidebar = el.closest('aside') || el.closest('.Sidebar');
             return interactive && !inSidebar ? interactive : null;
         };
@@ -80,7 +97,9 @@ export const CursorBorderEffect: React.FC = () => {
             window.removeEventListener('scroll', onScroll, true);
             cancelAnimationFrame(rafId);
         };
-    }, []);
+    }, [trailMode, trailSize]);
+
+    if (trailMode === 'disabled') return null;
 
     return (
         <div
@@ -101,7 +120,8 @@ export const CursorBorderEffect: React.FC = () => {
             }}
         >
             <div
-                className="animate-border-follow"
+                key={currentTargetRef.current?.innerText || currentTargetRef.current?.id || 'trail'}
+                className={trailMode === 'static' ? 'animate-border-follow-once' : 'animate-border-follow'}
                 style={{
                     position: 'absolute',
                     inset: 0,

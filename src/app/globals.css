@@ -242,6 +242,10 @@
   animation: border-follow 2s linear infinite;
 }
 
+.animate-border-follow-once {
+  animation: border-follow 2s linear forwards;
+}
+
 /* Scrollbar customization */
 ::-webkit-scrollbar {
   width: 6px;

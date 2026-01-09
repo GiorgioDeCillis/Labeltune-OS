@@ -15,6 +15,10 @@ interface ThemeContextType {
   blur: number;
   transparency: number;
   avatarUrl: string | null;
+  trailMode: 'loop' | 'static' | 'disabled';
+  trailSize: 'all' | 'large';
+  setTrailMode: (mode: 'loop' | 'static' | 'disabled') => void;
+  setTrailSize: (size: 'all' | 'large') => void;
   setTheme: (theme: ThemeType) => void;
   setWallpaper: (url: string) => void;
   setBlur: (value: number) => void;
@@ -29,6 +33,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [wallpaper, setWallpaperState] = useState<string>('/themes/osaka-jade/2-osaka-jade-bg.jpg');
   const [blur, setBlurState] = useState<number>(20);
   const [transparency, setTransparencyState] = useState<number>(0.10);
+  const [trailMode, setTrailModeState] = useState<'loop' | 'static' | 'disabled'>('loop');
+  const [trailSize, setTrailSizeState] = useState<'all' | 'large'>('all');
   const [avatarUrl, setAvatarUrlState] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,11 +43,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const savedWallpaper = localStorage.getItem('labeltune-wallpaper');
     const savedBlur = localStorage.getItem('labeltune-blur');
     const savedTransparency = localStorage.getItem('labeltune-transparency');
+    const savedTrailMode = localStorage.getItem('labeltune-trail-mode');
+    const savedTrailSize = localStorage.getItem('labeltune-trail-size');
 
     if (savedTheme) setThemeState(savedTheme);
     if (savedWallpaper) setWallpaperState(savedWallpaper);
     if (savedBlur) setBlurState(parseFloat(savedBlur));
     if (savedTransparency) setTransparencyState(parseFloat(savedTransparency));
+    if (savedTrailMode) setTrailModeState(savedTrailMode as any);
+    if (savedTrailSize) setTrailSizeState(savedTrailSize as any);
   }, []);
 
   const setTheme = (newTheme: ThemeType) => {
@@ -77,8 +87,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setAvatarUrlState(url);
   };
 
+  const setTrailMode = (mode: 'loop' | 'static' | 'disabled') => {
+    setTrailModeState(mode);
+    localStorage.setItem('labeltune-trail-mode', mode);
+  };
+
+  const setTrailSize = (size: 'all' | 'large') => {
+    setTrailSizeState(size);
+    localStorage.setItem('labeltune-trail-size', size);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, wallpaper, blur, transparency, avatarUrl, setTheme, setWallpaper, setBlur, setTransparency, setAvatarUrl }}>
+    <ThemeContext.Provider value={{
+      theme, wallpaper, blur, transparency, avatarUrl, trailMode, trailSize,
+      setTheme, setWallpaper, setBlur, setTransparency, setAvatarUrl, setTrailMode, setTrailSize
+    }}>
       <div
         data-theme={theme}
         className="min-h-screen transition-all duration-500 ease-in-out"
