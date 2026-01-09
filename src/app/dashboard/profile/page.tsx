@@ -533,7 +533,7 @@ export default function ProfilePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="glass-panel p-8 rounded-3xl space-y-10"
+                className="glass-panel pt-6 pb-8 px-8 rounded-3xl space-y-8"
             >
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
@@ -608,7 +608,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Wallpaper Selection */}
-                <div className="space-y-4 pt-10 border-t border-white/5">
+                <div className="space-y-4 pt-6 border-t border-white/5">
                     <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Sfondo Desktop</label>
                     <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                         {(theme === 'osaka-jade' ? wallpaperOptions['osaka-jade'] : theme === 'purple-moon' ? wallpaperOptions['purple-moon'] : wallpaperOptions['ayaka']).map((wp) => (
@@ -634,44 +634,44 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                <div className="grid lg:grid-cols-2 gap-12 pt-10 border-t border-white/5">
-                    {/* Trail Mode Selection */}
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Effetto Scia Neon</label>
-                            <p className="text-[10px] text-muted-foreground pl-1">Personalizza l'animazione della scia che segue il cursore</p>
-                        </div>
-                        <div className="flex flex-wrap gap-3">
-                            {[
-                                { id: 'loop', label: 'Loop continuo', icon: Zap, desc: 'La scia gira all\'infinito' },
-                                { id: 'static', label: 'Statico', icon: Check, desc: 'La scia si ferma dopo un giro' },
-                                { id: 'disabled', label: 'Disabilitato', icon: Ban, desc: 'Rimuove completamente la scia' }
-                            ].map((mode) => (
-                                <button
-                                    key={mode.id}
-                                    onClick={() => setTrailMode(mode.id as any)}
-                                    className={`flex-1 min-w-[140px] p-3 rounded-2xl border-2 transition-all text-left group ${trailMode === mode.id ? 'border-primary bg-primary/5' : 'border-white/5 hover:bg-white/5'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-3 mb-1">
-                                        <div className={`p-1.5 rounded-lg ${trailMode === mode.id ? 'bg-primary text-primary-foreground' : 'bg-white/5 text-muted-foreground group-hover:text-primary'
-                                            }`}>
-                                            <mode.icon className="w-4 h-4" />
-                                        </div>
-                                        <span className={`text-xs font-bold ${trailMode === mode.id ? 'text-primary' : 'text-muted-foreground'}`}>{mode.label}</span>
-                                    </div>
-                                    <p className="text-[9px] opacity-40 leading-tight">{mode.desc}</p>
-                                </button>
-                            ))}
-                        </div>
+                <div className="grid lg:grid-cols-2 gap-x-12 gap-y-6 pt-6 border-t border-white/5">
+                    {/* Headers Row */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Effetto Scia Neon</label>
+                        <p className="text-[10px] text-muted-foreground pl-1">Personalizza l'animazione della scia che segue il cursore</p>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Bersaglio Scia</label>
+                        <p className="text-[10px] text-muted-foreground pl-1">Decidi su quali componenti mostrare l'effetto</p>
                     </div>
 
-                    {/* Trail Target Selection */}
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-widest opacity-40 pl-1">Bersaglio Scia</label>
-                            <p className="text-[10px] text-muted-foreground pl-1">Decidi su quali componenti mostrare l'effetto</p>
-                        </div>
+                    {/* Left side: Mode buttons stacked to match the right alignment request */}
+                    <div className="grid grid-cols-2 gap-3 h-full">
+                        {[
+                            { id: 'loop', label: 'Loop continuo', icon: Zap, desc: 'La scia gira all\'infinito' },
+                            { id: 'static', label: 'Statico', icon: Check, desc: 'La scia si ferma dopo un giro' },
+                            { id: 'disabled', label: 'Disabilitato', icon: Ban, desc: 'Rimuove completamente la scia' }
+                        ].map((mode) => (
+                            <button
+                                key={mode.id}
+                                onClick={() => setTrailMode(mode.id as any)}
+                                className={`p-3 rounded-2xl border-2 transition-all text-left group ${mode.id === 'disabled' ? 'col-span-2' : ''} ${trailMode === mode.id ? 'border-primary bg-primary/5' : 'border-white/5 hover:bg-white/5'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-3 mb-1">
+                                    <div className={`p-1.5 rounded-lg ${trailMode === mode.id ? 'bg-primary text-primary-foreground' : 'bg-white/5 text-muted-foreground group-hover:text-primary'
+                                        }`}>
+                                        <mode.icon className="w-4 h-4" />
+                                    </div>
+                                    <span className={`text-xs font-bold ${trailMode === mode.id ? 'text-primary' : 'text-muted-foreground'}`}>{mode.label}</span>
+                                </div>
+                                <p className="text-[9px] opacity-40 leading-tight">{mode.desc}</p>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Right side: Targets aligned to match the bottom 'Disabled' row of the left side */}
+                    <div className="flex flex-col h-full justify-end gap-3">
                         <div className="flex gap-4">
                             {[
                                 { id: 'all', label: 'Tutti i componenti', icon: LayoutGrid, desc: 'Bottoni, link, card e campi' },
