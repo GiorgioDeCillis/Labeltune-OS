@@ -59,6 +59,14 @@ export async function getUserDetails(userId: string) {
         console.error('Error fetching tasks:', tasksError);
     }
 
+    // Fetch access logs
+    const { data: accessLogs, error: accessLogsError } = await adminSupabase
+        .rpc('get_user_access_logs', { target_user_id: userId });
+
+    if (accessLogsError) {
+        console.error('Error fetching access logs:', accessLogsError);
+    }
+
     // Calculate stats
     const annotatorTasks = tasks?.filter(t => t.assigned_to === userId) || [];
     const reviewerTasks = tasks?.filter(t => t.reviewed_by === userId) || [];
@@ -95,7 +103,8 @@ export async function getUserDetails(userId: string) {
             totalTasksAssigned: annotatorTasks.length,
             totalReviewsAssigned: reviewerTasks.length
         },
-        recentActivity: tasks?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 50) || []
+        recentActivity: tasks?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 50) || [],
+        accessLogs: accessLogs || []
     };
 }
 

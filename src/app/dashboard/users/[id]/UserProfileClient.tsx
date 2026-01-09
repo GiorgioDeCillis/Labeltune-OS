@@ -18,12 +18,13 @@ interface UserProfileClientProps {
         profile: any;
         stats: any;
         recentActivity: any[];
+        accessLogs: any[];
     };
     userId: string;
 }
 
 export default function UserProfileClient({ initialData, userId }: UserProfileClientProps) {
-    const { authUser, profile, stats, recentActivity } = initialData;
+    const { authUser, profile, stats, recentActivity, accessLogs } = initialData;
     const [activeTab, setActiveTab] = useState('overview');
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -458,25 +459,49 @@ export default function UserProfileClient({ initialData, userId }: UserProfileCl
                                     System Access Logs
                                 </h3>
                                 <div className="bg-black/20 rounded-2xl border border-white/5 overflow-hidden">
-                                    <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
-                                                <MapPin className="w-5 h-5 text-blue-400" />
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-sm">Last Known Access</p>
-                                                <p className="text-xs text-muted-foreground">Detected Session</p>
-                                            </div>
+                                    {accessLogs && accessLogs.length > 0 ? (
+                                        <div className="divide-y divide-white/5">
+                                            {accessLogs.map((log: any) => (
+                                                <div key={log.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
+                                                            {log.user_agent?.includes('Mobile') ? (
+                                                                <Smartphone className="w-5 h-5 text-blue-400" />
+                                                            ) : (
+                                                                <MapPin className="w-5 h-5 text-blue-400" />
+                                                            )}
+                                                        </div>
+                                                        <div className="overflow-hidden">
+                                                            <p className="font-bold text-sm truncate max-w-[200px] sm:max-w-md" title={log.user_agent}>
+                                                                {log.user_agent ? (log.user_agent.length > 40 ? log.user_agent.substring(0, 40) + '...' : log.user_agent) : 'Unknown Device'}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                Session ID: {log.id.slice(0, 8)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right flex-shrink-0 ml-4">
+                                                        <p className="font-mono text-sm font-bold text-primary">
+                                                            {log.ip_address || 'IP Not Available'}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {new Date(log.created_at).toLocaleString('en-GB', {
+                                                                day: 'numeric',
+                                                                month: 'short',
+                                                                year: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="text-right">
-                                            <p className="font-mono text-sm font-bold text-primary">
-                                                {(authUser as any).last_sign_in_ip || 'IP Not Available'}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {authUser.last_sign_in_at ? new Date(authUser.last_sign_in_at).toLocaleString('en-GB') : 'Unknown'}
-                                            </p>
+                                    ) : (
+                                        <div className="p-8 text-center text-muted-foreground">
+                                            No access logs available.
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </motion.div>
