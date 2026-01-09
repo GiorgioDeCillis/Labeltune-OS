@@ -121,7 +121,7 @@ export async function updateUserProfile(userId: string, formData: FormData) {
     const adminSupabase = await createAdminClient();
 
     const updates: any = {};
-    const textFields = ['first_name', 'last_name', 'phone_number', 'address', 'paypal_email', 'linkedin_url', 'github_url', 'website_url', 'nationality', 'locale_tag'];
+    const textFields = ['first_name', 'last_name', 'phone_number', 'address', 'paypal_email', 'linkedin_url', 'github_url', 'website_url', 'nationality', 'locale_tag', 'primary_language'];
     const dateFields = ['birth_date'];
 
     textFields.forEach(field => {
@@ -150,5 +150,6 @@ export async function updateUserProfile(userId: string, formData: FormData) {
     }
 
     revalidatePath(`/dashboard/users/${userId}`);
+    revalidatePath('/dashboard/users');
     return { success: true };
 }
