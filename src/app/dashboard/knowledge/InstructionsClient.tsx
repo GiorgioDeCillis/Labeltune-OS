@@ -2,14 +2,15 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ChevronRight, FileText, Trash2, BookOpen, Layout, GraduationCap, Archive, Search } from 'lucide-react';
-import { deleteInstructionSet, UnifiedInstructionItem } from './actions';
+import { ChevronRight, FileText, Trash2, BookOpen, Layout, GraduationCap, Archive, Search, Pencil, Check, X, Loader2 } from 'lucide-react';
+import { deleteInstructionSet, UnifiedInstructionItem, renameInstruction } from './actions';
 import { deleteCourse } from './courses/actions';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 
 interface InstructionsClientProps {
     instructions: UnifiedInstructionItem[];
+    userProfile: any;
 }
 
 export default function InstructionsClient({ instructions }: InstructionsClientProps) {
@@ -19,6 +20,41 @@ export default function InstructionsClient({ instructions }: InstructionsClientP
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [instructionToDelete, setInstructionToDelete] = useState<UnifiedInstructionItem | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Rename State
+    const [renamingId, setRenamingId] = useState<string | null>(null);
+    const [editedName, setEditedName] = useState('');
+    const [isRenaming, setIsRenaming] = useState(false);
+
+    const isAdmin = userProfile?.role === 'admin';
+    const isPM = userProfile?.role === 'pm';
+    const displayRole = isAdmin ? 'admin' : (isPM ? 'pm' : 'annotator');
+
+    const getDisplayName = (inst: UnifiedInstructionItem) => {
+        if (isAdmin || isPM) {
+            return inst.admin_name || inst.name;
+        }
+        return inst.name;
+    };
+
+    const handleRename = async (instruction: UnifiedInstructionItem) => {
+        if (!editedName.trim() || editedName === getDisplayName(instruction)) {
+            setRenamingId(null);
+            return;
+        }
+
+        setIsRenaming(true);
+        try {
+            await renameInstruction(instruction.id, editedName, displayRole);
+            showToast('Name updated successfully', 'success');
+            router.refresh();
+        } catch (error: any) {
+            showToast(error.message || 'Failed to rename', 'error');
+        } finally {
+            setIsRenaming(false);
+            setRenamingId(null);
+        }
+    };
 
     const filteredInstructions = instructions.filter(i =>
         i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,7 +126,56 @@ export default function InstructionsClient({ instructions }: InstructionsClientP
                 </div>
 
                 <div className="space-y-2">
-                    <h3 className="text-lg font-bold tracking-tight text-white group-hover:text-primary transition-colors">{instruction.name}</h3>
+                    <div className="flex items-center justify-between group/title">
+                        {renamingId === instruction.id ? (
+                            <div className="flex items-center gap-2 w-full" onClick={(e) => e.preventDefault()}>
+                                <input
+                                    autoFocus
+                                    value={editedName}
+                                    onChange={(e) => setEditedName(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleRename(instruction);
+                                        if (e.key === 'Escape') setRenamingId(null);
+                                    }}
+                                    className="bg-white/5 border border-primary/50 rounded-lg px-2 py-1 text-sm font-bold text-white w-full focus:outline-none"
+                                    disabled={isRenaming}
+                                />
+                                <button
+                                    onClick={(e) => { e.preventDefault(); handleRename(instruction); }}
+                                    disabled={isRenaming}
+                                    className="p-1 rounded-md hover:bg-emerald-500/20 text-emerald-400 transition-colors"
+                                >
+                                    {isRenaming ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                </button>
+                                <button
+                                    onClick={(e) => { e.preventDefault(); setRenamingId(null); }}
+                                    className="p-1 rounded-md hover:bg-red-500/20 text-red-400 transition-colors"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <h3 className="text-lg font-bold tracking-tight text-white group-hover:text-primary transition-colors truncate">
+                                    {getDisplayName(instruction)}
+                                </h3>
+                                {(instruction.type === 'platform' || instruction.type === 'uploaded') && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setEditedName(getDisplayName(instruction));
+                                            setRenamingId(instruction.id);
+                                        }}
+                                        className="p-1.5 rounded-lg bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-primary transition-all opacity-0 group-hover/title:opacity-100"
+                                        title="Rename"
+                                    >
+                                        <Pencil className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
+                            </>
+                        )}
+                    </div>
                     <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                         {instruction.description || 'No description provided.'}
                     </p>

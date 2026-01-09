@@ -12,6 +12,7 @@ export interface UnifiedInstructionItem {
     type: 'platform' | 'uploaded' | 'project' | 'course';
     project_id?: string | null;
     user_id?: string | null;
+    admin_name?: string | null;
     updated_at: string;
 }
 
@@ -135,6 +136,7 @@ export async function getUnifiedInstructions(): Promise<UnifiedInstructionItem[]
         type: inst.is_uploaded ? 'uploaded' : 'platform',
         project_id: inst.project_id,
         user_id: inst.user_id,
+        admin_name: inst.admin_name,
         updated_at: inst.updated_at
     }));
 
@@ -213,4 +215,26 @@ export async function getUnifiedInstructions(): Promise<UnifiedInstructionItem[]
     return [...mappedInstructions, ...projectInstructions, ...courseInstructions].sort(
         (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
     );
+}
+
+export async function renameInstruction(id: string, newName: string, role: string) {
+    const supabase = await createClient();
+
+    let updateData = {};
+    if (role === 'admin' || role === 'pm') {
+        updateData = { admin_name: newName };
+    } else {
+        updateData = { name: newName };
+    }
+
+    const { error } = await supabase
+        .from('instructions')
+        .update(updateData)
+        .eq('id', id);
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return { success: true };
 }

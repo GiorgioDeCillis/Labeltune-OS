@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Upload, Send, User, ChevronLeft, ChevronRight, Loader2, FileText, Layout, Archive } from 'lucide-react';
+import { Bot, Upload, Send, User, ChevronLeft, ChevronRight, Loader2, FileText, Layout, Archive, Pencil, Check, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { createInstructionSet, UnifiedInstructionItem } from '../knowledge/actions';
+import { createInstructionSet, UnifiedInstructionItem, renameInstruction } from '../knowledge/actions';
 import { useToast } from '@/components/Toast';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -38,6 +38,22 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
+
+    // Rename State
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [editedName, setEditedName] = useState('');
+    const [isRenaming, setIsRenaming] = useState(false);
+
+    const isAdmin = userProfile?.role === 'admin';
+    const isPM = userProfile?.role === 'pm';
+    const displayRole = isAdmin ? 'admin' : (isPM ? 'pm' : 'annotator');
+
+    const getDisplayName = (inst: UnifiedInstructionItem) => {
+        if (isAdmin || isPM) {
+            return inst.admin_name || inst.name;
+        }
+        return inst.name;
+    };
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -136,6 +152,35 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
             setIsUploading(false);
             setUploadStatus('');
             if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleRename = async () => {
+        if (!selectedInstruction || !editedName.trim() || editedName === getDisplayName(selectedInstruction)) {
+            setIsEditingName(false);
+            return;
+        }
+
+        setIsRenaming(true);
+        try {
+            await renameInstruction(selectedInstruction.id, editedName, displayRole);
+
+            // Update local state
+            const updatedInst = { ...selectedInstruction };
+            if (isAdmin || isPM) {
+                updatedInst.admin_name = editedName;
+            } else {
+                updatedInst.name = editedName;
+            }
+            setSelectedInstruction(updatedInst);
+
+            showToast('Name updated successfully', 'success');
+            router.refresh();
+        } catch (error: any) {
+            showToast(error.message || 'Failed to rename', 'error');
+        } finally {
+            setIsRenaming(false);
+            setIsEditingName(false);
         }
     };
 
@@ -250,7 +295,9 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
                                             <Icon className="w-5 h-5" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="font-bold text-white group-hover:text-primary transition-colors truncate">{inst.name}</div>
+                                            <div className="font-bold text-white group-hover:text-primary transition-colors truncate">
+                                                {getDisplayName(inst)}
+                                            </div>
                                             <div className="text-xs text-muted-foreground/60 flex items-center gap-2 mt-1">
                                                 <span className={`uppercase font-black tracking-tighter text-[9px] px-1.5 py-0.5 rounded ${inst.type === 'platform' ? 'bg-blue-500/10 text-blue-400' :
                                                     inst.type === 'uploaded' ? 'bg-purple-500/10 text-purple-400' :
@@ -294,11 +341,56 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
                     >
                         <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <div>
-                        <h2 className="font-bold text-white flex items-center gap-2 tracking-tight">
-                            <Bot className="w-5 h-5 text-primary" />
-                            {selectedInstruction.name}
-                        </h2>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 group/title">
+                            {isEditingName ? (
+                                <div className="flex items-center gap-2 w-full max-w-md">
+                                    <input
+                                        autoFocus
+                                        value={editedName}
+                                        onChange={(e) => setEditedName(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') handleRename();
+                                            if (e.key === 'Escape') setIsEditingName(false);
+                                        }}
+                                        className="bg-white/5 border border-primary/50 rounded-lg px-2 py-1 text-lg font-bold text-white w-full focus:outline-none"
+                                        disabled={isRenaming}
+                                    />
+                                    <button
+                                        onClick={handleRename}
+                                        disabled={isRenaming}
+                                        className="p-1 rounded-md hover:bg-emerald-500/20 text-emerald-400 transition-colors"
+                                    >
+                                        {isRenaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                    </button>
+                                    <button
+                                        onClick={() => setIsEditingName(false)}
+                                        className="p-1 rounded-md hover:bg-red-500/20 text-red-400 transition-colors"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <>
+                                    <h2 className="font-bold text-white flex items-center gap-2 tracking-tight truncate">
+                                        <Bot className="w-5 h-5 text-primary" />
+                                        {getDisplayName(selectedInstruction)}
+                                    </h2>
+                                    {(selectedInstruction.type === 'platform' || selectedInstruction.type === 'uploaded') && (
+                                        <button
+                                            onClick={() => {
+                                                setEditedName(getDisplayName(selectedInstruction));
+                                                setIsEditingName(true);
+                                            }}
+                                            className="p-1.5 rounded-lg bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-primary transition-all opacity-0 group-hover/title:opacity-100"
+                                            title="Rename"
+                                        >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                        </div>
                         <div className="text-[10px] text-muted-foreground flex items-center gap-2 uppercase font-black tracking-widest">
                             <span className={
                                 selectedInstruction.type === 'platform' ? 'text-blue-400' :

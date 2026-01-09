@@ -5,7 +5,13 @@ import InstructionsClient from './InstructionsClient';
 import { getUnifiedInstructions } from './actions';
 
 export default async function InstructionsPage() {
-    const instructions = await getUnifiedInstructions();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const [instructions, { data: profile }] = await Promise.all([
+        getUnifiedInstructions(),
+        supabase.from('profiles').select('*').eq('id', user?.id).single()
+    ]);
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -32,7 +38,7 @@ export default async function InstructionsPage() {
                 </div>
             </div>
 
-            <InstructionsClient instructions={instructions} />
+            <InstructionsClient instructions={instructions} userProfile={profile} />
         </div>
     );
 }
