@@ -34,7 +34,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [blur, setBlurState] = useState<number>(20);
   const [transparency, setTransparencyState] = useState<number>(0.10);
   const [trailMode, setTrailModeState] = useState<'loop' | 'static' | 'disabled'>('loop');
-  const [trailSize, setTrailSizeState] = useState<'all' | 'large'>('all');
+  const [trailSize, setTrailSizeState] = useState<'all' | 'large'>('large');
   const [avatarUrl, setAvatarUrlState] = useState<string | null>(null);
 
   useEffect(() => {
