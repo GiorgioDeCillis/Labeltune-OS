@@ -234,7 +234,7 @@ export default function CustomDateInput({
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute left-0 right-0 mt-2 z-50 glass-panel p-4 rounded-2xl shadow-2xl border border-white/10 bg-black/40 backdrop-blur-xl"
+                        className="absolute left-0 right-0 mt-2 z-50 glass-panel p-4 rounded-2xl shadow-2xl border border-white/20 bg-zinc-950/90 backdrop-blur-3xl"
                     >
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
