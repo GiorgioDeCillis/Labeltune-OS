@@ -482,7 +482,7 @@ export default function UserProfileClient({ initialData, userId }: UserProfileCl
                                                     </div>
                                                     <div className="text-right flex-shrink-0 ml-4">
                                                         <p className="font-mono text-sm font-bold text-primary">
-                                                            {log.ip_address || 'IP Not Available'}
+                                                            {log.ip_address ? log.ip_address.split('/')[0] : 'IP Not Available'}
                                                         </p>
                                                         <p className="text-xs text-muted-foreground">
                                                             {new Date(log.created_at).toLocaleString('en-GB', {
