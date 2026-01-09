@@ -670,30 +670,28 @@ export default function ProfilePage() {
                         ))}
                     </div>
 
-                    {/* Right side: Targets aligned to match the bottom 'Disabled' row of the left side */}
-                    <div className="flex flex-col h-full justify-end gap-3">
-                        <div className="flex gap-4">
-                            {[
-                                { id: 'all', label: 'Tutti i componenti', icon: LayoutGrid, desc: 'Bottoni, link, card e campi' },
-                                { id: 'large', label: 'Solo componenti grandi', icon: Maximize2, desc: 'Solo card, pannelli e finestre' }
-                            ].map((size) => (
-                                <button
-                                    key={size.id}
-                                    onClick={() => setTrailSize(size.id as any)}
-                                    className={`flex-1 p-4 rounded-2xl border-2 transition-all text-left flex items-start gap-4 ${trailSize === size.id ? 'border-primary bg-primary/5' : 'border-white/5 hover:bg-white/5'
-                                        }`}
-                                >
-                                    <div className={`p-2 rounded-xl flex-shrink-0 ${trailSize === size.id ? 'bg-primary text-primary-foreground' : 'bg-white/5 text-muted-foreground'
+                    {/* Right side: Targets aligned to match the buttons on the left */}
+                    <div className="flex flex-col gap-3">
+                        {[
+                            { id: 'all', label: 'Tutti i componenti', icon: LayoutGrid, desc: 'Bottoni, link, card e campi' },
+                            { id: 'large', label: 'Solo componenti grandi', icon: Maximize2, desc: 'Solo card, pannelli e finestre' }
+                        ].map((size) => (
+                            <button
+                                key={size.id}
+                                onClick={() => setTrailSize(size.id as any)}
+                                className={`p-3 rounded-2xl border-2 transition-all text-left group ${trailSize === size.id ? 'border-primary bg-primary/5' : 'border-white/5 hover:bg-white/5'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-3 mb-1">
+                                    <div className={`p-1.5 rounded-lg ${trailSize === size.id ? 'bg-primary text-primary-foreground' : 'bg-white/5 text-muted-foreground group-hover:text-primary'
                                         }`}>
-                                        <size.icon className="w-5 h-5" />
+                                        <size.icon className="w-4 h-4" />
                                     </div>
-                                    <div className="space-y-1">
-                                        <span className={`text-sm font-bold block ${trailSize === size.id ? 'text-primary' : 'text-muted-foreground'}`}>{size.label}</span>
-                                        <p className="text-[10px] opacity-40 leading-tight">{size.desc}</p>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
+                                    <span className={`text-xs font-bold ${trailSize === size.id ? 'text-primary' : 'text-muted-foreground'}`}>{size.label}</span>
+                                </div>
+                                <p className="text-[9px] opacity-40 leading-tight">{size.desc}</p>
+                            </button>
+                        ))}
                     </div>
                 </div>
             </motion.section>
