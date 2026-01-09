@@ -2,14 +2,15 @@
 import { getUserDetails } from './actions';
 import UserProfileClient from './UserProfileClient';
 
-export default async function UserProfilePage({ params }: { params: { id: string } }) {
+export default async function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
     try {
-        const userDetails = await getUserDetails(params.id);
+        const { id } = await params;
+        const userDetails = await getUserDetails(id);
 
         return (
             <UserProfileClient
                 initialData={userDetails}
-                userId={params.id}
+                userId={id}
             />
         );
     } catch (error: any) {

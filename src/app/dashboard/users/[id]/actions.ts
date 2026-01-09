@@ -23,6 +23,12 @@ export async function getUserDetails(userId: string) {
         throw new Error('Unauthorized');
     }
 
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!userId || !uuidRegex.test(userId)) {
+        throw new Error('Invalid User ID format');
+    }
+
     const adminSupabase = await createAdminClient();
 
     // Fetch auth user data
