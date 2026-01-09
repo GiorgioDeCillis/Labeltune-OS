@@ -79,8 +79,13 @@ export async function getUserDetails(userId: string) {
         ? ratedTasks.reduce((acc, t) => acc + (t.review_rating || 0), 0) / ratedTasks.length
         : 0;
 
+    console.log('Fetched Profile:', profile); // Debug log
+
     return {
-        authUser: authUser.user,
+        authUser: {
+            ...authUser.user,
+            last_sign_in_ip: authUser.user?.last_sign_in_at ? (authUser.user as any).last_sign_in_ip : null
+        },
         profile,
         stats: {
             totalEarnings,
@@ -90,7 +95,7 @@ export async function getUserDetails(userId: string) {
             totalTasksAssigned: annotatorTasks.length,
             totalReviewsAssigned: reviewerTasks.length
         },
-        recentActivity: tasks?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 10) || []
+        recentActivity: tasks?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 50) || []
     };
 }
 
