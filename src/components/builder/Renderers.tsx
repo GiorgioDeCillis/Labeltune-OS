@@ -1,7 +1,11 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { TaskComponent } from './types';
-import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot, Mic, Square, Play, Pause, SkipBack, SkipForward, Search, Loader2, ChevronRight, Check, Copy, RefreshCcw, Sparkles, Paperclip, X } from 'lucide-react';
+import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User, MessagesSquare, Bot, Mic, Square, Play, Pause, SkipBack, SkipForward, Search, Loader2, ChevronRight, Check, Copy, RefreshCcw, Sparkles, Paperclip, X, Box } from 'lucide-react';
+
+import dynamic from 'next/dynamic';
+const ImageCanvas = dynamic(() => import('@/components/builder/canvas/ImageCanvas').then(mod => mod.ImageCanvas), { ssr: false });
+const TextSpanLabeler = dynamic(() => import('@/components/builder/nlp/TextSpanLabeler').then(mod => mod.TextSpanLabeler), { ssr: false });
 
 import { getDefaultAvatar } from '@/utils/avatar';
 import ReactMarkdown from 'react-markdown';
@@ -394,14 +398,71 @@ export function TextAreaControl({ component, value, onChange, readOnly }: {
     );
 }
 
-export function ImageLabelsControl({ component, value, onChange, readOnly }: {
+export function ImageLabelsControl({ component, value, onChange, readOnly, data }: {
     component: TaskComponent,
     value: any,
     onChange: (val: any) => void,
-    readOnly?: boolean
+    readOnly?: boolean,
+    data: any
 }) {
-    // This is a simplified version. Real Label Studio does regions on the image.
-    // For now, we will just treat it as global tags for the image.
+    // Check if we are in "Simple Tag" mode or "Region" mode
+    const isRegionMode = component.type === 'RectangleLabels' || component.type === 'PolygonLabels';
+
+    // Find linked image data if present
+    // Usually 'toName' points to the Image object. We need to find the Image component to get its 'value' (src).
+    // For now, let's assume the user configures the 'value' of THIS component to be '$image' just like the image object, 
+    // OR we look for the component with name == toName[0].
+    // Simplified: we expect `component.value` to be set to the variable name (e.g. '$image') for the canvas to render the image background.
+
+    const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
+
+    if (isRegionMode) {
+        if (!src) return <div className="p-4 border border-red-500 rounded text-red-500">Error: Image source not configured for regions.</div>;
+
+        return (
+            <div className="space-y-3">
+                <ImageCanvas
+                    src={src}
+                    component={component}
+                    value={value || []}
+                    onChange={onChange}
+                    readOnly={readOnly}
+                />
+            </div>
+        );
+    }
+
+    // Check for NER Mode (Text Spans)
+    // If component.toName points to a Text object, OR if value is reference to text
+    // Simplified: If we are 'Labels' type and we have a 'value' starting with '$' that resolves to infinite text? 
+    // Or we explicitly check if it's acting on Text.
+    // For this MVP, let's assume if the component has 'text' property or linked data for text, we use NER.
+    // OR if type is 'Labels' and we want NER, we should probably have a distinct type 'TextLabels' or 'NERLabels'.
+    // BUT the task asked for NER.
+    // Let's use logic: if 'component.type' is 'Labels' AND 'component.value' refers to a string in data, treat as NER?
+    // No, standard 'Labels' just adds tags.
+    // Let's add explicit check: if component.granularity === 'word' or 'char' etc.
+
+    const isNER = component.type === 'Labels' && component.granularity === 'symbol'; // Using granularity to detect NER intent
+
+    if (isNER) {
+        const textContent = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.text;
+        if (!textContent) return <div className="p-4 border border-red-500 rounded text-red-500">Error: Text source not found for NER.</div>;
+
+        return (
+            <div className="space-y-3">
+                <TextSpanLabeler
+                    text={textContent}
+                    component={component}
+                    value={value || []}
+                    onChange={onChange}
+                    readOnly={readOnly}
+                />
+            </div>
+        );
+    }
+
+    // Legacy "Tags" Mode
     const selected = Array.isArray(value) ? value : [];
 
     const toggle = (val: string) => {

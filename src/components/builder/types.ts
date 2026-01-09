@@ -79,6 +79,20 @@ export interface TaskComponent {
         referenceTextLimit?: number;
         generators?: AIGeneratorConfig[];
     };
+    // Vision Config
+    imageConfig?: {
+        canZoom?: boolean;
+        canBrightnessContrast?: boolean;
+        labels: { value: string; background?: string; hotkey?: string }[];
+    };
+}
+
+export interface Region {
+    id: string;
+    label: string;
+    type: 'box' | 'polygon';
+    points: number[]; // [x, y, w, h] for box, [x1, y1, x2, y2...] for poly
+    color: string;
 }
 
 export interface TaskTemplate {

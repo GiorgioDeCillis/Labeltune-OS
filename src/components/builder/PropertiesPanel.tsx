@@ -44,7 +44,7 @@ export function PropertiesPanel({ component, onChange }: {
                 )}
 
             {/* Control Binding */}
-            {(component.type === 'Choices' || component.type === 'Labels' || component.type === 'RectangleLabels' || component.type === 'TextArea') && (
+            {(component.type === 'Choices' || component.type === 'Labels' || component.type === 'RectangleLabels' || component.type === 'PolygonLabels' || component.type === 'TextArea') && (
                 <div className="space-y-1">
                     <label className="text-xs font-bold text-muted-foreground">To Name (Target)</label>
                     <input
@@ -177,7 +177,7 @@ export function PropertiesPanel({ component, onChange }: {
                 </div>
             )}
 
-            {(component.type === 'Labels' || component.type === 'RectangleLabels') && (
+            {(component.type === 'Labels' || component.type === 'RectangleLabels' || component.type === 'PolygonLabels') && (
                 <div className="space-y-2 pt-4 border-t border-white/5">
                     <label className="text-xs font-bold text-muted-foreground">Labels (Value:Color per line)</label>
                     <textarea
@@ -194,6 +194,60 @@ export function PropertiesPanel({ component, onChange }: {
                         placeholder="Car:#ff0000"
                         className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono"
                     />
+                </div>
+            )}
+
+            {/* Vision Config */}
+            {(component.type === 'RectangleLabels' || component.type === 'PolygonLabels') && (
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                    <h4 className="text-xs font-bold text-muted-foreground flex items-center gap-2">
+                        Vision Settings
+                    </h4>
+                    <div className="flex flex-col gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={component.imageConfig?.canZoom ?? true}
+                                onChange={(e) => onChange({ imageConfig: { ...component.imageConfig, canZoom: e.target.checked } })}
+                                className="rounded bg-background/50 border-white/10 accent-primary"
+                            />
+                            <span className="text-sm">Allow Zoom & Pan</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={component.imageConfig?.canBrightnessContrast ?? false}
+                                onChange={(e) => onChange({ imageConfig: { ...component.imageConfig, canBrightnessContrast: e.target.checked } })}
+                                className="rounded bg-background/50 border-white/10 accent-primary"
+                            />
+                            <span className="text-sm">Allow Brightness/Contrast</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={component.imageConfig?.canRotate ?? false}
+                                onChange={(e) => onChange({ imageConfig: { ...component.imageConfig, canRotate: e.target.checked } })}
+                                className="rounded bg-background/50 border-white/10 accent-primary"
+                            />
+                            <span className="text-sm">Allow Rotation</span>
+                        </label>
+                    </div>
+                </div>
+            )}
+
+            {/* NLP Config */}
+            {(component.type === 'Labels') && (
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                    <h4 className="text-xs font-bold text-muted-foreground">Labeling Mode</h4>
+                    <select
+                        value={component.granularity || 'image'}
+                        onChange={(e) => onChange({ granularity: e.target.value })}
+                        className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50"
+                    >
+                        <option value="image">Whole Object (Classification)</option>
+                        <option value="symbol">Span / Region (NER)</option>
+                    </select>
+                    <p className="text-[10px] text-muted-foreground">Select 'Span / Region' for text highlighting (NER).</p>
                 </div>
             )}
 
