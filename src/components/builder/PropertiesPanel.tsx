@@ -208,7 +208,7 @@ export function PropertiesPanel({ component, onChange }: {
                             <input
                                 type="checkbox"
                                 checked={component.imageConfig?.canZoom ?? true}
-                                onChange={(e) => onChange({ imageConfig: { ...component.imageConfig, canZoom: e.target.checked } })}
+                                onChange={(e) => onChange({ imageConfig: { labels: [], ...component.imageConfig, canZoom: e.target.checked } })}
                                 className="rounded bg-background/50 border-white/10 accent-primary"
                             />
                             <span className="text-sm">Allow Zoom & Pan</span>
@@ -217,7 +217,7 @@ export function PropertiesPanel({ component, onChange }: {
                             <input
                                 type="checkbox"
                                 checked={component.imageConfig?.canBrightnessContrast ?? false}
-                                onChange={(e) => onChange({ imageConfig: { ...component.imageConfig, canBrightnessContrast: e.target.checked } })}
+                                onChange={(e) => onChange({ imageConfig: { labels: [], ...component.imageConfig, canBrightnessContrast: e.target.checked } })}
                                 className="rounded bg-background/50 border-white/10 accent-primary"
                             />
                             <span className="text-sm">Allow Brightness/Contrast</span>
@@ -226,7 +226,7 @@ export function PropertiesPanel({ component, onChange }: {
                             <input
                                 type="checkbox"
                                 checked={component.imageConfig?.canRotate ?? false}
-                                onChange={(e) => onChange({ imageConfig: { ...component.imageConfig, canRotate: e.target.checked } })}
+                                onChange={(e) => onChange({ imageConfig: { labels: [], ...component.imageConfig, canRotate: e.target.checked } })}
                                 className="rounded bg-background/50 border-white/10 accent-primary"
                             />
                             <span className="text-sm">Allow Rotation</span>

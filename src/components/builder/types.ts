@@ -83,7 +83,8 @@ export interface TaskComponent {
     imageConfig?: {
         canZoom?: boolean;
         canBrightnessContrast?: boolean;
-        labels: { value: string; background?: string; hotkey?: string }[];
+        canRotate?: boolean;
+        labels?: { value: string; background?: string; hotkey?: string }[];
     };
 }
 
