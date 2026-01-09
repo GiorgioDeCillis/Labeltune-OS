@@ -5,6 +5,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 export const CursorBorderEffect: React.FC = () => {
     const { trailMode, trailSize } = useTheme();
+    const [targetId, setTargetId] = React.useState<string>('initial');
     const containerRef = useRef<HTMLDivElement>(null);
     const currentTargetRef = useRef<HTMLElement | null>(null);
     const lastMousePos = useRef({ x: 0, y: 0 });
@@ -51,6 +52,7 @@ export const CursorBorderEffect: React.FC = () => {
                 if (newTarget) {
                     const style = window.getComputedStyle(newTarget);
                     container.style.setProperty('--br', style.borderRadius || '0px');
+                    setTargetId(Math.random().toString(36).substr(2, 9));
                     updateFromTarget();
                     updateVisibility(true);
                 } else {
@@ -120,7 +122,7 @@ export const CursorBorderEffect: React.FC = () => {
             }}
         >
             <div
-                key={currentTargetRef.current?.innerText || currentTargetRef.current?.id || 'trail'}
+                key={targetId}
                 className={trailMode === 'static' ? 'animate-border-follow-once' : 'animate-border-follow'}
                 style={{
                     position: 'absolute',
