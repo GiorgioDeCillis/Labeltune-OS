@@ -35,6 +35,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
         { href: '/dashboard/datasets', label: 'Dataset Explorer', icon: Search },
         { href: '/dashboard/knowledge', label: 'Knowledge', icon: FileText },
         { href: '/dashboard/advisor', label: 'AI Advisor', icon: Bot },
+        { href: '/dashboard/users', label: 'Users', icon: Users },
     ];
 
     const reviewLinks: { href: string; label: string; icon: any }[] = [];
