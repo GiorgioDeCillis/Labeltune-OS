@@ -23,7 +23,7 @@ export default async function AdvisorPage() {
 
     let instructions = (await getUnifiedInstructions()).filter(i => i.type !== 'course');
 
-    // If annotator, only show instructions for assigned projects
+    // If annotator, only show instructions for assigned projects or uploaded by themselves
     if (profile?.role === 'annotator') {
         const { data: assignments } = await supabase
             .from('project_assignees')
@@ -32,7 +32,8 @@ export default async function AdvisorPage() {
 
         const assignedProjectIds = (assignments || []).map(a => a.project_id);
         instructions = instructions.filter(i =>
-            i.type === 'project' && i.project_id && assignedProjectIds.includes(i.project_id)
+            (i.project_id && assignedProjectIds.includes(i.project_id)) ||
+            (i.user_id === user.id)
         );
     }
 

@@ -11,6 +11,7 @@ export interface UnifiedInstructionItem {
     content: any;
     type: 'platform' | 'uploaded' | 'project' | 'course';
     project_id?: string | null;
+    user_id?: string | null;
     updated_at: string;
 }
 
@@ -34,7 +35,8 @@ export async function createInstructionSet(data: Partial<InstructionSet>) {
             content: data.content,
             project_id: data.project_id || null,
             is_uploaded: data.is_uploaded || false,
-            organization_id: profile?.organization_id
+            organization_id: profile?.organization_id,
+            user_id: user.id
         })
         .select()
         .single();
@@ -132,6 +134,7 @@ export async function getUnifiedInstructions(): Promise<UnifiedInstructionItem[]
         content: inst.content,
         type: inst.is_uploaded ? 'uploaded' : 'platform',
         project_id: inst.project_id,
+        user_id: inst.user_id,
         updated_at: inst.updated_at
     }));
 
