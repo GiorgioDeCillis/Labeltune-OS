@@ -103,4 +103,5 @@ export interface InstructionSet {
     updated_at: string;
     project_id?: string | null;
     is_uploaded?: boolean;
+    organization_id?: string;
 }

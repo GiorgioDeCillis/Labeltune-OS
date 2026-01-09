@@ -19,6 +19,13 @@ export async function createInstructionSet(data: Partial<InstructionSet>) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Unauthorized');
 
+    // Get user's organization_id
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user.id)
+        .single();
+
     const { data: instructionSet, error } = await supabase
         .from('instructions')
         .insert({
@@ -26,7 +33,8 @@ export async function createInstructionSet(data: Partial<InstructionSet>) {
             description: data.description,
             content: data.content,
             project_id: data.project_id || null,
-            is_uploaded: data.is_uploaded || false
+            is_uploaded: data.is_uploaded || false,
+            organization_id: profile?.organization_id
         })
         .select()
         .single();
