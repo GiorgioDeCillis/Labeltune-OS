@@ -32,7 +32,7 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
     // We want admins, pms, annotators, reviewers.
     const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, full_name, role, avatar_url, tags, locale_tag')
+        .select('id, email, full_name, role, avatar_url, tags, locale_tag, is_onboarded')
         .neq('role', 'enterprise_client')
         .order('full_name');
 
@@ -73,26 +73,33 @@ export default async function ProjectTeamPage({ params }: { params: Promise<{ id
     }
 
     // 5. Merge data
-    const team = (allProfiles || []).map((u: any) => {
-        const userProgress = progress.filter(p => p.user_id === u.id);
-        const completedCourses = userProgress.filter(p => p.status === 'completed').length || 0;
-        const totalCourses = requiredCourseIds.length;
-        const isQualified = totalCourses === 0 || completedCourses === totalCourses;
-        const isAssigned = assignedUserIds.has(u.id);
-        const assignmentData = assignmentMap.get(u.id);
-        const status = assignmentData?.status || 'inactive'; // Use 'inactive' for unassigned users
-        const isReviewer = assignmentData?.is_reviewer || false;
+    const team = (allProfiles || [])
+        .filter((u: any) => {
+            const isAssigned = assignedUserIds.has(u.id);
+            // Show user if they are already assigned to the project
+            // OR if they have completed onboarding
+            return isAssigned || u.is_onboarded === true;
+        })
+        .map((u: any) => {
+            const userProgress = progress.filter(p => p.user_id === u.id);
+            const completedCourses = userProgress.filter(p => p.status === 'completed').length || 0;
+            const totalCourses = requiredCourseIds.length;
+            const isQualified = totalCourses === 0 || completedCourses === totalCourses;
+            const isAssigned = assignedUserIds.has(u.id);
+            const assignmentData = assignmentMap.get(u.id);
+            const status = assignmentData?.status || 'inactive'; // Use 'inactive' for unassigned users
+            const isReviewer = assignmentData?.is_reviewer || false;
 
-        return {
-            ...u,
-            completedCourses,
-            totalCourses,
-            isQualified,
-            isAssigned,
-            status,
-            isReviewer
-        };
-    });
+            return {
+                ...u,
+                completedCourses,
+                totalCourses,
+                isQualified,
+                isAssigned,
+                status,
+                isReviewer
+            };
+        });
 
     return (
         <TeamManagementClient
