@@ -59,6 +59,23 @@ export async function submitOnboarding(formData: FormData) {
     // 2. Generate Locale Tag (e.g., it_IT, us_US)
     const localeTag = `${primaryLanguage.toLowerCase()}_${nationality.toUpperCase()}`
 
+    // Check for duplicates (phone number, paypal email)
+    const { data: duplicateUser, error: duplicateError } = await supabase
+        .from('profiles')
+        .select('id')
+        .neq('id', user.id)
+        .or(`phone_number.eq.${phoneNumber},paypal_email.eq.${paypalEmail},email.eq.${paypalEmail},paypal_email.eq.${user.email}`)
+        .maybeSingle()
+
+    if (duplicateError) {
+        console.error('Error checking for duplicates:', duplicateError)
+        throw new Error('Errore durante la verifica dei dati. Riprova più tardi.')
+    }
+
+    if (duplicateUser) {
+        throw new Error('Esiste già un utente registrato con questo numero di telefono o email PayPal.')
+    }
+
     // 3. Update Profile (using upsert to handle cases where trigger might have failed)
     // Fetch existing profile to preserve data not in the onboarding form (like avatar_url)
     const { data: existingProfile } = await supabase
