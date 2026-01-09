@@ -128,8 +128,12 @@ export const CursorBorderEffect: React.FC = () => {
                     border: '2px solid var(--primary)',
                     borderRadius: 'inherit',
                     boxShadow: '0 0 10px var(--primary)',
-                    WebkitMaskImage: 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
-                    maskImage: 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
+                    WebkitMaskImage: trailMode === 'static'
+                        ? 'conic-gradient(from 0deg, black 0deg, black var(--trail-angle), transparent var(--trail-angle))'
+                        : 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
+                    maskImage: trailMode === 'static'
+                        ? 'conic-gradient(from 0deg, black 0deg, black var(--trail-angle), transparent var(--trail-angle))'
+                        : 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
                 }}
             />
         </div>
