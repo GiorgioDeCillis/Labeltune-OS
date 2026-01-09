@@ -187,41 +187,43 @@ export default function AdvisorClient({ instructions, user, userProfile }: { ins
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Left Column: Upload */}
-                    <div className="lg:col-span-1">
-                        <h3 className="font-bold text-lg text-white/80 px-2 mb-4 uppercase tracking-widest flex items-center gap-2">
-                            <Upload className="w-4 h-4 text-primary" />
-                            Upload New
-                        </h3>
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploading}
-                            className="w-full glass-panel p-8 rounded-2xl border border-dashed border-white/20 hover:bg-white/5 hover:border-primary/50 transition-all group flex flex-col items-center justify-center text-center gap-4 aspect-square"
-                        >
-                            {isUploading ? (
-                                <>
-                                    <Loader2 className="w-12 h-12 text-primary animate-spin" />
-                                    <div className="space-y-1">
-                                        <h3 className="font-bold text-lg">Processing...</h3>
-                                        <p className="text-sm text-muted-foreground">{uploadStatus}</p>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xl">
-                                        <Upload className="w-10 h-10 text-primary" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <h3 className="font-bold text-lg">Upload PDF</h3>
-                                        <p className="text-sm text-muted-foreground max-w-[200px]">AI will parse and extract rules automatically</p>
-                                    </div>
-                                </>
-                            )}
-                        </button>
-                        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden" />
-                    </div>
+                    {userProfile?.role !== 'annotator' && (
+                        <div className="lg:col-span-1">
+                            <h3 className="font-bold text-lg text-white/80 px-2 mb-4 uppercase tracking-widest flex items-center gap-2">
+                                <Upload className="w-4 h-4 text-primary" />
+                                Upload New
+                            </h3>
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploading}
+                                className="w-full glass-panel p-8 rounded-2xl border border-dashed border-white/20 hover:bg-white/5 hover:border-primary/50 transition-all group flex flex-col items-center justify-center text-center gap-4 aspect-square"
+                            >
+                                {isUploading ? (
+                                    <>
+                                        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                                        <div className="space-y-1">
+                                            <h3 className="font-bold text-lg">Processing...</h3>
+                                            <p className="text-sm text-muted-foreground">{uploadStatus}</p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xl">
+                                            <Upload className="w-10 h-10 text-primary" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h3 className="font-bold text-lg">Upload PDF</h3>
+                                            <p className="text-sm text-muted-foreground max-w-[200px]">AI will parse and extract rules automatically</p>
+                                        </div>
+                                    </>
+                                )}
+                            </button>
+                            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf" className="hidden" />
+                        </div>
+                    )}
 
                     {/* Right Columns: Library */}
-                    <div className="lg:col-span-2 space-y-4">
+                    <div className={`${userProfile?.role === 'annotator' ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-4`}>
                         <h3 className="font-bold text-lg text-white/80 px-2 mb-4 uppercase tracking-widest flex items-center gap-2">
                             <Archive className="w-4 h-4 text-primary" />
                             Knowledge Library

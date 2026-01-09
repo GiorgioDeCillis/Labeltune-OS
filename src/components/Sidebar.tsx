@@ -59,6 +59,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
     const links = [
         ...(isClient ? clientLinks : commonLinks),
         ...((isPM || isAdmin) ? pmLinks : []),
+        ...((isAnnotator) ? [{ href: '/dashboard/advisor', label: 'AI Advisor', icon: Bot }] : []),
         ...((isPM || isAdmin || isReviewer) ? reviewLinks : []),
         ...((isAnnotator || isReviewer || isPM || isAdmin) ? workerLinks : []),
         { href: '/dashboard/profile', label: 'Profile', icon: User },

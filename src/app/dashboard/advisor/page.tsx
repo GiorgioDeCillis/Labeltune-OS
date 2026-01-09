@@ -17,11 +17,24 @@ export default async function AdvisorPage() {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('avatar_url, full_name')
+        .select('avatar_url, full_name, role')
         .eq('id', user.id)
         .single();
 
-    const instructions = (await getUnifiedInstructions()).filter(i => i.type !== 'course');
+    let instructions = (await getUnifiedInstructions()).filter(i => i.type !== 'course');
+
+    // If annotator, only show instructions for assigned projects
+    if (profile?.role === 'annotator') {
+        const { data: assignments } = await supabase
+            .from('project_assignees')
+            .select('project_id')
+            .eq('user_id', user.id);
+
+        const assignedProjectIds = (assignments || []).map(a => a.project_id);
+        instructions = instructions.filter(i =>
+            i.type === 'project' && i.project_id && assignedProjectIds.includes(i.project_id)
+        );
+    }
 
     return (
         <div className="max-w-7xl mx-auto h-full pb-8">
