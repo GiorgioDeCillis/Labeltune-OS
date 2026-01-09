@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ChevronRight, FileText, Trash2, BookOpen, Layout, GraduationCap, Archive, Search } from 'lucide-react';
 import { deleteInstructionSet, UnifiedInstructionItem } from './actions';
+import { deleteCourse } from './courses/actions';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 
@@ -40,11 +41,15 @@ export default function InstructionsClient({ instructions }: InstructionsClientP
         if (!instructionToDelete) return;
         setIsDeleting(true);
         try {
-            await deleteInstructionSet(instructionToDelete.id);
-            showToast('Instruction set deleted successfully', 'success');
+            if (instructionToDelete.type === 'course') {
+                await deleteCourse(instructionToDelete.id);
+            } else {
+                await deleteInstructionSet(instructionToDelete.id);
+            }
+            showToast(`${instructionToDelete.type === 'course' ? 'Course' : 'Instruction set'} deleted successfully`, 'success');
             router.refresh();
         } catch (error: any) {
-            showToast(error.message || 'Failed to delete instruction set', 'error');
+            showToast(error.message || `Failed to delete ${instructionToDelete.type === 'course' ? 'course' : 'instruction set'}`, 'error');
         } finally {
             setIsDeleting(false);
             setDeleteDialogOpen(false);
@@ -53,7 +58,7 @@ export default function InstructionsClient({ instructions }: InstructionsClientP
     };
 
     const InstructionCard = ({ instruction }: { instruction: UnifiedInstructionItem }) => {
-        const isDeletable = (instruction.type === 'platform' || instruction.type === 'uploaded') && !instruction.project_id;
+        const isDeletable = (instruction.type === 'platform' || instruction.type === 'uploaded' || instruction.type === 'course') && !instruction.project_id;
         const iconStyle = {
             platform: "bg-blue-500/10 text-blue-400",
             uploaded: "bg-purple-500/10 text-purple-400",
@@ -202,7 +207,7 @@ export default function InstructionsClient({ instructions }: InstructionsClientP
                     <div className="glass-panel p-6 rounded-2xl max-w-md w-full mx-4 border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
                         <h3 className="text-xl font-bold mb-2 text-white">Conferma eliminazione</h3>
                         <p className="text-muted-foreground mb-6">
-                            Sei sicuro di voler eliminare le istruzioni &quot;{instructionToDelete?.name}&quot;? Questa azione non può essere annullata.
+                            Sei sicuro di voler eliminare {instructionToDelete?.type === 'course' ? 'il corso' : 'le istruzioni'} &quot;{instructionToDelete?.name}&quot;? Questa azione non può essere annullata.
                         </p>
                         <div className="flex gap-3 justify-end">
                             <button
