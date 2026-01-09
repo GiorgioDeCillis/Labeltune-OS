@@ -17,7 +17,8 @@ import {
     X,
     User,
     FileText,
-    Bot
+    Bot,
+    Users
 } from 'lucide-react';
 
 export function Sidebar({ userRole }: { userRole: string }) {
