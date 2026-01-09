@@ -58,6 +58,25 @@ export default function CustomDateInput({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Lift parent section z-index when picker is open to prevent stacking context issues
+    useEffect(() => {
+        if (showPicker && containerRef.current) {
+            const section = containerRef.current.closest('section');
+            if (section) {
+                const originalZ = section.style.zIndex;
+                const originalExtra = section.style.position;
+                section.style.zIndex = '50';
+                if (!originalExtra || originalExtra === 'static') {
+                    section.style.position = 'relative';
+                }
+                return () => {
+                    section.style.zIndex = originalZ;
+                    section.style.position = originalExtra;
+                };
+            }
+        }
+    }, [showPicker]);
+
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         let val = e.target.value;
         const isDelete = (e.nativeEvent as InputEvent).inputType === 'deleteContentBackward';
@@ -176,7 +195,7 @@ export default function CustomDateInput({
     }
 
     return (
-        <div className="relative w-full" ref={containerRef}>
+        <div className={`relative w-full ${showPicker ? 'z-50' : 'z-auto'}`} ref={containerRef}>
             <input
                 type="hidden"
                 name={name}
