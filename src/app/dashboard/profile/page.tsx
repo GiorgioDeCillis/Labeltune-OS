@@ -3,7 +3,7 @@
 import { useTheme } from '@/context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles, Camera, Loader2, Copy, Check, FileText, ExternalLink, Phone, MapPin, CreditCard, Github, Linkedin, Smartphone, Briefcase, Lock, Key, AlertCircle } from 'lucide-react';
+import { User, Mail, Shield, Zap, Palette, Image as ImageIcon, Sparkles, Camera, Loader2, Copy, Check, FileText, ExternalLink, Phone, MapPin, CreditCard, Github, Linkedin, Smartphone, Briefcase, Lock, Key, AlertCircle, Ban, LayoutGrid, Maximize2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getDefaultAvatar } from '@/utils/avatar';
