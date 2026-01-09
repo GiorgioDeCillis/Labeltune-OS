@@ -13,7 +13,7 @@ interface InstructionsClientProps {
     userProfile: any;
 }
 
-export default function InstructionsClient({ instructions }: InstructionsClientProps) {
+export default function InstructionsClient({ instructions, userProfile }: InstructionsClientProps) {
     const router = useRouter();
     const { showToast } = useToast();
     const [searchQuery, setSearchQuery] = useState('');
