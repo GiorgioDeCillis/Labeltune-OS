@@ -120,7 +120,11 @@ export default function UsersClient({ initialUsers }: { initialUsers: DashboardU
                         <tbody className="divide-y divide-white/5">
                             {filteredUsers.length > 0 ? (
                                 filteredUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-white/[0.02] transition-colors group">
+                                    <tr
+                                        key={user.id}
+                                        className="hover:bg-white/[0.02] transition-colors group cursor-pointer"
+                                        onClick={() => window.location.href = `/dashboard/users/${user.id}`}
+                                    >
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center overflow-hidden border border-white/10">
