@@ -14,9 +14,8 @@ export async function updateProfile(formData: FormData) {
     const firstName = formData.get('firstName') as string
     const lastName = formData.get('lastName') as string
     const birthDate = formData.get('birthDate') as string
-    const phoneNumber = formData.get('phoneNumber') as string
+
     const address = formData.get('address') as string
-    const paypalEmail = formData.get('paypalEmail') as string
     const linkedinUrl = formData.get('linkedinUrl') as string || null
     const githubUrl = formData.get('githubUrl') as string || null
     const websiteUrl = formData.get('websiteUrl') as string || null
@@ -29,12 +28,10 @@ export async function updateProfile(formData: FormData) {
             first_name: firstName,
             last_name: lastName,
             birth_date: birthDate,
-            phone_number: phoneNumber,
             address: address,
             linkedin_url: linkedinUrl,
             github_url: githubUrl,
             website_url: websiteUrl,
-            paypal_email: paypalEmail,
             job_offers_consent: jobOffersConsent,
         })
         .eq('id', user.id)

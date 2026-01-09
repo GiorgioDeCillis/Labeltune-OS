@@ -312,7 +312,8 @@ export default function ProfilePage() {
                                         <input
                                             name="phoneNumber"
                                             defaultValue={profile?.phone_number}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                            disabled
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none cursor-not-allowed opacity-60"
                                             required
                                         />
                                     </div>
@@ -333,7 +334,8 @@ export default function ProfilePage() {
                                             name="paypalEmail"
                                             defaultValue={profile?.paypal_email}
                                             type="email"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-primary transition-all"
+                                            disabled
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none cursor-not-allowed opacity-60"
                                             required
                                         />
                                     </div>
