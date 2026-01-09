@@ -56,7 +56,7 @@ export async function getUsers() {
         const profile = profiles?.find(p => p.id === authUser.id);
 
         let status = 'Active';
-        if (!profile) {
+        if (!profile || !profile.is_onboarded) {
             status = 'Incomplete Registration';
         } else if (!profile.full_name && !profile.first_name) {
             status = 'Pending';
