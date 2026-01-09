@@ -16,7 +16,7 @@ export default async function NewCoursePage() {
         .single();
 
     if (profile?.role !== 'pm' && profile?.role !== 'admin') {
-        redirect('/dashboard/knowledge/courses');
+        redirect('/dashboard/knowledge');
     }
 
     // Fetch Projects for the selector

@@ -125,7 +125,7 @@ export function CourseBuilder({ projectId: initialProjectId, existingCourse, pro
                     if (selectedProjectId) {
                         router.push(`/dashboard/projects/${selectedProjectId}`);
                     } else {
-                        router.push('/dashboard/knowledge/courses');
+                        router.push('/dashboard/knowledge');
                     }
                     router.refresh();
                 }

@@ -183,7 +183,7 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false,
                                 </button>
                             </Link>
                         )}
-                        <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/knowledge/courses'}>
+                        <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/knowledge'}>
                             <button className="text-xs font-bold text-muted-foreground hover:text-white transition-colors">
                                 Exit Course
                             </button>
@@ -294,7 +294,7 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false,
                                     </Link>
                                 ) : null}
 
-                                <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/knowledge/courses'}>
+                                <Link href={course.project_id ? `/dashboard/projects/${course.project_id}` : '/dashboard/knowledge'}>
                                     <button className={`w-full py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${nextCourseId
                                         ? 'bg-white/5 hover:bg-white/10 text-white'
                                         : 'bg-primary text-primary-foreground hover:opacity-90'

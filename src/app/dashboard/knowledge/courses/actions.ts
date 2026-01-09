@@ -25,7 +25,7 @@ export async function createCourse(projectId: string | null, data: Partial<Cours
     if (projectId) {
         revalidatePath(`/dashboard/projects/${projectId}`);
     }
-    revalidatePath('/dashboard/knowledge/courses');
+    revalidatePath('/dashboard/knowledge');
     return course;
 }
 
@@ -45,7 +45,7 @@ export async function updateCourse(courseId: string, data: Partial<Course>) {
 
     if (error) throw new Error(error.message);
     revalidatePath(`/dashboard/knowledge/courses/${courseId}`);
-    revalidatePath('/dashboard/knowledge/courses');
+    revalidatePath('/dashboard/knowledge');
 }
 
 export async function deleteCourse(courseId: string) {
@@ -85,7 +85,7 @@ export async function deleteCourse(courseId: string) {
         throw new Error(error.message);
     }
 
-    revalidatePath('/dashboard/knowledge/courses');
+    revalidatePath('/dashboard/knowledge');
     return { success: true };
 }
 
@@ -375,7 +375,7 @@ export async function saveCourseWithLessons(
     // 4. Revalidate
     revalidatePath(`/dashboard/knowledge/courses/${finalCourseId}`);
     if (projectId) revalidatePath(`/dashboard/projects/${projectId}`);
-    revalidatePath('/dashboard/knowledge/courses');
+    revalidatePath('/dashboard/knowledge');
 
     return { success: true, courseId: finalCourseId };
 }
