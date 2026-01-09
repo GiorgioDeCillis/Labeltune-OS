@@ -11,8 +11,6 @@ import {
 import Image from 'next/image';
 import { getDefaultAvatar } from '@/utils/avatar';
 import { updateUserProfile } from './actions';
-import { formatDistanceToNow, format } from 'date-fns';
-import { it } from 'date-fns/locale';
 
 interface UserProfileClientProps {
     initialData: {
@@ -110,13 +108,13 @@ export default function UserProfileClient({ initialData, userId }: UserProfileCl
                             </div>
                             <div className="flex items-center gap-3">
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${profile.role === 'admin' ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' :
-                                        profile.role === 'pm' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' :
-                                            'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                    profile.role === 'pm' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' :
+                                        'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                                     }`}>
                                     {profile.role}
                                 </span>
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${profile.is_onboarded ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-                                        'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
+                                    'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
                                     }`}>
                                     {profile.is_onboarded ? 'Active' : 'Pending Reg.'}
                                 </span>
@@ -141,7 +139,7 @@ export default function UserProfileClient({ initialData, userId }: UserProfileCl
                             </div>
                             <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
                                 <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-1">Joined</p>
-                                <p className="text-lg font-bold">{format(new Date(authUser.created_at), 'dd MMM yyyy')}</p>
+                                <p className="text-lg font-bold">{new Date(authUser.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                             </div>
                         </div>
                     </div>
@@ -158,8 +156,8 @@ export default function UserProfileClient({ initialData, userId }: UserProfileCl
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${activeTab === tab.id
-                                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                                : 'hover:bg-white/5 text-muted-foreground hover:text-white'
+                            ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                            : 'hover:bg-white/5 text-muted-foreground hover:text-white'
                             }`}
                     >
                         <tab.icon className="w-4 h-4" />
@@ -310,13 +308,13 @@ export default function UserProfileClient({ initialData, userId }: UserProfileCl
                                     <div className="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/10">
                                         <span className="text-sm font-medium">Last Sign In</span>
                                         <span className="text-xs text-muted-foreground">
-                                            {authUser.last_sign_in_at ? format(new Date(authUser.last_sign_in_at), 'dd MMM yyyy, HH:mm') : 'Never'}
+                                            {authUser.last_sign_in_at ? new Date(authUser.last_sign_in_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never'}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/10">
                                         <span className="text-sm font-medium">Created At</span>
                                         <span className="text-xs text-muted-foreground">
-                                            {format(new Date(authUser.created_at), 'dd MMM yyyy, HH:mm')}
+                                            {new Date(authUser.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
                                 </div>
@@ -344,8 +342,8 @@ export default function UserProfileClient({ initialData, userId }: UserProfileCl
                                     <div key={task.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
                                         <div className="flex items-center gap-4">
                                             <div className={`p-2 rounded-lg ${task.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400' :
-                                                    task.status === 'rejected' ? 'bg-red-500/10 text-red-400' :
-                                                        'bg-blue-500/10 text-blue-400'
+                                                task.status === 'rejected' ? 'bg-red-500/10 text-red-400' :
+                                                    'bg-blue-500/10 text-blue-400'
                                                 }`}>
                                                 {task.status === 'approved' ? <CheckCircle2 className="w-4 h-4" /> :
                                                     task.status === 'rejected' ? <AlertCircle className="w-4 h-4" /> :
@@ -354,7 +352,20 @@ export default function UserProfileClient({ initialData, userId }: UserProfileCl
                                             <div>
                                                 <p className="font-bold text-sm">Task #{task.id.slice(0, 8)}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    {formatDistanceToNow(new Date(task.created_at), { addSuffix: true })}
+                                                    {(() => {
+                                                        const date = new Date(task.created_at);
+                                                        const now = new Date();
+                                                        const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // seconds
+
+                                                        const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+                                                        if (diff < 60) return rtf.format(-diff, 'second');
+                                                        if (diff < 3600) return rtf.format(-Math.floor(diff / 60), 'minute');
+                                                        if (diff < 86400) return rtf.format(-Math.floor(diff / 3600), 'hour');
+                                                        if (diff < 2592000) return rtf.format(-Math.floor(diff / 86400), 'day');
+                                                        if (diff < 31536000) return rtf.format(-Math.floor(diff / 2592000), 'month');
+                                                        return rtf.format(-Math.floor(diff / 31536000), 'year');
+                                                    })()}
                                                 </p>
                                             </div>
                                         </div>
