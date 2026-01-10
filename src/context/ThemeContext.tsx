@@ -71,6 +71,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => { localStorage.setItem('labeltune-trail-mode', trailMode); }, [trailMode]);
   useEffect(() => { localStorage.setItem('labeltune-trail-size', trailSize); }, [trailSize]);
 
+  // Sync state to CSS variables on documentElement for consistency with blocking script
+  useEffect(() => {
+    document.documentElement.style.setProperty('--bg-wallpaper', `url(${wallpaper})`);
+    document.documentElement.style.setProperty('--bg-blur', `${blur}px`);
+    document.documentElement.style.setProperty('--glass-opacity', transparency.toString());
+    document.documentElement.style.setProperty('--glass-blur', `${Math.min(blur * 5, 20)}px`);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme, wallpaper, blur, transparency]);
+
   const setTheme = React.useCallback((newTheme: ThemeType) => {
     setThemeState(newTheme);
     // Set default wallpaper if switching theme
