@@ -144,7 +144,9 @@ export const CursorBorderEffect: React.FC = () => {
             style={{
                 position: 'fixed',
                 pointerEvents: 'none',
-                zIndex: 9999,
+                // Z-index must be lower than Navbar (40) but higher than content (0-10)
+                // This prevents the trail from appearing on top of the header during scroll
+                zIndex: 35,
                 top: 0,
                 left: 0,
                 transform: 'translate3d(var(--tx, 0), var(--ty, 0), 0)',
