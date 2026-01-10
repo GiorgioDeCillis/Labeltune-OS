@@ -68,17 +68,24 @@ export async function getUserDetails(userId: string) {
     }
 
     // Fetch course progress
-    const { data: courseProgress, error: progressError } = await adminSupabase
+    const { data: progress, error: progressError } = await adminSupabase
         .from('user_course_progress')
-        .select(`
-            *,
-            course:courses(*)
-        `)
+        .select('*')
         .eq('user_id', userId);
 
     if (progressError) {
         console.error('Error fetching course progress:', progressError);
     }
+
+    // Fetch all courses to map details
+    const { data: courses } = await adminSupabase
+        .from('courses')
+        .select('*');
+
+    const courseProgress = (progress || []).map(p => ({
+        ...p,
+        course: courses?.find(c => c.id === p.course_id)
+    }));
 
     // Fetch project assignments
     const { data: projectAssignments, error: assignmentsError } = await adminSupabase
@@ -116,8 +123,13 @@ export async function getUserDetails(userId: string) {
     // Calculate project-specific stats
     const projectStats = (projectAssignments || []).map(assignment => {
         const pTasks = annotatorTasks.filter(t => t.project_id === assignment.project_id);
+        const rTasks = reviewerTasks.filter(t => t.project_id === assignment.project_id);
+
         const pCompleted = pTasks.filter(t => t.status === 'approved');
+        const rCompleted = rTasks.filter(t => t.status === 'approved' || t.status === 'rejected');
+
         const pEarnings = pTasks.reduce((acc, t) => acc + (t.annotator_earnings || 0), 0);
+        const rEarnings = rTasks.reduce((acc, t) => acc + (t.reviewer_earnings || 0), 0);
 
         // Avg time spent per task (in seconds)
         const pTimeSpent = pTasks.filter(t => t.annotator_time_spent).reduce((acc, t) => acc + (t.annotator_time_spent || 0), 0);
@@ -128,7 +140,8 @@ export async function getUserDetails(userId: string) {
             projectName: assignment.project?.name,
             projectType: assignment.project?.type,
             completedTasks: pCompleted.length,
-            totalEarnings: pEarnings,
+            reviewedTasks: rCompleted.length,
+            totalEarnings: pEarnings + rEarnings,
             avgTimeSpent: pAvgTime,
             status: assignment.status
         };
