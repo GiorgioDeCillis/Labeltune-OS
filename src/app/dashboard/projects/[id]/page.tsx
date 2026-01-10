@@ -1,10 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Settings, BookOpen, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Settings, BookOpen, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Users, BarChart3, Clock, Euro, Award, Search } from 'lucide-react';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
 import { ProjectHeaderActions } from '@/components/dashboard/ProjectHeaderActions';
-import { startTasking, startReviewing } from '../actions';
+import { startTasking, startReviewing, getProjectKPIs } from '../actions';
 import { ToastQueryHandler } from '@/components/dashboard/ToastQueryHandler';
 
 
@@ -42,6 +42,9 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         .select('*')
         .eq('project_id', project.id)
         .order('created_at', { ascending: true });
+
+    // Fetch KPIs if PM
+    const kpis = isPM ? await getProjectKPIs(id) : null;
 
     // For non-admins, check if they are assigned and active + get reviewer status
     let isReviewer = false;
@@ -122,11 +125,62 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
         return (
             <div className="space-y-8">
                 <div className="flex items-center justify-between">
-                    <div>
+                    <div className="space-y-1">
+                        <Link
+                            href="/dashboard/projects"
+                            className="inline-flex items-center text-sm text-[var(--primary)] hover:opacity-80 transition-opacity font-medium mb-2"
+                        >
+                            <ChevronLeft className="w-4 h-4 mr-1" />
+                            Back to Projects
+                        </Link>
                         <h2 className="text-3xl font-bold tracking-tight text-white">{project.name}</h2>
                         <p className="text-white/60">{project.description}</p>
                     </div>
                     <ProjectHeaderActions id={id} guidelines={project.guidelines} />
+                </div>
+
+                {/* KPI Dashboard - Only for PM/Admin */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                        title="Total Tasks"
+                        value={kpis?.totalTasks.toString() || '0'}
+                        icon={BarChart3}
+                    />
+                    <StatCard
+                        title="Completed Tasks"
+                        value={kpis?.completedTasks.toString() || '0'}
+                        icon={CheckCircle2}
+                    />
+                    <StatCard
+                        title="Approved Tasks"
+                        value={kpis?.approvedTasks.toString() || '0'}
+                        icon={Award}
+                    />
+                    <StatCard
+                        title="Pending Review"
+                        value={kpis?.pendingReviews.toString() || '0'}
+                        icon={Search}
+                    />
+                    <StatCard
+                        title="Attempters"
+                        value={kpis?.uniqueAttempters.toString() || '0'}
+                        icon={Users}
+                    />
+                    <StatCard
+                        title="Reviewers"
+                        value={kpis?.uniqueReviewers.toString() || '0'}
+                        icon={Users}
+                    />
+                    <StatCard
+                        title="Total Project Cost"
+                        value={`€${kpis?.totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        icon={Euro}
+                    />
+                    <StatCard
+                        title="Avg Time per Task"
+                        value={formatDuration(kpis?.avgTimePerTask)}
+                        icon={Clock}
+                    />
                 </div>
 
                 <div className="glass-panel p-6 rounded-2xl border-white/10">
@@ -340,5 +394,20 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                 </div>
             </div>
         </div >
+    );
+}
+
+function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: any }) {
+    return (
+        <div className="glass-panel p-6 rounded-xl space-y-2 border border-white/5 hover:border-white/10 transition-all group">
+            <div
+                className="flex items-center justify-between transition-colors duration-300"
+                style={{ color: 'rgba(255,255,255,0.4)' }}
+            >
+                <span className="text-[10px] font-bold uppercase tracking-widest">{title}</span>
+                <Icon className="w-4 h-4 transition-transform group-hover:scale-110" style={{ color: 'var(--primary)' }} />
+            </div>
+            <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
+        </div>
     );
 }

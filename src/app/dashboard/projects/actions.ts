@@ -957,3 +957,50 @@ export async function startReviewing(projectId: string) {
     // No tasks to review - redirect back with message
     redirect(`/dashboard/projects/${projectId}?error=No tasks available for review`);
 }
+
+export async function getProjectKPIs(projectId: string) {
+    const supabase = await createClient();
+
+    const { data: tasks, error } = await supabase
+        .from('tasks')
+        .select('status, annotator_earnings, reviewer_earnings, annotator_time_spent, reviewer_time_spent, assigned_to, reviewed_by')
+        .eq('project_id', projectId);
+
+    if (error) {
+        console.error('Error fetching project KPIs:', error);
+        return {
+            totalTasks: 0,
+            completedTasks: 0,
+            approvedTasks: 0,
+            pendingReviews: 0,
+            uniqueAttempters: 0,
+            uniqueReviewers: 0,
+            totalCost: 0,
+            avgTimePerTask: 0
+        };
+    }
+
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(t => ['submitted', 'completed', 'approved'].includes(t.status)).length;
+    const approvedTasks = tasks.filter(t => ['completed', 'approved'].includes(t.status)).length;
+    const pendingReviews = tasks.filter(t => t.status === 'submitted').length;
+
+    const uniqueAttempters = new Set(tasks.map(t => t.assigned_to).filter(Boolean)).size;
+    const uniqueReviewers = new Set(tasks.map(t => t.reviewed_by).filter(Boolean)).size;
+
+    const totalCost = tasks.reduce((acc, t) => acc + (Number(t.annotator_earnings) || 0) + (Number(t.reviewer_earnings) || 0), 0);
+    const totalTime = tasks.reduce((acc, t) => acc + (Number(t.annotator_time_spent) || 0) + (Number(t.reviewer_time_spent) || 0), 0);
+
+    const avgTimePerTask = completedTasks > 0 ? totalTime / completedTasks : 0;
+
+    return {
+        totalTasks,
+        completedTasks,
+        approvedTasks,
+        pendingReviews,
+        uniqueAttempters,
+        uniqueReviewers,
+        totalCost,
+        avgTimePerTask
+    };
+}
