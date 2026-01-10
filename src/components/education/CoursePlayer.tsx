@@ -35,6 +35,12 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false,
     const hasNext = activeIndex < course.lessons.length - 1;
     const hasPrev = activeIndex > 0;
 
+    const isLessonCompleted = (lessonId: string) => {
+        return localCompletedLessons.includes(lessonId) || completedLessonIds.includes(lessonId);
+    };
+
+    const isCurrentLessonUncompletedQuiz = activeLesson?.type === 'quiz' && !isLessonCompleted(activeLesson.id);
+
     const handleNext = async () => {
         // Optimistic update: Navigate immediately
         const lessonToComplete = activeLessonId;
@@ -135,10 +141,17 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false,
                         return (
                             <button
                                 key={lesson.id}
-                                onClick={() => setActiveLessonId(lesson.id)}
+                                onClick={() => {
+                                    if (isAdmin || index <= activeIndex || isLessonCompleted(lesson.id) || (index === activeIndex + 1 && isLessonCompleted(course.lessons[activeIndex].id))) {
+                                        setActiveLessonId(lesson.id);
+                                    }
+                                }}
+                                disabled={!isAdmin && index > activeIndex + 1 && !isLessonCompleted(lesson.id)}
                                 className={`w-full text-left p-3 rounded-lg text-sm flex items-start gap-3 transition-colors ${isActive
                                     ? 'bg-primary/20 text-primary font-medium'
-                                    : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
+                                    : index > activeIndex && !isLessonCompleted(lesson.id) && !isAdmin
+                                        ? 'opacity-50 cursor-not-allowed text-muted-foreground'
+                                        : 'hover:bg-white/5 text-muted-foreground hover:text-foreground'
                                     }`}
                             >
                                 <div className="mt-0.5">
@@ -200,7 +213,7 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false,
                                     key={activeLesson.id}
                                     lesson={activeLesson}
                                     onComplete={() => {
-                                        // Refresh passed state logic if needed, usually handled by parent re-render or internal state
+                                        setLocalCompletedLessons(prev => prev.includes(activeLesson.id) ? prev : [...prev, activeLesson.id]);
                                         router.refresh();
                                     }}
                                 />
@@ -248,7 +261,7 @@ export function CoursePlayer({ course, completedLessonIds = [], isAdmin = false,
                     {hasNext ? (
                         <button
                             onClick={handleNext}
-                            disabled={isSaving}
+                            disabled={isSaving || (!isAdmin && isCurrentLessonUncompletedQuiz)}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all bg-primary text-primary-foreground hover:opacity-90 shadow-[0_0_15px_rgba(var(--primary),0.3)] disabled:opacity-50"
                         >
                             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
