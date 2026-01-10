@@ -6,7 +6,7 @@ import {
     User, Mail, Shield, Calendar, Clock, MapPin, Smartphone,
     FileText, Activity, DollarSign, Star, Briefcase,
     CheckCircle2, AlertCircle, Loader2, Edit2, Save, X,
-    LayoutGrid, List, File, BookOpen, Clock, Trophy
+    LayoutGrid, List, File, BookOpen, Trophy
 } from 'lucide-react';
 import Image from 'next/image';
 import { getDefaultAvatar } from '@/utils/avatar';
