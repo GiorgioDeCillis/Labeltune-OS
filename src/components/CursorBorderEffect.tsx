@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useEffect, useRef } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 
 export const CursorBorderEffect: React.FC = () => {
     const { trailMode, trailSize } = useTheme();
-    const [mounted, setMounted] = useState(false);
-    const [targetId, setTargetId] = useState<string>('initial');
+    const [targetId, setTargetId] = React.useState<string>('initial');
     const containerRef = useRef<HTMLDivElement>(null);
     const currentTargetRef = useRef<HTMLElement | null>(null);
     const lastMousePos = useRef({ x: 0, y: 0 });
@@ -17,11 +15,7 @@ export const CursorBorderEffect: React.FC = () => {
     const mouseRafRef = useRef<number | null>(null);
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (trailMode === 'disabled' || !mounted) {
+        if (trailMode === 'disabled') {
             if (currentTargetRef.current) {
                 currentTargetRef.current = null;
                 isVisibleRef.current = false;
@@ -102,6 +96,7 @@ export const CursorBorderEffect: React.FC = () => {
         };
 
         const findTarget = (el: HTMLElement): HTMLElement | null => {
+            if (!el) return null;
             const selector = trailSize === 'large'
                 ? '.glass-panel, .hyprland-window, .card'
                 : 'button, a, input, select, textarea, [role="button"], .glass-panel, .hyprland-window, .cursor-pointer, .card';
@@ -117,7 +112,9 @@ export const CursorBorderEffect: React.FC = () => {
             if (mouseRafRef.current) return;
 
             mouseRafRef.current = requestAnimationFrame(() => {
-                setTarget(findTarget(e.target as HTMLElement));
+                // Use elementFromPoint for more reliable detection across fixed/absolute layers
+                const elUnderMouse = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement;
+                setTarget(findTarget(elUnderMouse));
                 mouseRafRef.current = null;
             });
         };
@@ -150,18 +147,18 @@ export const CursorBorderEffect: React.FC = () => {
             cancelAnimationFrame(rafId);
             if (mouseRafRef.current) cancelAnimationFrame(mouseRafRef.current);
         };
-    }, [trailMode, trailSize, mounted]);
+    }, [trailMode, trailSize]);
 
-    if (trailMode === 'disabled' || !mounted) return null;
+    if (trailMode === 'disabled') return null;
 
-    return createPortal(
+    return (
         <div
             ref={containerRef}
             className="cursor-trail-container"
             style={{
                 position: 'fixed',
                 pointerEvents: 'none',
-                zIndex: 35, // Use a z-index lower than Navbar (40)
+                zIndex: 35, // Below Navbar (40) but above content
                 top: 0,
                 left: 0,
                 transform: 'translate3d(var(--tx, 0), var(--ty, 0), 0)',
@@ -180,8 +177,8 @@ export const CursorBorderEffect: React.FC = () => {
                     position: 'absolute',
                     inset: 0,
                     border: '2px solid var(--primary)',
-                    borderRadius: 'inherit',
                     boxShadow: '0 0 10px var(--primary)',
+                    borderRadius: 'inherit',
                     WebkitMaskImage: trailMode === 'static'
                         ? 'conic-gradient(from 0deg, black 0deg, black var(--trail-angle), transparent var(--trail-angle))'
                         : 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
@@ -190,8 +187,6 @@ export const CursorBorderEffect: React.FC = () => {
                         : 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
                 }}
             />
-        </div>,
-        document.body
+        </div>
     );
 };
-
