@@ -11,6 +11,9 @@ export const CursorBorderEffect: React.FC = () => {
     const lastMousePos = useRef({ x: 0, y: 0 });
     const isVisibleRef = useRef(false);
 
+    const prevRect = useRef({ x: 0, y: 0, w: 0, h: 0 });
+    const mouseRafRef = useRef<number | null>(null);
+
     useEffect(() => {
         if (trailMode === 'disabled') {
             if (currentTargetRef.current) {
@@ -43,7 +46,22 @@ export const CursorBorderEffect: React.FC = () => {
             const target = currentTargetRef.current;
             if (!target) return;
             const rect = target.getBoundingClientRect();
-            updatePosition(rect.left - 1, rect.top - 1, rect.width + 2, rect.height + 2);
+
+            const x = rect.left - 1;
+            const y = rect.top - 1;
+            const w = rect.width + 2;
+            const h = rect.height + 2;
+
+            // Only update DOM if position changed
+            if (Math.abs(x - prevRect.current.x) < 0.5 &&
+                Math.abs(y - prevRect.current.y) < 0.5 &&
+                Math.abs(w - prevRect.current.w) < 0.5 &&
+                Math.abs(h - prevRect.current.h) < 0.5) {
+                return;
+            }
+
+            prevRect.current = { x, y, w, h };
+            updatePosition(x, y, w, h);
         };
 
         const setTarget = (newTarget: HTMLElement | null) => {
@@ -53,6 +71,8 @@ export const CursorBorderEffect: React.FC = () => {
                     const style = window.getComputedStyle(newTarget);
                     container.style.setProperty('--br', style.borderRadius || '0px');
                     setTargetId(Math.random().toString(36).substr(2, 9));
+                    // Force immediate update when checking new target
+                    prevRect.current = { x: -9999, y: -9999, w: 0, h: 0 };
                     updateFromTarget();
                     updateVisibility(true);
                 } else {
@@ -73,20 +93,25 @@ export const CursorBorderEffect: React.FC = () => {
 
         const onMouseMove = (e: MouseEvent) => {
             lastMousePos.current = { x: e.clientX, y: e.clientY };
-            // Throttle mouse move slightly for target checking, but update position immediately if needed
-            requestAnimationFrame(() => {
+
+            if (mouseRafRef.current) return;
+
+            mouseRafRef.current = requestAnimationFrame(() => {
                 setTarget(findTarget(e.target as HTMLElement));
+                mouseRafRef.current = null;
             });
         };
 
         let lastScrollTime = 0;
         const onScroll = () => {
             const now = Date.now();
-            if (now - lastScrollTime < 50) return; // Throttle scroll checks to 20fps equivalent
+            if (now - lastScrollTime < 50) return; // Throttle scroll checks
             lastScrollTime = now;
 
             const el = document.elementFromPoint(lastMousePos.current.x, lastMousePos.current.y) as HTMLElement;
             if (el) setTarget(findTarget(el));
+            // Force update on scroll
+            prevRect.current = { x: -9999, y: -9999, w: 0, h: 0 };
             updateFromTarget();
         };
 
@@ -106,6 +131,7 @@ export const CursorBorderEffect: React.FC = () => {
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('scroll', onScroll, true);
             cancelAnimationFrame(rafId);
+            if (mouseRafRef.current) cancelAnimationFrame(mouseRafRef.current);
         };
     }, [trailMode, trailSize]);
 

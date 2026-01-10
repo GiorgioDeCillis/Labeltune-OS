@@ -114,14 +114,19 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
 
     const handleStageMouseMove = (e: any) => {
         if (readOnly) return;
-        const [x, y] = getMousePos();
-        setCursorPos({ x, y });
 
-        if (tool === 'rect' && newRegionPoints.length > 0) {
-            const [startX, startY] = newRegionPoints;
-            const width = x - startX;
-            const height = y - startY;
-            setNewRegionPoints([startX, startY, width, height]);
+        // Optimize: Only calculate position and update state if we are drawing
+        if ((tool === 'rect' || tool === 'polygon') && newRegionPoints.length > 0) {
+            const [x, y] = getMousePos();
+
+            if (tool === 'polygon') {
+                setCursorPos({ x, y });
+            } else if (tool === 'rect') {
+                const [startX, startY] = newRegionPoints;
+                const width = x - startX;
+                const height = y - startY;
+                setNewRegionPoints([startX, startY, width, height]);
+            }
         }
     };
 

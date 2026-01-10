@@ -51,6 +51,8 @@ import {
     HyperTextObject
 } from '@/components/builder/Renderers';
 
+const noop = () => { };
+
 interface TaskMonitoringViewProps {
     task: any;
     project: any;
@@ -107,9 +109,9 @@ export function TaskMonitoringView({ task, project, annotator, reviewer, current
         return data || {};
     };
 
-    const labels = parseJSON(task.labels);
-    const annotatorLabels = parseJSON(task.annotator_labels || task.labels);
-    const payload = parseJSON(task.payload);
+    const labels = React.useMemo(() => parseJSON(task.labels), [task.labels]);
+    const annotatorLabels = React.useMemo(() => parseJSON(task.annotator_labels || task.labels), [task.annotator_labels, task.labels]);
+    const payload = React.useMemo(() => parseJSON(task.payload), [task.payload]);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(task.id);
@@ -586,18 +588,18 @@ function renderComponent(component: TaskComponent, payload: any, labels: any) {
         case 'RubricTable': return <RubricTable component={component} />;
 
         // Controls (Read-only view)
-        case 'Choices': return <ChoicesControl component={component} value={value} onChange={() => { }} readOnly={true} />;
-        case 'Rating': return <RatingControl component={component} value={value} onChange={() => { }} readOnly={true} />;
-        case 'TextArea': return <TextAreaControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'Choices': return <ChoicesControl component={component} value={value} onChange={noop} readOnly={true} />;
+        case 'Rating': return <RatingControl component={component} value={value} onChange={noop} readOnly={true} />;
+        case 'TextArea': return <TextAreaControl component={component} value={value} onChange={noop} readOnly={true} />;
         case 'Labels':
         case 'RectangleLabels':
-        case 'PolygonLabels': return <ImageLabelsControl component={component} value={value} onChange={() => { }} readOnly={true} data={payload} />;
-        case 'RubricScorer': return <RubricScorerControl component={component} value={value} onChange={() => { }} readOnly={true} />;
-        case 'Ranking': return <RankingControl component={component} value={value} onChange={() => { }} readOnly={true} />;
-        case 'Feedback': return <FeedbackControl component={component} value={value} onChange={() => { }} readOnly={true} />;
-        case 'AudioRecorder': return <AudioRecorderControl component={component} value={value} onChange={() => { }} readOnly={true} />;
-        case 'Checklist': return <ChecklistControl component={component} value={value} onChange={() => { }} readOnly={true} />;
-        case 'AccordionChoices': return <AccordionChoicesControl component={component} value={value} onChange={() => { }} readOnly={true} />;
+        case 'PolygonLabels': return <ImageLabelsControl component={component} value={value} onChange={noop} readOnly={true} data={payload} />;
+        case 'RubricScorer': return <RubricScorerControl component={component} value={value} onChange={noop} readOnly={true} />;
+        case 'Ranking': return <RankingControl component={component} value={value} onChange={noop} readOnly={true} />;
+        case 'Feedback': return <FeedbackControl component={component} value={value} onChange={noop} readOnly={true} />;
+        case 'AudioRecorder': return <AudioRecorderControl component={component} value={value} onChange={noop} readOnly={true} />;
+        case 'Checklist': return <ChecklistControl component={component} value={value} onChange={noop} readOnly={true} />;
+        case 'AccordionChoices': return <AccordionChoicesControl component={component} value={value} onChange={noop} readOnly={true} />;
 
         default: return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
     }

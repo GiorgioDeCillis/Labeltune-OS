@@ -159,14 +159,16 @@ export function PropertiesPanel({ component, onChange }: {
                                 <span className="text-primary italic">Use # Name for headers</span>
                             )}
                         </label>
-                        <textarea
+                        <ListEditor
                             value={component.options?.map(o => `${o.label}:${o.value}`).join('\n') || ''}
-                            onChange={(e) => {
-                                const lines = e.target.value.split('\n');
+                            onChange={(text: string) => {
+                                const lines = text.split('\n');
                                 const options = lines.map(line => {
                                     const [label, value] = line.split(':');
+                                    // Handle empty lines or potential parsing issues gracefully
+                                    if (!line.trim()) return null;
                                     return { label: label?.trim(), value: (value || label)?.trim() };
-                                });
+                                }).filter(Boolean) as any[];
                                 onChange({ options });
                             }}
                             rows={5}
@@ -180,14 +182,15 @@ export function PropertiesPanel({ component, onChange }: {
             {(component.type === 'Labels' || component.type === 'RectangleLabels' || component.type === 'PolygonLabels') && (
                 <div className="space-y-2 pt-4 border-t border-white/5">
                     <label className="text-xs font-bold text-muted-foreground">Labels (Value:Color per line)</label>
-                    <textarea
+                    <ListEditor
                         value={component.labels?.map(l => `${l.value}:${l.background || '#000000'}`).join('\n') || ''}
-                        onChange={(e) => {
-                            const lines = e.target.value.split('\n');
+                        onChange={(text: string) => {
+                            const lines = text.split('\n');
                             const labels = lines.map(line => {
                                 const [value, color] = line.split(':');
+                                if (!line.trim()) return null;
                                 return { value: value?.trim(), background: (color || '#000000')?.trim() };
-                            });
+                            }).filter(Boolean) as any[];
                             onChange({ labels });
                         }}
                         rows={5}
@@ -401,5 +404,26 @@ export function PropertiesPanel({ component, onChange }: {
                 </div>
             )}
         </div>
+    );
+}
+
+function ListEditor({ value, onChange, placeholder, className, rows }: any) {
+    const [text, setText] = React.useState(value);
+
+    // Sync with external changes, but only if they are significantly different to avoid fighting the user
+    // Ideally we trust the user's focus state, but for simple implementation:
+    React.useEffect(() => {
+        setText(value);
+    }, [value]);
+
+    return (
+        <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onBlur={() => onChange(text)}
+            className={className}
+            rows={rows}
+            placeholder={placeholder}
+        />
     );
 }

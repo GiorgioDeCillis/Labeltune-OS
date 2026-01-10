@@ -54,54 +54,66 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (savedTrailSize) setTrailSizeState(savedTrailSize as any);
   }, []);
 
-  const setTheme = (newTheme: ThemeType) => {
-    setThemeState(newTheme);
-    localStorage.setItem('labeltune-theme', newTheme);
+  // Persistence Effects (Debounced for sliders)
+  useEffect(() => { localStorage.setItem('labeltune-theme', theme); }, [theme]);
+  useEffect(() => { localStorage.setItem('labeltune-wallpaper', wallpaper); }, [wallpaper]);
 
+  useEffect(() => {
+    const t = setTimeout(() => localStorage.setItem('labeltune-blur', blur.toString()), 500);
+    return () => clearTimeout(t);
+  }, [blur]);
+
+  useEffect(() => {
+    const t = setTimeout(() => localStorage.setItem('labeltune-transparency', transparency.toString()), 500);
+    return () => clearTimeout(t);
+  }, [transparency]);
+
+  useEffect(() => { localStorage.setItem('labeltune-trail-mode', trailMode); }, [trailMode]);
+  useEffect(() => { localStorage.setItem('labeltune-trail-size', trailSize); }, [trailSize]);
+
+  const setTheme = React.useCallback((newTheme: ThemeType) => {
+    setThemeState(newTheme);
     // Set default wallpaper if switching theme
     if (newTheme === 'osaka-jade') {
-      setWallpaper('/themes/osaka-jade/2-osaka-jade-bg.jpg');
+      setWallpaperState('/themes/osaka-jade/2-osaka-jade-bg.jpg');
     } else if (newTheme === 'ayaka') {
-      setWallpaper('/themes/ayaka/b2.jpg');
+      setWallpaperState('/themes/ayaka/b2.jpg');
     } else if (newTheme === 'purple-moon') {
-      setWallpaper('/themes/purple-moon/BG09.jpg');
+      setWallpaperState('/themes/purple-moon/BG09.jpg');
     }
-  };
+  }, []);
 
-  const setWallpaper = (url: string) => {
+  const setWallpaper = React.useCallback((url: string) => {
     setWallpaperState(url);
-    localStorage.setItem('labeltune-wallpaper', url);
-  };
+  }, []);
 
-  const setBlur = (value: number) => {
+  const setBlur = React.useCallback((value: number) => {
     setBlurState(value);
-    localStorage.setItem('labeltune-blur', value.toString());
-  };
+  }, []);
 
-  const setTransparency = (value: number) => {
+  const setTransparency = React.useCallback((value: number) => {
     setTransparencyState(value);
-    localStorage.setItem('labeltune-transparency', value.toString());
-  };
+  }, []);
 
-  const setAvatarUrl = (url: string | null) => {
+  const setAvatarUrl = React.useCallback((url: string | null) => {
     setAvatarUrlState(url);
-  };
+  }, []);
 
-  const setTrailMode = (mode: 'loop' | 'static' | 'disabled') => {
+  const setTrailMode = React.useCallback((mode: 'loop' | 'static' | 'disabled') => {
     setTrailModeState(mode);
-    localStorage.setItem('labeltune-trail-mode', mode);
-  };
+  }, []);
 
-  const setTrailSize = (size: 'all' | 'large') => {
+  const setTrailSize = React.useCallback((size: 'all' | 'large') => {
     setTrailSizeState(size);
-    localStorage.setItem('labeltune-trail-size', size);
-  };
+  }, []);
+
+  const contextValue = React.useMemo(() => ({
+    theme, wallpaper, blur, transparency, avatarUrl, trailMode, trailSize,
+    setTheme, setWallpaper, setBlur, setTransparency, setAvatarUrl, setTrailMode, setTrailSize
+  }), [theme, wallpaper, blur, transparency, avatarUrl, trailMode, trailSize, setTheme, setWallpaper, setBlur, setTransparency, setAvatarUrl, setTrailMode, setTrailSize]);
 
   return (
-    <ThemeContext.Provider value={{
-      theme, wallpaper, blur, transparency, avatarUrl, trailMode, trailSize,
-      setTheme, setWallpaper, setBlur, setTransparency, setAvatarUrl, setTrailMode, setTrailSize
-    }}>
+    <ThemeContext.Provider value={contextValue}>
       <div
         data-theme={theme}
         className="min-h-screen transition-[background-image] duration-500 ease-in-out"
