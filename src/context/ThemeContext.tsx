@@ -125,7 +125,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <ThemeContext.Provider value={contextValue}>
       <div
         data-theme={theme}
-        className="min-h-screen transition-[background-image] duration-500 ease-in-out bg-cover bg-center bg-fixed relative"
+        className="min-h-screen transition-[background-image] duration-500 ease-in-out bg-cover bg-center bg-fixed"
         style={{
           backgroundImage: `var(--bg-wallpaper, url(${wallpaper}))`,
           '--bg-blur': `${blur}px`,
@@ -133,12 +133,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           '--glass-blur': `${Math.min(blur * 5, 20)}px`
         } as React.CSSProperties}
       >
-        {/* Separate backdrop blur div to avoid creating a containing block for fixed children */}
         <div
-          className="fixed inset-0 backdrop-blur-[var(--bg-blur)] bg-black/20 pointer-events-none z-0"
-        />
-
-        <div className="relative z-10 min-h-screen">
+          className="min-h-screen backdrop-blur-[var(--bg-blur)] bg-black/20"
+        >
           {children}
         </div>
       </div>

@@ -45,33 +45,18 @@ export const CursorBorderEffect: React.FC = () => {
         const updateFromTarget = () => {
             const target = currentTargetRef.current;
             if (!target) return;
-
-            // Explicitly check if target is still in DOM
-            if (!target.isConnected) {
-                setTarget(null);
-                return;
-            }
-
             const rect = target.getBoundingClientRect();
-
-            // Check if element is completely out of viewport
-            if (rect.bottom < 0 || rect.top > window.innerHeight || rect.right < 0 || rect.left > window.innerWidth) {
-                updateVisibility(false);
-                return;
-            } else {
-                updateVisibility(true);
-            }
 
             const x = rect.left - 1;
             const y = rect.top - 1;
             const w = rect.width + 2;
             const h = rect.height + 2;
 
-            // Update DOM if position changed
-            if (Math.abs(x - prevRect.current.x) < 0.1 &&
-                Math.abs(y - prevRect.current.y) < 0.1 &&
-                Math.abs(w - prevRect.current.w) < 0.1 &&
-                Math.abs(h - prevRect.current.h) < 0.1) {
+            // Only update DOM if position changed
+            if (Math.abs(x - prevRect.current.x) < 0.5 &&
+                Math.abs(y - prevRect.current.y) < 0.5 &&
+                Math.abs(w - prevRect.current.w) < 0.5 &&
+                Math.abs(h - prevRect.current.h) < 0.5) {
                 return;
             }
 
@@ -86,6 +71,7 @@ export const CursorBorderEffect: React.FC = () => {
                     const style = window.getComputedStyle(newTarget);
                     container.style.setProperty('--br', style.borderRadius || '0px');
                     setTargetId(Math.random().toString(36).substr(2, 9));
+                    // Force immediate update when checking new target
                     prevRect.current = { x: -9999, y: -9999, w: 0, h: 0 };
                     updateFromTarget();
                     updateVisibility(true);
@@ -96,7 +82,6 @@ export const CursorBorderEffect: React.FC = () => {
         };
 
         const findTarget = (el: HTMLElement): HTMLElement | null => {
-            if (!el) return null;
             const selector = trailSize === 'large'
                 ? '.glass-panel, .hyprland-window, .card'
                 : 'button, a, input, select, textarea, [role="button"], .glass-panel, .hyprland-window, .cursor-pointer, .card';
@@ -112,24 +97,25 @@ export const CursorBorderEffect: React.FC = () => {
             if (mouseRafRef.current) return;
 
             mouseRafRef.current = requestAnimationFrame(() => {
-                // Use elementFromPoint for more reliable detection across fixed/absolute layers
-                const elUnderMouse = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement;
-                setTarget(findTarget(elUnderMouse));
+                setTarget(findTarget(e.target as HTMLElement));
                 mouseRafRef.current = null;
             });
         };
 
+        let lastScrollTime = 0;
         const onScroll = () => {
-            // Re-detect element under cursor during scroll
+            const now = Date.now();
+            if (now - lastScrollTime < 50) return; // Throttle scroll checks
+            lastScrollTime = now;
+
             const el = document.elementFromPoint(lastMousePos.current.x, lastMousePos.current.y) as HTMLElement;
             if (el) setTarget(findTarget(el));
-
-            // Force update from current target as it's moving
+            // Force update on scroll
+            prevRect.current = { x: -9999, y: -9999, w: 0, h: 0 };
             updateFromTarget();
         };
 
         window.addEventListener('mousemove', onMouseMove, { passive: true });
-        // Use capture: true to catch scrolls in sub-containers
         window.addEventListener('scroll', onScroll, { capture: true, passive: true });
 
         let rafId: number;
@@ -158,7 +144,9 @@ export const CursorBorderEffect: React.FC = () => {
             style={{
                 position: 'fixed',
                 pointerEvents: 'none',
-                zIndex: 35, // Below Navbar (40) but above content
+                // Z-index must be lower than Navbar (40) but higher than content (0-10)
+                // This prevents the trail from appearing on top of the header during scroll
+                zIndex: 35,
                 top: 0,
                 left: 0,
                 transform: 'translate3d(var(--tx, 0), var(--ty, 0), 0)',
@@ -167,7 +155,6 @@ export const CursorBorderEffect: React.FC = () => {
                 borderRadius: 'var(--br, 0)',
                 opacity: 'var(--opacity, 0)',
                 willChange: 'transform, opacity',
-                transition: 'opacity 0.2s ease', // Smooth appearance/disappearance
             }}
         >
             <div
@@ -177,8 +164,8 @@ export const CursorBorderEffect: React.FC = () => {
                     position: 'absolute',
                     inset: 0,
                     border: '2px solid var(--primary)',
-                    boxShadow: '0 0 10px var(--primary)',
                     borderRadius: 'inherit',
+                    boxShadow: '0 0 10px var(--primary)',
                     WebkitMaskImage: trailMode === 'static'
                         ? 'conic-gradient(from 0deg, black 0deg, black var(--trail-angle), transparent var(--trail-angle))'
                         : 'conic-gradient(from var(--trail-angle), black 0%, transparent 30%, transparent 100%)',
