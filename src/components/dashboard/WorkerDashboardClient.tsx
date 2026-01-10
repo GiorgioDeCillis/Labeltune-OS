@@ -7,6 +7,7 @@ import ProjectQueueModal from '@/components/dashboard/ProjectQueueModal';
 import { createClient } from '@/utils/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { startTasking, startReviewing } from '@/app/dashboard/projects/actions';
+import { getWorkerStats } from '@/app/dashboard/actions';
 import { useSearchParams } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 
@@ -48,6 +49,9 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
         isReviewer: false,
         hasTasksToReview: false
     });
+    const [reviewersCount, setReviewersCount] = useState(0);
+    const [monthlyEarnings, setMonthlyEarnings] = useState<{ m: string, amount: number, v: number, opacity: number, glow?: boolean }[]>([]);
+    const [totalEarnings, setTotalEarnings] = useState(0);
     const [hoveredBar, setHoveredBar] = useState<number | null>(null);
     const supabase = createClient();
     const searchParams = useSearchParams();
@@ -81,6 +85,27 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                 `)
                 .eq('user_id', user.id)
                 .eq('status', 'active');
+
+            // Fetch real worker stats
+            const workerStats = await getWorkerStats(user.id);
+            if (workerStats) {
+                setStats({
+                    totalTasks: workerStats.totalTasks,
+                    hoursWorked: workerStats.hoursWorked,
+                    avgRate: workerStats.avgRate
+                });
+                setTotalEarnings(workerStats.totalEarnings);
+
+                // Calculate percentages for the chart
+                const maxAmount = Math.max(...workerStats.monthlyEarnings.map(m => m.amount), 1);
+                const chartData = workerStats.monthlyEarnings.map((m, idx) => ({
+                    ...m,
+                    v: Math.max((m.amount / maxAmount) * 100, 5), // Min 5% for visibility
+                    opacity: 0.2 + (idx * 0.15), // Gradual increase in opacity
+                    glow: idx >= 4 // Glow for the most recent months
+                }));
+                setMonthlyEarnings(chartData);
+            }
 
             if (projectsError) console.error('Error fetching assigned projects:', projectsError);
             else if (projectsData) {
@@ -161,17 +186,7 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                 }
             }
 
-            // Fetch total tasks completed
-            const { count, error: tasksError } = await supabase
-                .from('tasks')
-                .select('*', { count: 'exact', head: true })
-                .eq('assigned_to', user.id)
-                .in('status', ['completed', 'approved', 'rejected_requeued']);
-
-            if (!tasksError) {
-                setStats(prev => ({ ...prev, totalTasks: count || 0 }));
-            }
-
+            /* Skip task count fetch as it's now handled by getWorkerStats above */
         } catch (error) {
             console.error('Error in fetchDashboardData:', error);
         } finally {
@@ -374,37 +389,12 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                 <Wallet className="w-4 h-4" />
                                 <span className="font-bold uppercase tracking-wider text-[10px]">Total Earnings</span>
                             </div>
-                            <div className="text-5xl font-bold text-white tracking-tighter">€2,824</div>
-                            <p className="text-white/40 text-[10px] font-medium uppercase tracking-wide">Earnings (Aug 2025 - Jan 2026)</p>
+                            <div className="text-5xl font-bold text-white tracking-tighter">€{totalEarnings.toLocaleString()}</div>
+                            <p className="text-white/40 text-[10px] font-medium uppercase tracking-wide">Last 6 Months Earnings</p>
                         </div>
 
                         <div className="flex-1 flex items-end justify-between gap-3 h-40 w-full group/chart relative">
-                            {[
-                                {
-                                    m: 'Aug', v: 40, amount: 480, opacity: 0.2,
-                                    projects: [{ n: 'RLHF Safety', a: 300 }, { n: 'Chat Eval', a: 180 }]
-                                },
-                                {
-                                    m: 'Sep', v: 100, amount: 1200, opacity: 1, glow: true,
-                                    projects: [{ n: 'RLHF Safety', a: 800 }, { n: 'Coding Gen', a: 400 }]
-                                },
-                                {
-                                    m: 'Oct', v: 60, amount: 720, opacity: 0.4,
-                                    projects: [{ n: 'RLHF Safety', a: 400 }, { n: 'Image Gen', a: 320 }]
-                                },
-                                {
-                                    m: 'Nov', v: 75, amount: 900, opacity: 0.8, glow: true,
-                                    projects: [{ n: 'Voice Design', a: 500 }, { n: 'RLHF Safety', a: 400 }]
-                                },
-                                {
-                                    m: 'Dec', v: 50, amount: 600, opacity: 0.5,
-                                    projects: [{ n: 'RLHF Safety', a: 350 }, { n: 'Creative', a: 250 }]
-                                },
-                                {
-                                    m: 'Jan', v: 35, amount: 420, opacity: 0.3,
-                                    projects: [{ n: 'RLHF Safety', a: 220 }, { n: 'Audio Lab', a: 200 }]
-                                }
-                            ].map((bar, i) => (
+                            {monthlyEarnings.map((bar, i) => (
                                 <div
                                     key={i}
                                     className="flex-1 flex flex-col items-center gap-2 h-full group/bar relative"
@@ -424,15 +414,6 @@ export default function WorkerDashboardClient({ user, profile }: { user: any, pr
                                                     <div className="flex flex-col">
                                                         <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">{bar.m} Breakdown</span>
                                                         <span className="text-xl font-bold text-white tracking-tighter">€{bar.amount}</span>
-                                                    </div>
-
-                                                    <div className="space-y-2 border-t border-white/5 pt-2">
-                                                        {bar.projects.map((p, pi) => (
-                                                            <div key={pi} className="flex justify-between items-center gap-4">
-                                                                <span className="text-[10px] text-white/60 font-medium">{p.n}</span>
-                                                                <span className="text-[10px] text-primary font-bold">€{p.a}</span>
-                                                            </div>
-                                                        ))}
                                                     </div>
 
                                                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#0A0A0A]/95 rotate-45 border-r border-b border-white/10"></div>

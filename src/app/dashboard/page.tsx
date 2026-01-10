@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Clock, CheckCircle, BarChart3 } from 'lucide-react';
 import WorkerDashboardClient from '@/components/dashboard/WorkerDashboardClient';
+import { getPMStats } from './actions';
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -35,6 +36,8 @@ export default async function DashboardPage() {
 // Sub-components for different roles
 async function PMDashboard({ user, profile }: { user: any, profile: any }) {
     const supabase = await createClient();
+    const { totalProjects, activeTasks, completionRate, teamVelocity } = await getPMStats();
+
     const { data: recentProjects } = await supabase
         .from('projects')
         .select('*')
@@ -48,10 +51,10 @@ async function PMDashboard({ user, profile }: { user: any, profile: any }) {
                 <p className="text-white/60">Project Manager Dashboard</p>
             </div>
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title="Total Projects" value={recentProjects?.length.toString() || "0"} icon={BarChart3} />
-                <StatCard title="Active Tasks" value="1,234" icon={Clock} />
-                <StatCard title="Completed" value="89%" icon={CheckCircle} />
-                <StatCard title="Team Velocity" value="24/hr" icon={BarChart3} />
+                <StatCard title="Total Projects" value={totalProjects.toString()} icon={BarChart3} />
+                <StatCard title="Active Tasks" value={activeTasks.toLocaleString()} icon={Clock} />
+                <StatCard title="Completed" value={`${completionRate}%`} icon={CheckCircle} />
+                <StatCard title="Team Velocity" value={`${teamVelocity}/24h`} icon={BarChart3} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -68,8 +71,8 @@ async function PMDashboard({ user, profile }: { user: any, profile: any }) {
                                 <div className="p-3 bg-white/5 rounded-lg flex justify-between items-center hover:bg-white/10 transition-colors">
                                     <span>{project.name}</span>
                                     <span className={`text-xs px-2 py-1 rounded-full ${project.status === 'active'
-                                            ? 'bg-green-500/20 text-green-400'
-                                            : 'bg-yellow-500/20 text-yellow-400'
+                                        ? 'bg-green-500/20 text-green-400'
+                                        : 'bg-yellow-500/20 text-yellow-400'
                                         }`}>
                                         {project.status}
                                     </span>
