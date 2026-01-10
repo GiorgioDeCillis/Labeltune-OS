@@ -18,7 +18,7 @@ export function Navbar({ user, userRole, initialAvatar, fullName }: { user: any,
     }, [initialAvatar, avatarUrl, setAvatarUrl]);
 
     return (
-        <header className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-40">
+        <header className="h-16 border-b border-white/5 bg-black/20 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-50">
             <div className="flex items-center gap-4">
                 {/* Breadcrumbs can go here */}
             </div>

@@ -98,7 +98,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
 
             {/* Sidebar Content */}
             <aside className={`
-                w-64 flex flex-col h-screen fixed left-0 top-0 glass-panel border-r border-white/10 z-50 transition-transform duration-300
+                w-64 flex flex-col h-screen fixed left-0 top-0 glass-panel border-r border-white/10 z-60 transition-transform duration-300
                 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
                 <div className="p-6 pt-16 md:pt-6">
