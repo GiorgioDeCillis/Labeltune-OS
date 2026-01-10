@@ -35,7 +35,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('labeltune-theme') || 'osaka-jade';
+                  const wallpaper = localStorage.getItem('labeltune-wallpaper') || '/themes/osaka-jade/2-osaka-jade-bg.jpg';
+                  const blur = localStorage.getItem('labeltune-blur') || '20';
+                  const transparency = localStorage.getItem('labeltune-transparency') || '0.10';
+                  
+                  document.documentElement.setAttribute('data-theme', theme);
+                  document.documentElement.style.setProperty('--bg-wallpaper', 'url(' + wallpaper + ')');
+                  document.documentElement.style.setProperty('--bg-blur', blur + 'px');
+                  document.documentElement.style.setProperty('--glass-opacity', transparency);
+                  document.documentElement.style.setProperty('--glass-blur', Math.min(parseFloat(blur) * 5, 20) + 'px');
+                } catch (e) {
+                  console.error('Theme initialization failed:', e);
+                }
+              })()
+            `,
+          }}
+        />
+      </head>
       <body className={`${rethinkSans.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           <CursorBorderEffect />
@@ -51,6 +74,6 @@ export default function RootLayout({
           `}
         </Script>
       </body>
-    </html>
+    </html >
   );
 }

@@ -116,12 +116,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <ThemeContext.Provider value={contextValue}>
       <div
         data-theme={theme}
-        className="min-h-screen transition-[background-image] duration-500 ease-in-out"
+        className="min-h-screen transition-[background-image] duration-500 ease-in-out bg-cover bg-center bg-fixed"
         style={{
-          backgroundImage: `url(${wallpaper})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
+          backgroundImage: `var(--bg-wallpaper, url(${wallpaper}))`,
           '--bg-blur': `${blur}px`,
           '--glass-opacity': transparency,
           '--glass-blur': `${Math.min(blur * 5, 20)}px`
