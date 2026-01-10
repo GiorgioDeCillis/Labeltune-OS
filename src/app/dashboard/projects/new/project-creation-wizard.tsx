@@ -10,6 +10,7 @@ import { InstructionsStep } from './steps/InstructionsStep';
 import { CoursesStep } from './steps/CoursesStep';
 import { InstructionSection, Course, Project } from '@/types/manual-types';
 import CustomSelect from '@/components/CustomSelect';
+import CustomDateInput from '@/components/CustomDateInput';
 
 const PROJECT_TYPE_OPTIONS = [
     { code: 'text_classification', name: 'Text Classification' },
@@ -405,23 +406,19 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold uppercase text-muted-foreground">Start Date</label>
-                                    <input
+                                    <CustomDateInput
                                         name="start_date"
-                                        type="date"
-                                        value={details.start_date}
-                                        onChange={(e) => setDetails(prev => ({ ...prev, start_date: e.target.value }))}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary [color-scheme:dark]"
+                                        defaultValue={details.start_date}
+                                        onChange={(val) => setDetails(prev => ({ ...prev, start_date: val }))}
                                     />
                                     <p className="text-xs text-muted-foreground">When the project is scheduled to begin.</p>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold uppercase text-muted-foreground">Expected End Date</label>
-                                    <input
+                                    <CustomDateInput
                                         name="expected_end_date"
-                                        type="date"
-                                        value={details.expected_end_date}
-                                        onChange={(e) => setDetails(prev => ({ ...prev, expected_end_date: e.target.value }))}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary [color-scheme:dark]"
+                                        defaultValue={details.expected_end_date}
+                                        onChange={(val) => setDetails(prev => ({ ...prev, expected_end_date: val }))}
                                     />
                                     <p className="text-xs text-muted-foreground">Target completion date for all tasks.</p>
                                 </div>

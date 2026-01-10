@@ -11,6 +11,7 @@ interface CustomDateInputProps {
     className?: string;
     placeholder?: string;
     defaultValue?: string; // Expects YYYY-MM-DD
+    onChange?: (value: string) => void;
 }
 
 export default function CustomDateInput({
@@ -19,7 +20,8 @@ export default function CustomDateInput({
     error,
     className,
     placeholder = "DD/MM/YYYY",
-    defaultValue
+    defaultValue,
+    onChange
 }: CustomDateInputProps) {
     const [displayValue, setDisplayValue] = useState('');
     const [isoValue, setIsoValue] = useState('');
@@ -106,15 +108,18 @@ export default function CustomDateInput({
 
             if (d > 0 && d <= 31 && m > 0 && m <= 12 && y > 1900 && y < 2100) {
                 setIsoValue(`${year}-${month}-${day}`);
+                if (onChange) onChange(`${year}-${month}-${day}`);
                 const newDate = new Date(y, m - 1, d);
                 setSelectedDate(newDate);
                 setViewDate(newDate);
             } else {
                 setIsoValue('');
+                if (onChange) onChange('');
                 setSelectedDate(null);
             }
         } else {
             setIsoValue('');
+            if (onChange) onChange('');
             setSelectedDate(null);
         }
     };
@@ -126,6 +131,7 @@ export default function CustomDateInput({
 
         setDisplayValue(`${day}/${month}/${year}`);
         setIsoValue(`${year}-${month}-${day}`);
+        if (onChange) onChange(`${year}-${month}-${day}`);
         setSelectedDate(date);
         setShowPicker(false);
     };

@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { updateProject } from '@/app/dashboard/projects/actions';
-import { Save } from 'lucide-react';
 import CustomSelect from '@/components/CustomSelect';
+import CustomDateInput from '@/components/CustomDateInput';
 import { Project } from '@/types/manual-types';
 
 const PROJECT_TYPE_OPTIONS = [
@@ -138,20 +138,16 @@ export function ProjectEditForm({ project }: ProjectEditFormProps) {
                 <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <label className="text-sm font-bold uppercase text-muted-foreground">Start Date</label>
-                        <input
+                        <CustomDateInput
                             name="start_date"
-                            type="date"
                             defaultValue={project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : ''}
-                            className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary [color-scheme:dark]"
                         />
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-bold uppercase text-muted-foreground">Expected End Date</label>
-                        <input
+                        <CustomDateInput
                             name="expected_end_date"
-                            type="date"
                             defaultValue={project.expected_end_date ? new Date(project.expected_end_date).toISOString().split('T')[0] : ''}
-                            className="w-full bg-white/5 border border-white/10 rounded-lg p-3 focus:outline-none focus:border-primary [color-scheme:dark]"
                         />
                     </div>
                 </div>
