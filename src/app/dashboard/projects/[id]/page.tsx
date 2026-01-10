@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Settings, BookOpen, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Users, BarChart3, Clock, Euro, Award, Search } from 'lucide-react';
+import { Settings, BookOpen, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Users, BarChart3, Clock, Euro, Award, Search, Timer, Archive } from 'lucide-react';
 import { ProjectGuidelinesLink } from '@/components/ProjectGuidelinesLink';
 import { ProjectHeaderActions } from '@/components/dashboard/ProjectHeaderActions';
 import { startTasking, startReviewing, getProjectKPIs } from '../actions';
