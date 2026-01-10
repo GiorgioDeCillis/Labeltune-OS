@@ -73,10 +73,18 @@ export const CursorBorderEffect: React.FC = () => {
 
         const onMouseMove = (e: MouseEvent) => {
             lastMousePos.current = { x: e.clientX, y: e.clientY };
-            setTarget(findTarget(e.target as HTMLElement));
+            // Throttle mouse move slightly for target checking, but update position immediately if needed
+            requestAnimationFrame(() => {
+                setTarget(findTarget(e.target as HTMLElement));
+            });
         };
 
+        let lastScrollTime = 0;
         const onScroll = () => {
+            const now = Date.now();
+            if (now - lastScrollTime < 50) return; // Throttle scroll checks to 20fps equivalent
+            lastScrollTime = now;
+
             const el = document.elementFromPoint(lastMousePos.current.x, lastMousePos.current.y) as HTMLElement;
             if (el) setTarget(findTarget(el));
             updateFromTarget();

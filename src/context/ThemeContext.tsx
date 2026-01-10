@@ -104,7 +104,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }}>
       <div
         data-theme={theme}
-        className="min-h-screen transition-all duration-500 ease-in-out"
+        className="min-h-screen transition-[background-image] duration-500 ease-in-out"
         style={{
           backgroundImage: `url(${wallpaper})`,
           backgroundSize: 'cover',
