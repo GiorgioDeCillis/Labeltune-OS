@@ -168,36 +168,46 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                 </div>
 
                 {/* KPI Dashboard - Only for PM/Admin */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     <StatCard
                         title="Total Tasks"
                         value={kpis?.totalTasks.toString() || '0'}
                         icon={BarChart3}
                     />
                     <StatCard
-                        title="Completed Tasks"
-                        value={kpis?.completedTasks.toString() || '0'}
-                        icon={CheckCircle2}
+                        title="Pending"
+                        value={kpis?.pending.toString() || '0'}
+                        icon={Clock}
                     />
                     <StatCard
-                        title="Approved Tasks"
-                        value={kpis?.approvedTasks.toString() || '0'}
-                        icon={Award}
+                        title="In Progress"
+                        value={kpis?.in_progress.toString() || '0'}
+                        icon={Timer}
                     />
                     <StatCard
-                        title="Pending Review"
-                        value={kpis?.pendingReviews.toString() || '0'}
+                        title="Submitted"
+                        value={kpis?.submitted.toString() || '0'}
                         icon={Search}
                     />
                     <StatCard
-                        title="Attempters"
-                        value={kpis?.uniqueAttempters.toString() || '0'}
-                        icon={Users}
+                        title="Completed"
+                        value={kpis?.completed.toString() || '0'}
+                        icon={CheckCircle2}
                     />
                     <StatCard
-                        title="Reviewers"
-                        value={kpis?.uniqueReviewers.toString() || '0'}
-                        icon={Users}
+                        title="Approved"
+                        value={kpis?.approved.toString() || '0'}
+                        icon={Award}
+                    />
+                    <StatCard
+                        title="Rejected"
+                        value={kpis?.rejected.toString() || '0'}
+                        icon={AlertCircle}
+                    />
+                    <StatCard
+                        title="Requeued (History)"
+                        value={kpis?.rejected_requeued.toString() || '0'}
+                        icon={Archive}
                     />
                     <StatCard
                         title="Total Project Cost"

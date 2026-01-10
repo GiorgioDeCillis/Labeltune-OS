@@ -970,9 +970,13 @@ export async function getProjectKPIs(projectId: string) {
         console.error('Error fetching project KPIs:', error);
         return {
             totalTasks: 0,
-            completedTasks: 0,
-            approvedTasks: 0,
-            pendingReviews: 0,
+            pending: 0,
+            in_progress: 0,
+            submitted: 0,
+            completed: 0,
+            approved: 0,
+            rejected: 0,
+            rejected_requeued: 0,
             uniqueAttempters: 0,
             uniqueReviewers: 0,
             totalCost: 0,
@@ -980,24 +984,36 @@ export async function getProjectKPIs(projectId: string) {
         };
     }
 
+    // Status counts
     const totalTasks = tasks.length;
-    const completedTasks = tasks.filter(t => ['submitted', 'completed', 'approved'].includes(t.status)).length;
-    const approvedTasks = tasks.filter(t => ['completed', 'approved'].includes(t.status)).length;
-    const pendingReviews = tasks.filter(t => t.status === 'submitted').length;
+    const pending = tasks.filter(t => t.status === 'pending').length;
+    const in_progress = tasks.filter(t => t.status === 'in_progress').length;
+    const submitted = tasks.filter(t => t.status === 'submitted').length;
+    const completed = tasks.filter(t => t.status === 'completed').length;
+    const approved = tasks.filter(t => t.status === 'approved').length;
+    const rejected = tasks.filter(t => t.status === 'rejected').length;
+    const rejected_requeued = tasks.filter(t => t.status === 'rejected_requeued').length;
 
     const uniqueAttempters = new Set(tasks.map(t => t.assigned_to).filter(Boolean)).size;
     const uniqueReviewers = new Set(tasks.map(t => t.reviewed_by).filter(Boolean)).size;
 
+    // Total cost includes everything (including historical/requeued tasks since they were paid)
     const totalCost = tasks.reduce((acc, t) => acc + (Number(t.annotator_earnings) || 0) + (Number(t.reviewer_earnings) || 0), 0);
-    const totalTime = tasks.reduce((acc, t) => acc + (Number(t.annotator_time_spent) || 0) + (Number(t.reviewer_time_spent) || 0), 0);
 
-    const avgTimePerTask = completedTasks > 0 ? totalTime / completedTasks : 0;
+    // Avg time covers tasks that have reached at least 'submitted' state
+    const workedTasks = tasks.filter(t => ['submitted', 'completed', 'approved'].includes(t.status));
+    const totalTimeWorked = workedTasks.reduce((acc, t) => acc + (Number(t.annotator_time_spent) || 0) + (Number(t.reviewer_time_spent) || 0), 0);
+    const avgTimePerTask = workedTasks.length > 0 ? totalTimeWorked / workedTasks.length : 0;
 
     return {
         totalTasks,
-        completedTasks,
-        approvedTasks,
-        pendingReviews,
+        pending,
+        in_progress,
+        submitted,
+        completed,
+        approved,
+        rejected,
+        rejected_requeued,
         uniqueAttempters,
         uniqueReviewers,
         totalCost,
