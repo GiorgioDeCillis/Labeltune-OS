@@ -55,6 +55,20 @@ export default function ProfilePage() {
         fetchData();
     }, []);
 
+    // Preload wallpapers for instant switching
+    useEffect(() => {
+        const allWallpapers = [
+            ...wallpaperOptions['osaka-jade'],
+            ...wallpaperOptions['ayaka'],
+            ...wallpaperOptions['purple-moon']
+        ];
+
+        allWallpapers.forEach((wp) => {
+            const img = new Image();
+            img.src = wp.url;
+        });
+    }, []);
+
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || !user) return;
