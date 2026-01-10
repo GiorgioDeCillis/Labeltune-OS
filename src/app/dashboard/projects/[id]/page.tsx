@@ -8,6 +8,34 @@ import { startTasking, startReviewing, getProjectKPIs } from '../actions';
 import { ToastQueryHandler } from '@/components/dashboard/ToastQueryHandler';
 
 
+// Helper to format duration if stored as number (seconds) or string
+const formatDuration = (val: number | string | null | undefined) => {
+    if (!val) return 'N/A';
+    const numVal = Number(val);
+    if (!isNaN(numVal)) {
+        const hrs = Math.floor(numVal / 3600);
+        const mins = Math.floor((numVal % 3600) / 60);
+        if (hrs > 0) return `${hrs}h ${mins}m`;
+        return `${mins}m`;
+    }
+    return val as string;
+};
+
+function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: any }) {
+    return (
+        <div className="glass-panel p-6 rounded-xl space-y-2 border border-white/5 hover:border-white/10 transition-all group">
+            <div
+                className="flex items-center justify-between transition-colors duration-300"
+                style={{ color: 'rgba(255,255,255,0.4)' }}
+            >
+                <span className="text-[10px] font-bold uppercase tracking-widest">{title}</span>
+                <Icon className="w-4 h-4 transition-transform group-hover:scale-110" style={{ color: 'var(--primary)' }} />
+            </div>
+            <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
+        </div>
+    );
+}
+
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const supabase = await createClient();
@@ -210,18 +238,6 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     }
 
     // Annotator View (Outlier Style)
-    // Helper to format duration if stored as number (minutes) or string
-    const formatDuration = (val: number | string | null) => {
-        if (!val) return 'N/A';
-        const numVal = Number(val);
-        if (!isNaN(numVal)) {
-            const hrs = Math.floor(numVal / 3600);
-            const mins = Math.floor((numVal % 3600) / 60);
-            if (hrs > 0) return `${hrs}h ${mins}m`;
-            return `${mins}m`;
-        }
-        return val as string;
-    };
 
     return (
         <div className="space-y-8 max-w-5xl mx-auto">
@@ -394,20 +410,5 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                 </div>
             </div>
         </div >
-    );
-}
-
-function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: any }) {
-    return (
-        <div className="glass-panel p-6 rounded-xl space-y-2 border border-white/5 hover:border-white/10 transition-all group">
-            <div
-                className="flex items-center justify-between transition-colors duration-300"
-                style={{ color: 'rgba(255,255,255,0.4)' }}
-            >
-                <span className="text-[10px] font-bold uppercase tracking-widest">{title}</span>
-                <Icon className="w-4 h-4 transition-transform group-hover:scale-110" style={{ color: 'var(--primary)' }} />
-            </div>
-            <div className="text-2xl font-bold text-white tracking-tight">{value}</div>
-        </div>
     );
 }
