@@ -8,7 +8,7 @@ export async function getWorkerStats(userId: string) {
     // Fetch tasks for earnings and stats
     const { data: tasks, error: tasksError } = await supabase
         .from('tasks')
-        .select('annotator_earnings, reviewer_earnings, annotator_time_spent, reviewer_time_spent, created_at, status')
+        .select('assigned_to, reviewed_by, annotator_earnings, reviewer_earnings, annotator_time_spent, reviewer_time_spent, created_at, status')
         .or(`assigned_to.eq.${userId},reviewed_by.eq.${userId}`);
 
     if (tasksError) {
@@ -47,19 +47,29 @@ export async function getWorkerStats(userId: string) {
         let time = 0;
 
         // Annotator stats
-        if (task.status === 'approved' || task.status === 'completed' || task.status === 'submitted') {
-            // We count earnings for submitted/completed/approved usually, but let's be safe and check based on actual field values
+        const isAnnotator = task.assigned_to === userId;
+        const isReviewer = task.reviewed_by === userId;
+
+        if (isAnnotator) {
             earned += (task.annotator_earnings || 0);
             time += (task.annotator_time_spent || 0);
 
-            if (task.status === 'approved' || task.status === 'completed') {
+            // Match HistoryClient.tsx logic for "Total Completed"
+            if (['submitted', 'completed', 'approved', 'rejected_requeued'].includes(task.status)) {
                 totalTasks++;
             }
         }
 
-        // Reviewer stats
-        earned += (task.reviewer_earnings || 0);
-        time += (task.reviewer_time_spent || 0);
+        // Reviewer stats (if the user reviewed their own task or is multi-role)
+        if (isReviewer) {
+            earned += (task.reviewer_earnings || 0);
+            time += (task.reviewer_time_spent || 0);
+
+            // If they are only the reviewer, we might count it as a task too
+            if (!isAnnotator && ['submitted', 'completed', 'approved', 'rejected_requeued'].includes(task.status)) {
+                totalTasks++;
+            }
+        }
 
         totalEarnings += earned;
         totalTimeSpent += time;
