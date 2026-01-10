@@ -155,6 +155,7 @@ export const CursorBorderEffect: React.FC = () => {
                 borderRadius: 'var(--br, 0)',
                 opacity: 'var(--opacity, 0)',
                 willChange: 'transform, opacity',
+                clipPath: 'inset(64px 0 0 0)', // Hide trail under the 64px header
             }}
         >
             <div
