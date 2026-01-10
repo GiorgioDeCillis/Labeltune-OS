@@ -6,7 +6,7 @@ import {
     User, Mail, Shield, Calendar, Clock, MapPin, Smartphone,
     FileText, Activity, DollarSign, Star, Briefcase,
     CheckCircle2, AlertCircle, Loader2, Edit2, Save, X,
-    LayoutGrid, List, File
+    LayoutGrid, List, File, BookOpen, Clock, Trophy
 } from 'lucide-react';
 import Image from 'next/image';
 import { getDefaultAvatar } from '@/utils/avatar';
@@ -19,12 +19,13 @@ interface UserProfileClientProps {
         stats: any;
         recentActivity: any[];
         accessLogs: any[];
+        courseProgress?: any[];
     };
     userId: string;
 }
 
 export default function UserProfileClient({ initialData, userId }: UserProfileClientProps) {
-    const { authUser, profile, stats, recentActivity, accessLogs } = initialData;
+    const { authUser, profile, stats, recentActivity, accessLogs, courseProgress = [] } = initialData;
     const [activeTab, setActiveTab] = useState('overview');
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -78,6 +79,8 @@ export default function UserProfileClient({ initialData, userId }: UserProfileCl
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutGrid },
+        { id: 'projects', label: 'Projects', icon: Briefcase },
+        { id: 'courses', label: 'Courses', icon: BookOpen },
         { id: 'activity', label: 'Activity & Logs', icon: Activity },
         { id: 'documents', label: 'Documents', icon: FileText },
     ];
@@ -500,6 +503,145 @@ export default function UserProfileClient({ initialData, userId }: UserProfileCl
                                     ) : (
                                         <div className="p-8 text-center text-muted-foreground">
                                             No access logs available.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )
+                }
+
+                {
+                    activeTab === 'projects' && (
+                        <motion.div
+                            key="projects"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="space-y-6"
+                        >
+                            <div className="glass-panel p-8 rounded-3xl">
+                                <h3 className="text-xl font-bold flex items-center gap-2 mb-6">
+                                    <Briefcase className="w-5 h-5 text-primary" />
+                                    Assigned Projects
+                                </h3>
+
+                                <div className="grid gap-6">
+                                    {stats.projectStats && stats.projectStats.length > 0 ? (
+                                        stats.projectStats.map((p: any) => (
+                                            <div key={p.projectId} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all group">
+                                                <div className="flex flex-col md:flex-row justify-between gap-6">
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center gap-3">
+                                                            <h4 className="text-xl font-black">{p.projectName}</h4>
+                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${p.status === 'active' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
+                                                                }`}>
+                                                                {p.status}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-muted-foreground uppercase font-bold tracking-widest">{p.projectType}</p>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 flex-1 max-w-2xl">
+                                                        <div className="bg-black/20 rounded-xl p-4 border border-white/5">
+                                                            <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Avg Time / Task</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <Clock className="w-4 h-4 text-primary" />
+                                                                <p className="text-lg font-black">
+                                                                    {(() => {
+                                                                        const sec = Math.round(p.avgTimeSpent);
+                                                                        if (sec < 60) return `${sec}s`;
+                                                                        const min = Math.floor(sec / 60);
+                                                                        const remSec = sec % 60;
+                                                                        return `${min}m ${remSec}s`;
+                                                                    })()}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-black/20 rounded-xl p-4 border border-white/5">
+                                                            <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Tasks Completed</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                                                <p className="text-lg font-black">{p.completedTasks}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-black/20 rounded-xl p-4 border border-white/5">
+                                                            <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Total Earnings</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <DollarSign className="w-4 h-4 text-emerald-400" />
+                                                                <p className="text-lg font-black text-emerald-400">€{p.totalEarnings.toFixed(2)}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-12 border border-dashed border-white/10 rounded-2xl">
+                                            <p className="text-muted-foreground">No projects assigned to this user.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )
+                }
+
+                {
+                    activeTab === 'courses' && (
+                        <motion.div
+                            key="courses"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="space-y-6"
+                        >
+                            <div className="glass-panel p-8 rounded-3xl">
+                                <h3 className="text-xl font-bold flex items-center gap-2 mb-6">
+                                    <BookOpen className="w-5 h-5 text-primary" />
+                                    Educational Progress
+                                </h3>
+
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {courseProgress && courseProgress.length > 0 ? (
+                                        courseProgress.map((cp: any) => (
+                                            <div key={cp.id} className={`p-6 rounded-2xl border transition-all ${cp.status === 'completed'
+                                                ? 'bg-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/40'
+                                                : 'bg-white/5 border-white/10 hover:border-white/20'
+                                                }`}>
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="space-y-1">
+                                                        <h4 className="font-bold text-lg">{cp.course?.title}</h4>
+                                                        <p className="text-xs text-muted-foreground">Course ID: {cp.course_id.slice(0, 8)}</p>
+                                                    </div>
+                                                    <div className={`p-2 rounded-xl ${cp.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-yellow-500/10 text-yellow-400'
+                                                        }`}>
+                                                        {cp.status === 'completed' ? <Trophy className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-6 space-y-3">
+                                                    <div className="flex justify-between items-center text-xs">
+                                                        <span className="text-muted-foreground font-bold uppercase tracking-wider">Status</span>
+                                                        <span className={`font-black uppercase tracking-widest ${cp.status === 'completed' ? 'text-emerald-400' : 'text-yellow-400'
+                                                            }`}>
+                                                            {cp.status === 'completed' ? 'SUCCESS' : cp.status.replace('_', ' ')}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-xs">
+                                                        <span className="text-muted-foreground font-bold uppercase tracking-wider">Lessons Completed</span>
+                                                        <span className="font-mono">{cp.completed_lessons?.length || 0}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-xs">
+                                                        <span className="text-muted-foreground font-bold uppercase tracking-wider">Last Activity</span>
+                                                        <span className="text-white/60">{new Date(cp.updated_at).toLocaleDateString('en-GB')}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="col-span-full text-center py-12 border border-dashed border-white/10 rounded-2xl">
+                                            <p className="text-muted-foreground">This user has not started any courses.</p>
                                         </div>
                                     )}
                                 </div>

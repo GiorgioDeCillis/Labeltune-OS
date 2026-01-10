@@ -67,6 +67,32 @@ export async function getUserDetails(userId: string) {
         console.error('Error fetching access logs:', accessLogsError);
     }
 
+    // Fetch course progress
+    const { data: courseProgress, error: progressError } = await adminSupabase
+        .from('user_course_progress')
+        .select(`
+            *,
+            course:courses(*)
+        `)
+        .eq('user_id', userId);
+
+    if (progressError) {
+        console.error('Error fetching course progress:', progressError);
+    }
+
+    // Fetch project assignments
+    const { data: projectAssignments, error: assignmentsError } = await adminSupabase
+        .from('project_assignees')
+        .select(`
+            *,
+            project:projects(*)
+        `)
+        .eq('user_id', userId);
+
+    if (assignmentsError) {
+        console.error('Error fetching project assignments:', assignmentsError);
+    }
+
     // Calculate stats
     const annotatorTasks = tasks?.filter(t => t.assigned_to === userId) || [];
     const reviewerTasks = tasks?.filter(t => t.reviewed_by === userId) || [];
@@ -79,13 +105,34 @@ export async function getUserDetails(userId: string) {
     }, 0);
 
     const completedTasksCount = annotatorTasks.filter(t => t.status === 'approved').length;
-    const reviewedTasksCount = reviewerTasks.filter(t => t.status === 'approved' || t.status === 'rejected').length; // Assuming reviewed means final decision made
+    const reviewedTasksCount = reviewerTasks.filter(t => t.status === 'approved' || t.status === 'rejected').length;
 
-    // Calculate average rating received as annotator
+    // Calculate average rating
     const ratedTasks = annotatorTasks.filter(t => t.review_rating);
     const avgRating = ratedTasks.length > 0
         ? ratedTasks.reduce((acc, t) => acc + (t.review_rating || 0), 0) / ratedTasks.length
         : 0;
+
+    // Calculate project-specific stats
+    const projectStats = (projectAssignments || []).map(assignment => {
+        const pTasks = annotatorTasks.filter(t => t.project_id === assignment.project_id);
+        const pCompleted = pTasks.filter(t => t.status === 'approved');
+        const pEarnings = pTasks.reduce((acc, t) => acc + (t.annotator_earnings || 0), 0);
+
+        // Avg time spent per task (in seconds)
+        const pTimeSpent = pTasks.filter(t => t.annotator_time_spent).reduce((acc, t) => acc + (t.annotator_time_spent || 0), 0);
+        const pAvgTime = pTasks.length > 0 ? pTimeSpent / pTasks.length : 0;
+
+        return {
+            projectId: assignment.project_id,
+            projectName: assignment.project?.name,
+            projectType: assignment.project?.type,
+            completedTasks: pCompleted.length,
+            totalEarnings: pEarnings,
+            avgTimeSpent: pAvgTime,
+            status: assignment.status
+        };
+    });
 
     console.log('Fetched Profile:', profile); // Debug log
 
@@ -101,8 +148,10 @@ export async function getUserDetails(userId: string) {
             reviewedTasksCount,
             avgRating,
             totalTasksAssigned: annotatorTasks.length,
-            totalReviewsAssigned: reviewerTasks.length
+            totalReviewsAssigned: reviewerTasks.length,
+            projectStats
         },
+        courseProgress: courseProgress || [],
         recentActivity: tasks?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 50) || [],
         accessLogs: accessLogs || []
     };
