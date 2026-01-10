@@ -144,7 +144,7 @@ export const CursorBorderEffect: React.FC = () => {
             style={{
                 position: 'fixed',
                 pointerEvents: 'none',
-                // Z-index must be lower than Navbar (50) but higher than content (0-10)
+                // Z-index must be lower than Navbar (40) but higher than content (0-10)
                 // This prevents the trail from appearing on top of the header during scroll
                 zIndex: 35,
                 top: 0,
@@ -155,7 +155,6 @@ export const CursorBorderEffect: React.FC = () => {
                 borderRadius: 'var(--br, 0)',
                 opacity: 'var(--opacity, 0)',
                 willChange: 'transform, opacity',
-                clipPath: 'inset(64px 0 0 0)', // Hide trail under the 64px header
             }}
         >
             <div
