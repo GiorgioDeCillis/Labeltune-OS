@@ -67,7 +67,9 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
         absolute_expiration_duration: initialData?.absolute_expiration_duration ? initialData.absolute_expiration_duration / 60 : 0,
         payment_mode: initialData?.payment_mode || 'hourly',
         pay_per_task: initialData?.pay_per_task || '',
-        review_pay_per_task: initialData?.review_pay_per_task || ''
+        review_pay_per_task: initialData?.review_pay_per_task || '',
+        start_date: initialData?.start_date ? new Date(initialData.start_date).toISOString().split('T')[0] : '',
+        expected_end_date: initialData?.expected_end_date ? new Date(initialData.expected_end_date).toISOString().split('T')[0] : ''
     });
 
     const formRef = useRef<HTMLFormElement>(null);
@@ -106,6 +108,8 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
             formData.append('payment_mode', details.payment_mode);
             formData.append('pay_per_task', details.pay_per_task);
             formData.append('review_pay_per_task', details.review_pay_per_task);
+            formData.append('start_date', details.start_date);
+            formData.append('expected_end_date', details.expected_end_date);
 
             const savedDraft = await saveProjectDraft(formData, draftId || undefined);
             if (savedDraft) {
@@ -392,6 +396,35 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
                                     placeholder="1000"
                                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary"
                                 />
+                            </div>
+                        </div>
+
+                        {/* Project Timing */}
+                        <div className="space-y-4 pt-4 border-t border-white/10">
+                            <h4 className="font-bold text-lg">Project Schedule</h4>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold uppercase text-muted-foreground">Start Date</label>
+                                    <input
+                                        name="start_date"
+                                        type="date"
+                                        value={details.start_date}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, start_date: e.target.value }))}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary [color-scheme:dark]"
+                                    />
+                                    <p className="text-xs text-muted-foreground">When the project is scheduled to begin.</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold uppercase text-muted-foreground">Expected End Date</label>
+                                    <input
+                                        name="expected_end_date"
+                                        type="date"
+                                        value={details.expected_end_date}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, expected_end_date: e.target.value }))}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary [color-scheme:dark]"
+                                    />
+                                    <p className="text-xs text-muted-foreground">Target completion date for all tasks.</p>
+                                </div>
                             </div>
                         </div>
 

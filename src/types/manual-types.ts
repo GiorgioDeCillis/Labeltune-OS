@@ -44,6 +44,8 @@ export interface Project {
     pay_per_task?: string;
     review_pay_per_task?: string;
     organization_id?: string;
+    start_date?: string | null;
+    expected_end_date?: string | null;
 }
 
 export interface Course {

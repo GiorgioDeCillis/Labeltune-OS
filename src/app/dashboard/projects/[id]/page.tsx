@@ -162,7 +162,15 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                             Back to Projects
                         </Link>
                         <h2 className="text-3xl font-bold tracking-tight text-white">{project.name}</h2>
-                        <p className="text-white/60">{project.description}</p>
+                        <div className="flex items-center gap-4 text-white/60">
+                            <p>{project.description}</p>
+                            {project.start_date && project.expected_end_date && (
+                                <div className="flex items-center gap-2 border-l border-white/10 pl-4 h-4 text-xs font-medium">
+                                    <Calendar className="w-3 h-3" />
+                                    {new Date(project.start_date).toLocaleDateString()} - {new Date(project.expected_end_date).toLocaleDateString()}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <ProjectHeaderActions id={id} guidelines={project.guidelines} />
                 </div>
@@ -318,6 +326,20 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                                 <AlertCircle className="w-3 h-3 text-white/30" />
                             </div>
                         </div>
+
+                        {project.start_date && project.expected_end_date && (
+                            <div>
+                                <div className="flex items-center gap-2 text-3xl font-bold">
+                                    {(new Date(project.expected_end_date).getTime() - new Date(project.start_date).getTime()) / (1000 * 60 * 60 * 24) > 0
+                                        ? `${Math.ceil((new Date(project.expected_end_date).getTime() - new Date(project.start_date).getTime()) / (1000 * 60 * 60 * 24))} Days`
+                                        : '—'}
+                                </div>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <p className="text-sm text-white/50">Project Duration</p>
+                                    <Calendar className="w-3 h-3 text-white/30" />
+                                </div>
+                            </div>
+                        )}
 
                         {/* Empty col or user can put something else. 
                            The reference image has 3 cols: Pay, Assessment Rate, Time.

@@ -71,7 +71,13 @@ export default async function ProjectsPage() {
                                         <div className="pt-4 border-t border-white/5 flex items-center justify-between">
                                             <div className="flex items-center text-xs text-muted-foreground gap-2">
                                                 <Calendar className="w-3 h-3" />
-                                                {new Date(project.created_at).toLocaleDateString()}
+                                                {project.start_date && project.expected_end_date ? (
+                                                    <span>
+                                                        {new Date(project.start_date).toLocaleDateString()} - {new Date(project.expected_end_date).toLocaleDateString()}
+                                                    </span>
+                                                ) : (
+                                                    <span>{new Date(project.created_at).toLocaleDateString()}</span>
+                                                )}
                                             </div>
                                             {/* Spacer for the absolute button */}
                                             {isDraft && isInternal && <div className="w-8 h-8" />}
