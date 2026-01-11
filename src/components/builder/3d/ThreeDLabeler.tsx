@@ -103,7 +103,7 @@ function LabelableBox({
         <>
             {isSelected && !readOnly && (
                 <TransformControls
-                    object={meshRef}
+                    object={meshRef as any}
                     mode={mode}
                     onObjectChange={(e) => {
                         if (meshRef.current) {
