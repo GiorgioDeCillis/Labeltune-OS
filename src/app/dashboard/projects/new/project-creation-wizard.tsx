@@ -140,6 +140,14 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
         else if (step === 'details') setStep('builder');
     };
 
+    const goToStep = (targetStep: Step) => {
+        // Prevent skipping directly to other steps if template isn't selected
+        if (targetStep !== 'template' && !selectedTemplate && !initialData) return;
+
+        handleAutoSave();
+        setStep(targetStep);
+    };
+
     const handleSelectTemplate = (template: ProjectTemplate) => {
         setSelectedTemplate(template);
         setComponents(template.schema);
@@ -182,18 +190,36 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
 
             {/* Stepper */}
             <div className="flex items-center justify-center gap-4 mb-8">
-                {steps.map((s, i) => (
-                    <React.Fragment key={s.id}>
-                        <div className={`flex items-center gap-2 ${i === currentStepIndex ? 'text-primary' : 'text-muted-foreground'}`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${i <= currentStepIndex ? 'border-primary bg-primary/10 text-primary' : 'border-white/10'
-                                }`}>
-                                {i + 1}
-                            </div>
-                            <span className="font-medium hidden md:inline">{s.label}</span>
-                        </div>
-                        {i < steps.length - 1 && <div className={`w-8 md:w-12 h-px ${i < currentStepIndex ? 'bg-primary/50' : 'bg-white/10'}`} />}
-                    </React.Fragment>
-                ))}
+                {steps.map((s, i) => {
+                    const isCompleted = i < currentStepIndex;
+                    const isActive = i === currentStepIndex;
+                    const canNavigate = i <= currentStepIndex || (selectedTemplate || initialData);
+
+                    return (
+                        <React.Fragment key={s.id}>
+                            <button
+                                type="button"
+                                onClick={() => canNavigate && goToStep(s.id as Step)}
+                                disabled={!canNavigate}
+                                className={`flex items-center gap-2 transition-all outline-none ${isActive ? 'text-primary' : isCompleted ? 'text-white/80 hover:text-primary' : 'text-muted-foreground'} ${canNavigate ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                                    }`}
+                            >
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${isActive ? 'border-primary bg-primary/10 text-primary scale-110 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]' :
+                                    isCompleted ? 'border-primary/50 bg-primary/5 text-primary' :
+                                        'border-white/10'
+                                    }`}>
+                                    {i + 1}
+                                </div>
+                                <span className={`font-medium hidden md:inline transition-colors ${isActive ? 'font-bold' : ''}`}>
+                                    {s.label}
+                                </span>
+                            </button>
+                            {i < steps.length - 1 && (
+                                <div className={`w-8 md:w-12 h-px transition-colors duration-500 ${i < currentStepIndex ? 'bg-primary' : 'bg-white/10'}`} />
+                            )}
+                        </React.Fragment>
+                    );
+                })}
             </div>
 
             {step === 'template' && (
