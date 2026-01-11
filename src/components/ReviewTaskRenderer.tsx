@@ -31,7 +31,7 @@ import {
     ViewLayout,
     AudioRecorderControl,
     ChecklistControl,
-    ChecklistControl,
+
     AccordionChoicesControl,
     AIResponseGeneratorObject,
     VideoTimelineControl,

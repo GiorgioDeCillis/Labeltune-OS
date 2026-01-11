@@ -267,7 +267,10 @@ function SortableComponent({ component, isSelected, onSelect, onDelete }: {
                     </div>
                 )}
 
-                     <div className="absolute bottom-3 text-[10px] uppercase font-bold text-indigo-400/80 tracking-widest">3D Mesh Viewer</div>
+                {component.type === 'Mesh' && (
+                    <div className="h-40 w-full bg-gradient-to-br from-gray-900 to-black rounded-lg border border-white/10 relative overflow-hidden flex items-center justify-center group-hover:border-primary/30 transition-colors">
+                        <Box className="w-12 h-12 text-indigo-500/50" />
+                        <div className="absolute bottom-3 text-[10px] uppercase font-bold text-indigo-400/80 tracking-widest">3D Mesh Viewer</div>
                     </div>
                 )}
 
