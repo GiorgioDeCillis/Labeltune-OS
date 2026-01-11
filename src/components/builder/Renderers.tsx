@@ -91,9 +91,6 @@ export function MeshObject({ component, data }: { component: TaskComponent, data
     );
 }
 
-    );
-}
-
 export function MapObject({ component, data }: { component: TaskComponent, data: any }) {
     // Value might bind to map center/config or just be static
     return (
