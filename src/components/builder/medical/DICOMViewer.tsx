@@ -95,7 +95,7 @@ export function DICOMViewer({ component, value, readOnly, height = "600px" }: DI
                     <div className="absolute inset-y-4 right-[50%] w-1 bg-white/10 rounded-full"></div>
                     <input
                         type="range"
-                        orient="vertical"
+                        {...({ orient: "vertical" } as any)}
                         min="1" max={totalSlices}
                         value={currentSlice}
                         onChange={(e) => setCurrentSlice(Number(e.target.value))}
