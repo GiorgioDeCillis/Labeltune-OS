@@ -1,7 +1,6 @@
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import {
-    Type,
+Type,
     List,
     CheckSquare,
     AlignLeft,
@@ -25,10 +24,7 @@ import {
     Link,
     Box,
     Radar,
-    Activity,
-    MessageSquare,
-    AlertCircle,
-    FileText
+    AlertCircle
 } from 'lucide-react';
 import { TaskComponentType } from './types';
 
