@@ -6,6 +6,8 @@ import { Image as ImageIcon, Music, Type, Video, Activity, FileText, Send, User,
 import dynamic from 'next/dynamic';
 const ImageCanvas = dynamic(() => import('@/components/builder/canvas/ImageCanvas').then(mod => mod.ImageCanvas), { ssr: false });
 const TextSpanLabeler = dynamic(() => import('@/components/builder/nlp/TextSpanLabeler').then(mod => mod.TextSpanLabeler), { ssr: false });
+const VideoTimeline = dynamic(() => import('@/components/builder/video/VideoTimeline').then(mod => mod.VideoTimeline), { ssr: false });
+const AudioSpectrogram = dynamic(() => import('@/components/builder/audio/AudioSpectrogram').then(mod => mod.AudioSpectrogram), { ssr: false });
 
 import { getDefaultAvatar } from '@/utils/avatar';
 import ReactMarkdown from 'react-markdown';
@@ -406,7 +408,12 @@ export function ImageLabelsControl({ component, value, onChange, readOnly, data 
     data: any
 }) {
     // Check if we are in "Simple Tag" mode or "Region" mode
-    const isRegionMode = component.type === 'RectangleLabels' || component.type === 'PolygonLabels';
+    const isRegionMode = component.type === 'RectangleLabels' ||
+        component.type === 'PolygonLabels' ||
+        component.type === 'BrushLabels' ||
+        component.type === 'KeypointLabels' ||
+        component.type === 'EllipseLabels' ||
+        component.type === 'RelationLabels';
 
     // Find linked image data if present
     // Usually 'toName' points to the Image object. We need to find the Image component to get its 'value' (src).
@@ -502,6 +509,50 @@ export function ImageLabelsControl({ component, value, onChange, readOnly, data 
                     </button>
                 ))}
             </div>
+        </div>
+    );
+}
+
+export function VideoTimelineControl({ component, value, onChange, readOnly, data }: {
+    component: TaskComponent,
+    value: any,
+    onChange: (val: any) => void,
+    readOnly?: boolean,
+    data: any
+}) {
+    const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
+
+    return (
+        <div className="space-y-3">
+            <VideoTimeline
+                src={src}
+                component={component}
+                value={value || []}
+                onChange={onChange}
+                readOnly={readOnly}
+            />
+        </div>
+    );
+}
+
+export function AudioSpectrogramControl({ component, value, onChange, readOnly, data }: {
+    component: TaskComponent,
+    value: any,
+    onChange: (val: any) => void,
+    readOnly?: boolean,
+    data: any
+}) {
+    const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
+
+    return (
+        <div className="space-y-3">
+            <AudioSpectrogram
+                src={src}
+                component={component}
+                value={value || []}
+                onChange={onChange}
+                readOnly={readOnly}
+            />
         </div>
     );
 }

@@ -30,7 +30,7 @@ export function PropertiesPanel({ component, onChange }: {
             {/* Object Binding */}
             {(component.type === 'Image' || component.type === 'Text' || component.type === 'Audio' ||
                 component.type === 'Video' || component.type === 'TimeSeries' || component.type === 'PDF' ||
-                component.type === 'MultiMessage') && (
+                component.type === 'MultiMessage' || component.type === 'VideoTimeline' || component.type === 'AudioSpectrogram') && (
                     <div className="space-y-1">
                         <label className="text-xs font-bold text-muted-foreground">Value (Data Key)</label>
                         <input
@@ -44,18 +44,23 @@ export function PropertiesPanel({ component, onChange }: {
                 )}
 
             {/* Control Binding */}
-            {(component.type === 'Choices' || component.type === 'Labels' || component.type === 'RectangleLabels' || component.type === 'PolygonLabels' || component.type === 'TextArea') && (
-                <div className="space-y-1">
-                    <label className="text-xs font-bold text-muted-foreground">To Name (Target)</label>
-                    <input
-                        value={component.toName?.[0] || ''}
-                        onChange={(e) => onChange({ toName: [e.target.value] })}
-                        className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono text-xs"
-                        placeholder="Target component name"
-                    />
-                    <p className="text-[10px] text-muted-foreground">Which component does this control label?</p>
-                </div>
-            )}
+            {(component.type === 'Choices' || component.type === 'Labels' ||
+                component.type === 'RectangleLabels' || component.type === 'PolygonLabels' ||
+                component.type === 'BrushLabels' || component.type === 'KeypointLabels' ||
+                component.type === 'EllipseLabels' || component.type === 'RelationLabels' ||
+                component.type === 'VideoTimeline' || component.type === 'AudioSpectrogram' ||
+                component.type === 'TextArea') && (
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground">To Name (Target)</label>
+                        <input
+                            value={component.toName?.[0] || ''}
+                            onChange={(e) => onChange({ toName: [e.target.value] })}
+                            className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono text-xs"
+                            placeholder="Target component name"
+                        />
+                        <p className="text-[10px] text-muted-foreground">Which component does this control label?</p>
+                    </div>
+                )}
 
             <div className="space-y-1">
                 <label className="text-xs font-bold text-muted-foreground">Description</label>
@@ -179,64 +184,72 @@ export function PropertiesPanel({ component, onChange }: {
                 </div>
             )}
 
-            {(component.type === 'Labels' || component.type === 'RectangleLabels' || component.type === 'PolygonLabels') && (
-                <div className="space-y-2 pt-4 border-t border-white/5">
-                    <label className="text-xs font-bold text-muted-foreground">Labels (Value:Color per line)</label>
-                    <ListEditor
-                        value={component.labels?.map(l => `${l.value}:${l.background || '#000000'}`).join('\n') || ''}
-                        onChange={(text: string) => {
-                            const lines = text.split('\n');
-                            const labels = lines.map(line => {
-                                const [value, color] = line.split(':');
-                                if (!line.trim()) return null;
-                                return { value: value?.trim(), background: (color || '#000000')?.trim() };
-                            }).filter(Boolean) as any[];
-                            onChange({ labels });
-                        }}
-                        rows={5}
-                        placeholder="Car:#ff0000"
-                        className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono"
-                    />
-                </div>
-            )}
+            {(component.type === 'Labels' ||
+                component.type === 'RectangleLabels' || component.type === 'PolygonLabels' ||
+                component.type === 'BrushLabels' || component.type === 'KeypointLabels' ||
+                component.type === 'EllipseLabels' || component.type === 'RelationLabels' ||
+                component.type === 'VideoTimeline' || component.type === 'AudioSpectrogram'
+            ) && (
+                    <div className="space-y-2 pt-4 border-t border-white/5">
+                        <label className="text-xs font-bold text-muted-foreground">Labels (Value:Color per line)</label>
+                        <ListEditor
+                            value={component.labels?.map(l => `${l.value}:${l.background || '#000000'}`).join('\n') || ''}
+                            onChange={(text: string) => {
+                                const lines = text.split('\n');
+                                const labels = lines.map(line => {
+                                    const [value, color] = line.split(':');
+                                    if (!line.trim()) return null;
+                                    return { value: value?.trim(), background: (color || '#000000')?.trim() };
+                                }).filter(Boolean) as any[];
+                                onChange({ labels });
+                            }}
+                            rows={5}
+                            placeholder="Car:#ff0000"
+                            className="w-full bg-background/50 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary/50 font-mono"
+                        />
+                    </div>
+                )}
 
             {/* Vision Config */}
-            {(component.type === 'RectangleLabels' || component.type === 'PolygonLabels') && (
-                <div className="space-y-4 pt-4 border-t border-white/5">
-                    <h4 className="text-xs font-bold text-muted-foreground flex items-center gap-2">
-                        Vision Settings
-                    </h4>
-                    <div className="flex flex-col gap-2">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={component.imageConfig?.canZoom ?? true}
-                                onChange={(e) => onChange({ imageConfig: { labels: [], ...component.imageConfig, canZoom: e.target.checked } })}
-                                className="rounded bg-background/50 border-white/10 accent-primary"
-                            />
-                            <span className="text-sm">Allow Zoom & Pan</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={component.imageConfig?.canBrightnessContrast ?? false}
-                                onChange={(e) => onChange({ imageConfig: { labels: [], ...component.imageConfig, canBrightnessContrast: e.target.checked } })}
-                                className="rounded bg-background/50 border-white/10 accent-primary"
-                            />
-                            <span className="text-sm">Allow Brightness/Contrast</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={component.imageConfig?.canRotate ?? false}
-                                onChange={(e) => onChange({ imageConfig: { labels: [], ...component.imageConfig, canRotate: e.target.checked } })}
-                                className="rounded bg-background/50 border-white/10 accent-primary"
-                            />
-                            <span className="text-sm">Allow Rotation</span>
-                        </label>
+            {(component.type === 'RectangleLabels' || component.type === 'PolygonLabels' ||
+                component.type === 'BrushLabels' || component.type === 'KeypointLabels' ||
+                component.type === 'EllipseLabels' || component.type === 'RelationLabels'
+            ) && (
+                    <div className="space-y-4 pt-4 border-t border-white/5">
+                        <h4 className="text-xs font-bold text-muted-foreground flex items-center gap-2">
+                            Vision Settings
+                        </h4>
+                        <div className="flex flex-col gap-2">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={component.imageConfig?.canZoom ?? true}
+                                    onChange={(e) => onChange({ imageConfig: { labels: [], ...component.imageConfig, canZoom: e.target.checked } })}
+                                    className="rounded bg-background/50 border-white/10 accent-primary"
+                                />
+                                <span className="text-sm">Allow Zoom & Pan</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={component.imageConfig?.canBrightnessContrast ?? false}
+                                    onChange={(e) => onChange({ imageConfig: { labels: [], ...component.imageConfig, canBrightnessContrast: e.target.checked } })}
+                                    className="rounded bg-background/50 border-white/10 accent-primary"
+                                />
+                                <span className="text-sm">Allow Brightness/Contrast</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={component.imageConfig?.canRotate ?? false}
+                                    onChange={(e) => onChange({ imageConfig: { labels: [], ...component.imageConfig, canRotate: e.target.checked } })}
+                                    className="rounded bg-background/50 border-white/10 accent-primary"
+                                />
+                                <span className="text-sm">Allow Rotation</span>
+                            </label>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
             {/* NLP Config */}
             {(component.type === 'Labels') && (

@@ -31,7 +31,13 @@ export type TaskComponentType =
     | 'AudioRecorder'
     | 'Checklist'
     | 'AccordionChoices'
-    | 'AIResponseGenerator';
+    | 'AIResponseGenerator'
+    | 'BrushLabels'
+    | 'KeypointLabels'
+    | 'EllipseLabels'
+    | 'RelationLabels'
+    | 'VideoTimeline'
+    | 'AudioSpectrogram';
 
 export interface AIGeneratorConfig {
     id: string;
@@ -91,9 +97,12 @@ export interface TaskComponent {
 export interface Region {
     id: string;
     label: string;
-    type: 'box' | 'polygon';
-    points: number[]; // [x, y, w, h] for box, [x1, y1, x2, y2...] for poly
+    type: 'box' | 'polygon' | 'brush' | 'keypoint' | 'ellipse' | 'relation';
+    points: number[]; // [x, y, w, h] for box, [x1, y1, x2, y2...] for poly, [x, y] for keypoint
     color: string;
+    mask?: string; // Base64 or URL for brush mask
+    fromId?: string; // For relation
+    toId?: string; // For relation
 }
 
 export interface TaskTemplate {

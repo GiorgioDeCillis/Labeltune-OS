@@ -82,6 +82,40 @@ function createDefaultComponent(type: TaskComponentType): TaskComponent {
                     ]
                 }
             };
+        case 'BrushLabels':
+        case 'KeypointLabels':
+        case 'EllipseLabels':
+        case 'RelationLabels':
+            return {
+                ...base,
+                title: type.replace('Labels', ' Tools'),
+                toName: [],
+                labels: [
+                    { value: 'Object A', background: '#3b82f6' },
+                    { value: 'Object B', background: '#ef4444' }
+                ],
+                value: '$image'
+            };
+        case 'VideoTimeline':
+            return {
+                ...base,
+                title: 'Video Segments',
+                value: '$video',
+                labels: [
+                    { value: 'Action', background: '#3b82f6' },
+                    { value: 'Background', background: '#10b981' }
+                ]
+            };
+        case 'AudioSpectrogram':
+            return {
+                ...base,
+                title: 'Audio Annotations',
+                value: '$audio',
+                labels: [
+                    { value: 'Speech', background: '#3b82f6' },
+                    { value: 'Noise', background: '#ef4444' }
+                ]
+            };
         default:
             return { ...base, title: `New ${type}` };
     }

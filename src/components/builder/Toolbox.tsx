@@ -18,7 +18,11 @@ import {
     MessagesSquare,
     Mic,
     ListTree,
-    Bot
+    Bot,
+    Brush,
+    Target,
+    Circle,
+    Link
 } from 'lucide-react';
 import { TaskComponentType } from './types';
 
@@ -69,6 +73,10 @@ export function Toolbox() {
                 <DraggableTool type="Number" label="Number" icon={Hash} />
                 <DraggableTool type="RectangleLabels" label="Rectangle Labels" icon={MousePointer2} />
                 <DraggableTool type="PolygonLabels" label="Polygon Labels" icon={MousePointer2} />
+                <DraggableTool type="BrushLabels" label="Brush/Mask Tool" icon={Brush} />
+                <DraggableTool type="KeypointLabels" label="Keypoint Tool" icon={Target} />
+                <DraggableTool type="EllipseLabels" label="Ellipse Tool" icon={Circle} />
+                <DraggableTool type="RelationLabels" label="Relationship Linker" icon={Link} />
                 <DraggableTool type="AudioRecorder" label="Audio Recorder" icon={Mic} />
                 <DraggableTool type="Checklist" label="Self-Check List" icon={CheckSquare} />
                 <DraggableTool type="AccordionChoices" label="Accordion Choices" icon={ListTree} />
@@ -87,6 +95,8 @@ export function Toolbox() {
                 <DraggableTool type="PDF" label="PDF Document" icon={FileText} />
                 <DraggableTool type="MultiMessage" label="Conversation (LLM)" icon={MessagesSquare} />
                 <DraggableTool type="AIResponseGenerator" label="AI Assistant" icon={Bot} />
+                <DraggableTool type="VideoTimeline" label="Video Timeline" icon={Activity} />
+                <DraggableTool type="AudioSpectrogram" label="Audio Spectrogram" icon={Activity} />
             </div>
         </div>
     );

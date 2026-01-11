@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TaskComponent } from './types';
-import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic, ChevronRight, Bot } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic, ChevronRight, Bot, Brush, Target, Circle, Link, Activity } from 'lucide-react';
 
 export function Canvas({ components, selectedId, onSelect, onDelete }: {
     components: TaskComponent[],
@@ -198,6 +198,64 @@ function SortableComponent({ component, isSelected, onSelect, onDelete }: {
                             <Bot className="w-6 h-6 opacity-50" />
                             <span className="text-xs uppercase tracking-widest font-bold">AI Assistant ({component.aiConfig?.generators?.length || 0} models)</span>
                         </div>
+                    </div>
+                )}
+
+                {component.type === 'BrushLabels' && (
+                    <div className="h-32 w-full bg-white/5 rounded-lg border border-white/10 relative overflow-hidden flex items-center justify-center">
+                        <Brush className="w-8 h-8 text-primary opacity-20 absolute" />
+                        <div className="w-3/4 h-2 bg-primary/20 rounded-full blur-sm" />
+                        <div className="absolute bottom-2 right-2 text-[10px] uppercase font-bold text-muted-foreground">Brush/Mask Preview</div>
+                    </div>
+                )}
+
+                {component.type === 'KeypointLabels' && (
+                    <div className="h-32 w-full bg-white/5 rounded-lg border border-white/10 relative flex items-center justify-center">
+                        <Target className="w-8 h-8 text-primary opacity-20 absolute" />
+                        <div className="flex gap-4">
+                            {[1, 2, 3].map(i => <div key={i} className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />)}
+                        </div>
+                        <div className="absolute bottom-2 right-2 text-[10px] uppercase font-bold text-muted-foreground">Keypoint Preview</div>
+                    </div>
+                )}
+
+                {component.type === 'EllipseLabels' && (
+                    <div className="h-32 w-full bg-white/5 rounded-lg border border-white/10 relative flex items-center justify-center">
+                        <Circle className="w-16 h-10 text-primary opacity-20 border-2 border-dashed border-primary/50 relative" />
+                        <div className="absolute bottom-2 right-2 text-[10px] uppercase font-bold text-muted-foreground">Ellipse Preview</div>
+                    </div>
+                )}
+
+                {component.type === 'RelationLabels' && (
+                    <div className="h-32 w-full bg-white/5 rounded-lg border border-white/10 relative flex items-center justify-center gap-12">
+                        <div className="w-12 h-12 border border-white/20 rounded bg-white/5" />
+                        <Link className="w-4 h-4 text-primary" />
+                        <div className="w-12 h-12 border border-white/20 rounded bg-white/5" />
+                        <div className="absolute bottom-2 right-2 text-[10px] uppercase font-bold text-muted-foreground">Relation Preview</div>
+                    </div>
+                )}
+
+                {component.type === 'VideoTimeline' && (
+                    <div className="space-y-2">
+                        <div className="h-12 w-full bg-white/5 rounded border border-white/10 flex items-center px-4 gap-2">
+                            <Activity className="w-4 h-4 text-primary" />
+                            <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden relative">
+                                <div className="absolute left-1/4 w-1/3 h-full bg-primary/40" />
+                                <div className="absolute right-1/4 w-1/6 h-full bg-primary/40" />
+                            </div>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest text-center">Video Segmentation Timeline</div>
+                    </div>
+                )}
+
+                {component.type === 'AudioSpectrogram' && (
+                    <div className="space-y-2">
+                        <div className="h-16 w-full bg-white/5 rounded border border-white/10 overflow-hidden flex items-end px-1 gap-[1px]">
+                            {Array.from({ length: 40 }).map((_, i) => (
+                                <div key={i} className="flex-1 bg-primary/20" style={{ height: `${20 + Math.random() * 60}%` }} />
+                            ))}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest text-center">Audio Spectrogram / Waveform</div>
                     </div>
                 )}
 

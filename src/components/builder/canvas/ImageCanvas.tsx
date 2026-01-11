@@ -4,7 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Rect, Line, Image as KonvaImage, Transformer, Circle, Group } from 'react-konva';
 import useImage from 'use-image';
 import { TaskComponent, Region } from '../types';
-import { ZoomIn, ZoomOut, Move, MousePointer2, Box, Pentagon, RotateCcw, Trash2, Sun, FileCode } from 'lucide-react';
+import { ZoomIn, ZoomOut, Move, MousePointer2, Box, Pentagon, RotateCcw, Trash2, Sun, FileCode, Brush, Target, Circle as CircleIcon, Link as LinkIcon } from 'lucide-react';
+import { Ellipse } from 'react-konva';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ImageCanvasProps {
@@ -26,7 +27,8 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
     const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
     // Tools: 'select' | 'rect' | 'polygon' | 'pan'
-    const [tool, setTool] = useState<'select' | 'rect' | 'polygon' | 'pan'>('select');
+    // Tools: 'select' | 'rect' | 'polygon' | 'pan' | 'brush' | 'keypoint' | 'ellipse' | 'relation'
+    const [tool, setTool] = useState<'select' | 'rect' | 'polygon' | 'pan' | 'brush' | 'keypoint' | 'ellipse' | 'relation'>('select');
 
     // Selection
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -109,6 +111,44 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
             setNewRegionPoints([x, y, 0, 0]); // Start x, start y, w, h
         } else if (tool === 'polygon') {
             setNewRegionPoints([...newRegionPoints, x, y]);
+        } else if (tool === 'ellipse') {
+            setNewRegionPoints([x, y, 0, 0]); // center x, center y, rx, ry
+        } else if (tool === 'keypoint') {
+            const labelConfig = component.imageConfig?.labels?.find(l => l.value === activeLabel);
+            const newRegion: Region = {
+                id: uuidv4(),
+                type: 'keypoint',
+                label: activeLabel,
+                points: [x, y],
+                color: labelConfig?.background || '#00ff00'
+            };
+            onChange([...value, newRegion]);
+        } else if (tool === 'brush') {
+            setNewRegionPoints([x, y]);
+        } else if (tool === 'relation') {
+            const shape = e.target;
+            if (shape !== stageRef.current && shape.id()) {
+                if (!newRegionPoints.length) {
+                    setNewRegionPoints([shape.id() as any]);
+                } else {
+                    const fromId = newRegionPoints[0] as unknown as string;
+                    const toId = shape.id();
+                    if (fromId !== toId) {
+                        const labelConfig = component.imageConfig?.labels?.find(l => l.value === activeLabel);
+                        const newRegion: Region = {
+                            id: uuidv4(),
+                            type: 'relation',
+                            label: activeLabel,
+                            points: [],
+                            color: labelConfig?.background || '#ffffff',
+                            fromId,
+                            toId
+                        };
+                        onChange([...value, newRegion]);
+                        setNewRegionPoints([]);
+                    }
+                }
+            }
         }
     };
 
@@ -116,41 +156,68 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
         if (readOnly) return;
 
         // Optimize: Only calculate position and update state if we are drawing
-        if ((tool === 'rect' || tool === 'polygon') && newRegionPoints.length > 0) {
+        if ((tool === 'rect' || tool === 'polygon' || tool === 'ellipse' || tool === 'brush') && newRegionPoints.length > 0) {
             const [x, y] = getMousePos();
 
             if (tool === 'polygon') {
                 setCursorPos({ x, y });
             } else if (tool === 'rect') {
                 const [startX, startY] = newRegionPoints;
-                const width = x - startX;
-                const height = y - startY;
-                setNewRegionPoints([startX, startY, width, height]);
+                setNewRegionPoints([startX, startY, x - startX, y - startY]);
+            } else if (tool === 'ellipse') {
+                const [centerX, centerY] = newRegionPoints;
+                const rx = Math.abs(x - centerX);
+                const ry = Math.abs(y - centerY);
+                setNewRegionPoints([centerX, centerY, rx, ry]);
+            } else if (tool === 'brush') {
+                setNewRegionPoints([...newRegionPoints, x, y]);
             }
         }
     };
 
     const handleStageMouseUp = () => {
         if (readOnly) return;
-        if (tool === 'rect' && newRegionPoints.length > 0) {
-            // Finish Rect
-            const [x, y, w, h] = newRegionPoints;
+        if ((tool === 'rect' || tool === 'ellipse' || tool === 'brush') && newRegionPoints.length > 0) {
+            const labelConfig = component.imageConfig?.labels?.find(l => l.value === activeLabel);
+            let newRegion: Region | null = null;
 
-            // Ignore tiny boxes
-            if (Math.abs(w) > 5 && Math.abs(h) > 5) {
-                const labelConfig = component.imageConfig?.labels?.find(l => l.value === activeLabel);
-                const newRegion: Region = {
+            if (tool === 'rect') {
+                const [x, y, w, h] = newRegionPoints;
+                if (Math.abs(w) > 5 && Math.abs(h) > 5) {
+                    newRegion = {
+                        id: uuidv4(),
+                        type: 'box',
+                        label: activeLabel,
+                        points: [x, y, w, h],
+                        color: labelConfig?.background || '#00ff00'
+                    };
+                }
+            } else if (tool === 'ellipse') {
+                const [x, y, rx, ry] = newRegionPoints;
+                if (rx > 2 && ry > 2) {
+                    newRegion = {
+                        id: uuidv4(),
+                        type: 'ellipse',
+                        label: activeLabel,
+                        points: [x, y, rx, ry],
+                        color: labelConfig?.background || '#00ff00'
+                    };
+                }
+            } else if (tool === 'brush') {
+                newRegion = {
                     id: uuidv4(),
-                    type: 'box',
+                    type: 'brush',
                     label: activeLabel,
-                    points: [x, y, w, h], // We normalize later if needed
+                    points: newRegionPoints,
                     color: labelConfig?.background || '#00ff00'
                 };
+            }
+
+            if (newRegion) {
                 onChange([...value, newRegion]);
-                // Select newly created
                 setTimeout(() => {
                     setTool('select');
-                    setSelectedId(newRegion.id);
+                    setSelectedId(newRegion!.id);
                 }, 50);
             }
             setNewRegionPoints([]);
@@ -206,6 +273,10 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
             if (e.key === 'm') setTool('pan');
             if (e.key === 'r') setTool('rect');
             if (e.key === 'p') setTool('polygon');
+            if (e.key === 'b') setTool('brush');
+            if (e.key === 'k') setTool('keypoint');
+            if (e.key === 'e') setTool('ellipse');
+            if (e.key === 'l') setTool('relation');
 
             // Label Shortcuts (1-9)
             if (e.key >= '1' && e.key <= '9') {
@@ -234,8 +305,14 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
                     <ToolButton active={tool === 'pan'} onClick={() => setTool('pan')} icon={Move} title="Pan" />
                     <ToolButton active={tool === 'select'} onClick={() => setTool('select')} icon={MousePointer2} title="Select" />
                     <div className="w-px h-6 bg-white/10 mx-2" />
-                    <ToolButton active={tool === 'rect'} onClick={() => { setSelectedId(null); setTool('rect'); }} icon={Box} title="Rectangle" />
-                    <ToolButton active={tool === 'polygon'} onClick={() => { setSelectedId(null); setTool('polygon'); }} icon={Pentagon} title="Polygon" />
+                    <ToolButton active={tool === 'rect'} onClick={() => { setSelectedId(null); setTool('rect'); }} icon={Box} title="Rectangle (R)" />
+                    <ToolButton active={tool === 'polygon'} onClick={() => { setSelectedId(null); setTool('polygon'); }} icon={Pentagon} title="Polygon (P)" />
+                    <div className="w-px h-6 bg-white/10 mx-2" />
+                    <ToolButton active={tool === 'brush'} onClick={() => { setSelectedId(null); setTool('brush'); }} icon={Brush} title="Brush (B)" />
+                    <ToolButton active={tool === 'keypoint'} onClick={() => { setSelectedId(null); setTool('keypoint'); }} icon={Target} title="Keypoint (K)" />
+                    <ToolButton active={tool === 'ellipse'} onClick={() => { setSelectedId(null); setTool('ellipse'); }} icon={CircleIcon} title="Ellipse (E)" />
+                    <div className="w-px h-6 bg-white/10 mx-2" />
+                    <ToolButton active={tool === 'relation'} onClick={() => { setSelectedId(null); setTool('relation'); }} icon={LinkIcon} title="Relation (L)" />
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -364,18 +441,69 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
                                         draggable={tool === 'select'}
                                         onClick={() => tool === 'select' && setSelectedId(region.id)}
                                         onDragEnd={(e) => {
-                                            // Handling polygon drag is tricky because points are relative to parent, but drag moves the group/shape offset.
-                                            // Best is to update all points by delta.
-                                            // For MVP, Konva handles {x,y} offset automatically on drag, we just need to save it.
                                             const node = e.target;
-                                            const dx = node.x();
-                                            const dy = node.y();
-                                            // Apply delta to points and reset x/y to 0
-                                            const newPoints = region.points.map((p, i) => i % 2 === 0 ? p + dx : p + dy);
+                                            const newPoints = region.points.map((p, i) => i % 2 === 0 ? p + node.x() : p + node.y());
                                             onChange(value.map(r => r.id === region.id ? { ...r, points: newPoints } : r));
-                                            node.x(0);
-                                            node.y(0);
+                                            node.x(0); node.y(0);
                                         }}
+                                    />
+                                );
+                            } else if (region.type === 'ellipse') {
+                                return (
+                                    <Ellipse
+                                        key={region.id}
+                                        id={region.id}
+                                        x={region.points[0]}
+                                        y={region.points[1]}
+                                        radiusX={region.points[2]}
+                                        radiusY={region.points[3]}
+                                        stroke={region.color}
+                                        strokeWidth={2 / stageScale}
+                                        fill={isSelected ? region.color + '33' : 'transparent'}
+                                        draggable={tool === 'select'}
+                                        onClick={() => tool === 'select' && setSelectedId(region.id)}
+                                    />
+                                );
+                            } else if (region.type === 'keypoint') {
+                                return (
+                                    <Circle
+                                        key={region.id}
+                                        id={region.id}
+                                        x={region.points[0]}
+                                        y={region.points[1]}
+                                        radius={5 / stageScale}
+                                        fill={region.color}
+                                        stroke="white"
+                                        strokeWidth={1 / stageScale}
+                                        draggable={tool === 'select'}
+                                        onClick={() => tool === 'select' && setSelectedId(region.id)}
+                                    />
+                                );
+                            } else if (region.type === 'brush') {
+                                return (
+                                    <Line
+                                        key={region.id}
+                                        id={region.id}
+                                        points={region.points}
+                                        stroke={region.color}
+                                        strokeWidth={10 / stageScale}
+                                        tension={0.5}
+                                        lineCap="round"
+                                        lineJoin="round"
+                                        onClick={() => tool === 'select' && setSelectedId(region.id)}
+                                    />
+                                );
+                            } else if (region.type === 'relation') {
+                                const from = value.find(r => r.id === region.fromId);
+                                const to = value.find(r => r.id === region.toId);
+                                if (!from || !to) return null;
+                                return (
+                                    <Line
+                                        key={region.id}
+                                        points={[from.points[0], from.points[1], to.points[0], to.points[1]]}
+                                        stroke={region.color}
+                                        strokeWidth={2 / stageScale}
+                                        dash={[5, 5]}
                                     />
                                 );
                             }
@@ -392,6 +520,27 @@ export function ImageCanvas({ src, component, value = [], onChange, readOnly }: 
                                 stroke="white"
                                 strokeWidth={1 / stageScale}
                                 dash={[5, 5]}
+                            />
+                        )}
+                        {tool === 'ellipse' && newRegionPoints.length > 0 && (
+                            <Ellipse
+                                x={newRegionPoints[0]}
+                                y={newRegionPoints[1]}
+                                radiusX={newRegionPoints[2]}
+                                radiusY={newRegionPoints[3]}
+                                stroke="white"
+                                strokeWidth={1 / stageScale}
+                                dash={[5, 5]}
+                            />
+                        )}
+                        {tool === 'brush' && newRegionPoints.length > 0 && (
+                            <Line
+                                points={newRegionPoints}
+                                stroke="white"
+                                strokeWidth={10 / stageScale}
+                                tension={0.5}
+                                lineCap="round"
+                                lineJoin="round"
                             />
                         )}
                         {tool === 'polygon' && newRegionPoints.length > 0 && (
