@@ -8,6 +8,16 @@ const ImageCanvas = dynamic(() => import('@/components/builder/canvas/ImageCanva
 const TextSpanLabeler = dynamic(() => import('@/components/builder/nlp/TextSpanLabeler').then(mod => mod.TextSpanLabeler), { ssr: false });
 const VideoTimeline = dynamic(() => import('@/components/builder/video/VideoTimeline').then(mod => mod.VideoTimeline), { ssr: false });
 const AudioSpectrogram = dynamic(() => import('@/components/builder/audio/AudioSpectrogram').then(mod => mod.AudioSpectrogram), { ssr: false });
+const LidarPointPreview = dynamic(() => import('@/components/builder/3d/LidarPointPreview').then(mod => mod.LidarPointPreview), { ssr: false });
+const MeshViewer = dynamic(() => import('@/components/builder/3d/MeshViewer').then(mod => mod.MeshViewer), { ssr: false });
+const ThreeDLabeler = dynamic(() => import('@/components/builder/3d/ThreeDLabeler').then(mod => mod.ThreeDLabeler), { ssr: false });
+const MapCanvas = dynamic(() => import('@/components/builder/gis/MapCanvas').then(mod => mod.MapCanvas), { ssr: false });
+const GeoJSONLabels = dynamic(() => import('@/components/builder/gis/GeoJSONLabels').then(mod => mod.GeoJSONLabels), { ssr: false });
+const DICOMViewer = dynamic(() => import('@/components/builder/medical/DICOMViewer').then(mod => mod.DICOMViewer), { ssr: false });
+const SignalPlotter = dynamic(() => import('@/components/builder/medical/SignalPlotter').then(mod => mod.SignalPlotter), { ssr: false });
+const SideBySideRanking = dynamic(() => import('@/components/builder/ai-eval/SideBySideRanking').then(mod => mod.SideBySideRanking), { ssr: false });
+const HallucinationHighlighter = dynamic(() => import('@/components/builder/ai-eval/HallucinationHighlighter').then(mod => mod.HallucinationHighlighter), { ssr: false });
+const OCRFormExtractor = dynamic(() => import('@/components/builder/doc-intel/OCRFormExtractor').then(mod => mod.OCRFormExtractor), { ssr: false });
 
 import { getDefaultAvatar } from '@/utils/avatar';
 import ReactMarkdown from 'react-markdown';
@@ -49,6 +59,100 @@ export function VideoObject({ component, data }: { component: TaskComponent, dat
                     </div>
                 )}
             </div>
+        </div>
+    );
+}
+
+export function LidarObject({ component, data }: { component: TaskComponent, data: any }) {
+    const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
+
+    // We pass the src to the LidarPointPreview. If no src, it renders demo data.
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <div className="h-[500px] w-full border border-white/10 rounded-lg overflow-hidden bg-black relative">
+                <LidarPointPreview />
+                {/* Note: In a real implementation we would pass 'src' to LidarPointPreview */}
+            </div>
+        </div>
+    );
+}
+
+export function MeshObject({ component, data }: { component: TaskComponent, data: any }) {
+    const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
+
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <div className="h-[500px] w-full border border-white/10 rounded-lg overflow-hidden bg-black relative">
+                <MeshViewer modelUrl={src} />
+            </div>
+        </div>
+    );
+}
+
+    );
+}
+
+export function MapObject({ component, data }: { component: TaskComponent, data: any }) {
+    // Value might bind to map center/config or just be static
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <div className="h-[500px] w-full relative">
+                <MapCanvas component={component} value={null} readOnly={true} />
+            </div>
+        </div>
+    );
+}
+
+export function DICOMObject({ component, data }: { component: TaskComponent, data: any }) {
+    const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <div className="h-[600px] w-full relative">
+                <DICOMViewer component={component} value={src} readOnly={false} />
+            </div>
+        </div>
+    );
+}
+
+export function SignalPlotterObject({ component, data }: { component: TaskComponent, data: any }) {
+    const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <div className="h-[400px] w-full relative">
+                <SignalPlotter component={component} value={src} readOnly={false} />
+            </div>
+        </div>
+    );
+}
+
+export function SideBySideObject({ component, data }: { component: TaskComponent, data: any }) {
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <SideBySideRanking component={component} value={null} readOnly={false} />
+        </div>
+    );
+}
+
+export function HallucinationObject({ component, data }: { component: TaskComponent, data: any }) {
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <HallucinationHighlighter component={component} value={null} readOnly={false} />
+        </div>
+    );
+}
+
+export function OCRObject({ component, data }: { component: TaskComponent, data: any }) {
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <OCRFormExtractor component={component} value={null} readOnly={false} />
         </div>
     );
 }
@@ -556,6 +660,8 @@ export function AudioSpectrogramControl({ component, value, onChange, readOnly, 
         </div>
     );
 }
+
+
 
 export function AudioRecorderControl({ component, value, onChange, readOnly }: {
     component: TaskComponent,
@@ -1485,6 +1591,72 @@ export function AccordionChoicesControl({ component, value, onChange, readOnly }
                         </div>
                     </div>
                 ))}
+            </div>
+        </div>
+    );
+}
+
+export function ThreeDBoxLabelsControl({ component, value, onChange, readOnly, data }: {
+    component: TaskComponent,
+    value: any,
+    onChange: (val: any) => void,
+    readOnly?: boolean,
+    data: any
+}) {
+    // Similar to ImageRegions, we check component.value for the source data
+    // If component.value is '$lidar', defined in a Lidar component
+    const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
+
+    return (
+        <div className="space-y-2">
+            <div>
+                <label className="text-sm font-bold block mb-1">{component.title}</label>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
+            </div>
+            <div className="h-[600px] w-full relative">
+                <ThreeDLabeler
+                    src={src}
+                    component={component}
+                    value={value}
+                    onChange={onChange}
+                    readOnly={readOnly}
+                />
+            </div>
+        </div>
+    );
+}
+
+    );
+}
+
+export function GeoJSONControl({ component, value, onChange, readOnly, data }: {
+    component: TaskComponent,
+    value: any,
+    onChange: (val: any) => void,
+    readOnly?: boolean,
+    data: any
+}) {
+    return (
+        <div className="space-y-2">
+            <div>
+                <label className="text-sm font-bold block mb-1">{component.title}</label>
+                {component.description && (
+                    <div className="text-xs text-muted-foreground mb-3 prose prose-invert prose-xs max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{component.description}</ReactMarkdown>
+                    </div>
+                )}
+            </div>
+            <div className="h-[600px] w-full relative">
+                <GeoJSONLabels
+                    component={component}
+                    value={value}
+                    onChange={onChange}
+                    readOnly={readOnly}
+                />
             </div>
         </div>
     );

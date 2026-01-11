@@ -37,7 +37,18 @@ export type TaskComponentType =
     | 'EllipseLabels'
     | 'RelationLabels'
     | 'VideoTimeline'
-    | 'AudioSpectrogram';
+    | 'AudioSpectrogram'
+    | 'Lidar'
+    | 'Mesh'
+    | 'ThreeDBoxLabels'
+    | 'Map'
+    | 'GeoJSONLabels'
+    | 'DICOM'
+    | 'SignalPlotter'
+    | 'SideBySideRanking'
+    | 'SideBySideRanking'
+    | 'HallucinationHighlighter'
+    | 'OCRFormExtractor';
 
 export interface AIGeneratorConfig {
     id: string;

@@ -36,7 +36,17 @@ import {
     AccordionChoicesControl,
     AIResponseGeneratorObject,
     VideoTimelineControl,
-    AudioSpectrogramControl
+    AudioSpectrogramControl,
+    LidarObject,
+    MeshObject,
+    ThreeDBoxLabelsControl,
+    MapObject,
+    GeoJSONControl,
+    DICOMObject,
+    SignalPlotterObject,
+    SideBySideObject,
+    HallucinationObject,
+    OCRObject
 } from '@/components/builder/Renderers';
 
 export function TaskRenderer({
@@ -544,6 +554,14 @@ function renderComponent(
     if (component.type === 'PDF') return <PDFObject key={component.id} component={component} data={taskData} />;
     if (component.type === 'MultiMessage') return <MultiMessageObject key={component.id} component={component} data={taskData} />;
     if (component.type === 'AIResponseGenerator') return <AIResponseGeneratorObject key={component.id} component={component} readOnly={isReadOnly} />;
+    if (component.type === 'Lidar') return <LidarObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'Mesh') return <MeshObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'Map') return <MapObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'DICOM') return <DICOMObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'SignalPlotter') return <SignalPlotterObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'SideBySideRanking') return <SideBySideObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'HallucinationHighlighter') return <HallucinationObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'OCRFormExtractor') return <OCRObject key={component.id} component={component} data={taskData} />;
 
     // Layout
     if (component.type === 'View') {
@@ -584,6 +602,8 @@ function renderComponent(
     if (component.type === 'AudioRecorder') return <AudioRecorderControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
     if (component.type === 'Checklist') return <ChecklistControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
     if (component.type === 'AccordionChoices') return <AccordionChoicesControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+    if (component.type === 'ThreeDBoxLabels') return <ThreeDBoxLabelsControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} data={taskData} />;
+    if (component.type === 'GeoJSONLabels') return <GeoJSONControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} data={taskData} />;
 
     return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
 }

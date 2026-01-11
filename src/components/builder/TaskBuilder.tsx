@@ -116,8 +116,83 @@ function createDefaultComponent(type: TaskComponentType): TaskComponent {
                     { value: 'Noise', background: '#ef4444' }
                 ]
             };
+        case 'ThreeDBoxLabels':
+            return {
+                ...base,
+                title: '3D Bounding Boxes',
+                description: 'Annotate objects in 3D space with bounding boxes',
+                labels: [
+                    { value: 'Car', background: '#FF0000' },
+                    { value: 'Pedestrian', background: '#00FF00' },
+                    { value: 'Cyclist', background: '#0000FF' }
+                ],
+                value: '$lidar' // Default assumption: binds to lidar data
+            };
+        case 'Lidar':
+            return {
+                ...base,
+                title: 'Lidar Point Cloud',
+                value: '$lidar',
+                description: 'Render large-scale point clouds (.pcd, .las) with interactive camera controls.'
+            };
+        case 'Mesh':
+            return {
+                ...base,
+                title: '3D Mesh',
+                value: '$mesh',
+                description: 'Interactive viewport for 3D meshes (OBJ, GLTF).'
+            };
+        case 'Map':
+            return {
+                ...base,
+                title: 'Map / Satellite',
+                value: { center: [51.505, -0.09], zoom: 13 },
+                description: 'Integrated interactive map with support for satellite imagery layers.'
+            };
+        case 'GeoJSONLabels':
+            return {
+                ...base,
+                title: 'Vector Annotations',
+                value: { type: "FeatureCollection", features: [] },
+                description: 'Draw vector data (points, lines, polygons) directly on real-world coordinates.'
+            };
+        case 'DICOM':
+            return {
+                ...base,
+                title: 'Medical Scans (DICOM)',
+                value: '$dicom_url',
+                description: 'Industry standard viewer for MRI, CT, and X-ray scans.'
+            };
+        case 'SignalPlotter':
+            return {
+                ...base,
+                title: 'Bio-Signal Monitor',
+                value: '$ecg_data',
+                description: 'High-performance chart for ECG, EEG, and other high-frequency signals.'
+            };
+        case 'SideBySideRanking':
+            return {
+                ...base,
+                title: 'RLHF Comparison',
+                value: { model_a: '$response_a', model_b: '$response_b' },
+                description: 'Compare two model outputs for Reinforcement Learning from Human Feedback.'
+            };
+        case 'HallucinationHighlighter':
+            return {
+                ...base,
+                title: 'Factuality Check',
+                value: '$text_content',
+                description: 'Highlight and annotate factual errors or hallucinations in text.'
+            };
+        case 'OCRFormExtractor':
+            return {
+                ...base,
+                title: 'Form Extraction',
+                value: '$document_url',
+                description: 'Extract and label structured fields (invoices, forms) from images/PDFs.'
+            };
         default:
-            return { ...base, title: `New ${type}` };
+            return base;
     }
 }
 export function TaskBuilder({

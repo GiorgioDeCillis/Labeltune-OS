@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TaskComponent } from './types';
-import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic, ChevronRight, Bot, Brush, Target, Circle, Link, Activity } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic, ChevronRight, Bot, Brush, Target, Circle, Link, Activity, Box, Radar } from 'lucide-react';
 
 export function Canvas({ components, selectedId, onSelect, onDelete }: {
     components: TaskComponent[],
@@ -256,6 +256,21 @@ function SortableComponent({ component, isSelected, onSelect, onDelete }: {
                             ))}
                         </div>
                         <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest text-center">Audio Spectrogram / Waveform</div>
+                    </div>
+                )}
+
+                {component.type === 'Lidar' && (
+                    <div className="h-40 w-full bg-black rounded-lg border border-white/10 relative overflow-hidden flex items-center justify-center">
+                        <Radar className="w-12 h-12 text-green-500/50" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_30%,_rgba(0,0,0,0.8)_100%)]"></div>
+                        <div className="absolute bottom-3 text-[10px] uppercase font-bold text-green-500/80 tracking-widest">Lidar Point Cloud</div>
+                    </div>
+                )}
+
+                {component.type === 'Mesh' && (
+                    <div className="h-40 w-full bg-gradient-to-br from-gray-900 to-black rounded-lg border border-white/10 relative overflow-hidden flex items-center justify-center group-hover:border-primary/30 transition-colors">
+                        <Box className="w-12 h-12 text-indigo-500/50" />
+                        <div className="absolute bottom-3 text-[10px] uppercase font-bold text-indigo-400/80 tracking-widest">3D Mesh Viewer</div>
                     </div>
                 )}
 

@@ -22,7 +22,13 @@ import {
     Brush,
     Target,
     Circle,
-    Link
+    Link,
+    Box,
+    Radar,
+    Activity,
+    MessageSquare,
+    AlertCircle,
+    FileText
 } from 'lucide-react';
 import { TaskComponentType } from './types';
 
@@ -97,6 +103,36 @@ export function Toolbox() {
                 <DraggableTool type="AIResponseGenerator" label="AI Assistant" icon={Bot} />
                 <DraggableTool type="VideoTimeline" label="Video Timeline" icon={Activity} />
                 <DraggableTool type="AudioSpectrogram" label="Audio Spectrogram" icon={Activity} />
+            </div>
+
+            <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">3D & Spatial</h4>
+                <DraggableTool type="Lidar" label="Lidar Point Cloud" icon={Radar} />
+                <DraggableTool type="Mesh" label="3D Mesh / Object" icon={Box} />
+                <DraggableTool type="ThreeDBoxLabels" label="3D Box Labels" icon={Box} />
+            </div>
+
+            <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Geospatial & GIS</h4>
+                <DraggableTool type="Map" label="Map / Satellite Imagery" icon={Radar} />
+                <DraggableTool type="GeoJSONLabels" label="GeoJSON / Vector Labels" icon={Box} />
+            </div>
+
+            <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Medical & Scientific</h4>
+                <DraggableTool type="DICOM" label="DICOM Medical Viewer" icon={Activity} />
+                <DraggableTool type="SignalPlotter" label="Bio-Signal Plotter" icon={Activity} />
+            </div>
+
+            <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Advanced AI Evaluation</h4>
+                <DraggableTool type="SideBySideRanking" label="RLHF Side-by-Side" icon={MessageSquare} />
+                <DraggableTool type="HallucinationHighlighter" label="Hallucination Check" icon={AlertCircle} />
+            </div>
+
+            <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Document Intelligence</h4>
+                <DraggableTool type="OCRFormExtractor" label="OCR / Form Extraction" icon={FileText} />
             </div>
         </div>
     );
