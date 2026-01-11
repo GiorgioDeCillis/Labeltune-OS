@@ -228,7 +228,7 @@ export function TaskBuilder({
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="flex gap-6 h-full items-start">
+            <div className="flex gap-6 h-full">
                 {/* Left: Toolbox */}
                 <div className="w-64 glass-panel p-4 rounded-xl flex flex-col gap-4 max-h-full overflow-hidden">
                     <div className="flex items-center justify-between">
@@ -268,7 +268,7 @@ export function TaskBuilder({
                 </div>
 
                 {/* Center: Canvas */}
-                <div className="flex-1 glass-panel p-8 rounded-xl min-h-[600px] flex flex-col">
+                <div className="flex-1 glass-panel p-8 rounded-xl min-h-[600px] flex flex-col max-h-full overflow-hidden">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-bold text-sm text-muted-foreground uppercase">Canvas</h3>
                         <div className="flex gap-2">
