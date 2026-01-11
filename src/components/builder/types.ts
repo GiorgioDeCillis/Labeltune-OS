@@ -46,7 +46,6 @@ export type TaskComponentType =
     | 'DICOM'
     | 'SignalPlotter'
     | 'SideBySideRanking'
-    | 'SideBySideRanking'
     | 'HallucinationHighlighter'
     | 'OCRFormExtractor';
 
@@ -68,7 +67,7 @@ export interface TaskComponent {
     // Links
     toName?: string[]; // Which component this controls (e.g. Labels -> Image)
     // Data binding
-    value?: string; // e.g. "$image" for Objects
+    value?: string | any; // e.g. "$image" for Objects or complex initial state
     // Content
     text?: string; // For Text/Header
     content?: string; // For InstructionBlock
