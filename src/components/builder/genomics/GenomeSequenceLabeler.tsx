@@ -18,6 +18,9 @@ export function GenomeSequenceLabeler({ component, value, data, onChange, readOn
     const [zoomLevel, setZoomLevel] = useState(1);
     const [scrollOffset, setScrollOffset] = useState(0);
     const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
+    const [predictions, setPredictions] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const { showToast } = useToast();
 
     // Data Binding: use real data from dataset if available, fallback to mock for demo
     const sequence = useMemo(() => {
@@ -49,9 +52,9 @@ export function GenomeSequenceLabeler({ component, value, data, onChange, readOn
         try {
             const newPredictions = await predictVariantImpact(sequence, component.genomicsConfig);
             setPredictions(newPredictions);
-            toast({ title: 'Analysis Complete', description: 'AlphaGenome predictions updated.', type: 'success' });
+            showToast('Analysis Complete: AlphaGenome predictions updated.', 'success');
         } catch (error) {
-            toast({ title: 'Inference Failed', description: 'Could not run AlphaGenome analysis.', type: 'error' });
+            showToast('Inference Failed: Could not run AlphaGenome analysis.', 'error');
         } finally {
             setIsLoading(false);
         }
