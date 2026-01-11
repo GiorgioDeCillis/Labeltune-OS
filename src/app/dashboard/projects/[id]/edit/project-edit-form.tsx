@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Save } from 'lucide-react';
 import { updateProject } from '@/app/dashboard/projects/actions';
 import CustomSelect from '@/components/CustomSelect';
 import CustomDateInput from '@/components/CustomDateInput';
