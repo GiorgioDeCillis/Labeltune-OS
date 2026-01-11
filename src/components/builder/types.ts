@@ -47,7 +47,14 @@ export type TaskComponentType =
     | 'SignalPlotter'
     | 'SideBySideRanking'
     | 'HallucinationHighlighter'
-    | 'OCRFormExtractor';
+    | 'OCRFormExtractor'
+    | 'RedactionLabeler'
+    | 'LegalRedlineViewer'
+    | 'ClauseLinker'
+    | 'WSIViewer'
+    | 'MolecularViewer'
+    | 'SatelliteCompare'
+    | 'ChatEditor';
 
 export interface AIGeneratorConfig {
     id: string;
