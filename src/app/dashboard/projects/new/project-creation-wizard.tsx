@@ -5,9 +5,10 @@ import { ProjectTemplate, PROJECT_TEMPLATES } from '@/utils/templates';
 import { TaskBuilder } from '@/components/builder/TaskBuilder';
 import { TaskComponent } from '@/components/builder/types';
 import { createProject, saveProjectDraft } from '../actions';
-import { ChevronRight, ChevronLeft, Save, LayoutGrid, Settings2, MessageSquare, Image as ImageIcon, Box, Mic, Bot, BookOpen, FileText, CheckCircle2, Loader2, Dna } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Save, LayoutGrid, Settings2, MessageSquare, Image as ImageIcon, Box, Mic, Bot, BookOpen, FileText, CheckCircle2, Loader2, Dna, Users } from 'lucide-react';
 import { InstructionsStep } from './steps/InstructionsStep';
 import { CoursesStep } from './steps/CoursesStep';
+import { WorkersStep } from './steps/WorkersStep';
 import { InstructionSection, Course, Project } from '@/types/manual-types';
 import CustomSelect from '@/components/CustomSelect';
 import CustomDateInput from '@/components/CustomDateInput';
@@ -35,7 +36,7 @@ const iconMap = {
     Dna
 };
 
-type Step = 'template' | 'instructions' | 'courses' | 'builder' | 'details';
+type Step = 'template' | 'instructions' | 'courses' | 'builder' | 'workers' | 'details';
 
 interface ProjectCreationWizardProps {
     availableCourses: Course[];
@@ -131,7 +132,8 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
         if (step === 'template' && selectedTemplate) setStep('instructions');
         else if (step === 'instructions') setStep('courses');
         else if (step === 'courses') setStep('builder');
-        else if (step === 'builder') setStep('details');
+        else if (step === 'builder') setStep('workers');
+        else if (step === 'workers') setStep('details');
     };
 
     const prevStep = () => {
@@ -139,7 +141,8 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
         if (step === 'instructions') setStep('template');
         else if (step === 'courses') setStep('instructions');
         else if (step === 'builder') setStep('courses');
-        else if (step === 'details') setStep('builder');
+        else if (step === 'workers') setStep('builder');
+        else if (step === 'details') setStep('workers');
     };
 
     const goToStep = (targetStep: Step) => {
@@ -167,6 +170,7 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
         { id: 'instructions', label: 'Instructions', icon: FileText },
         { id: 'courses', label: 'Courses', icon: BookOpen },
         { id: 'builder', label: 'Builder', icon: Settings2 },
+        { id: 'workers', label: 'Workers', icon: Users },
         { id: 'details', label: 'Details', icon: Save },
     ];
 
@@ -343,6 +347,30 @@ export function ProjectCreationWizard({ availableCourses: initialCoursesList, in
                             showSaveButton={false}
                         />
                     </div>
+                </div>
+            )}
+
+            {step === 'workers' && (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/10">
+                        <div className="flex items-center gap-4">
+                            <button onClick={prevStep} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            <div>
+                                <h3 className="font-bold">Project Team</h3>
+                                <p className="text-sm text-muted-foreground">Assign eligible workers to this project draft.</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={nextStep}
+                            className="px-6 py-2 bg-primary text-primary-foreground rounded-xl font-bold hover:opacity-90 transition-all flex items-center gap-2"
+                        >
+                            Next: Final Details
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                    <WorkersStep projectId={draftId} />
                 </div>
             )}
 
