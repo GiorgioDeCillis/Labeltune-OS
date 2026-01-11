@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { TaskComponent } from '../types';
-import { Play, Pause, Volume2, Plus, X, Waveform as WaveformIcon } from 'lucide-react';
+import { Play, Pause, Volume2, Plus, X, Activity as WaveformIcon } from 'lucide-react';
 
 interface AudioAnnotation {
     id: string;
