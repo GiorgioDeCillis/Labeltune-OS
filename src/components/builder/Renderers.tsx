@@ -1626,10 +1626,6 @@ export function ThreeDBoxLabelsControl({ component, value, onChange, readOnly, d
         </div>
     );
 }
-
-    );
-}
-
 export function GeoJSONControl({ component, value, onChange, readOnly, data }: {
     component: TaskComponent,
     value: any,
