@@ -3,10 +3,6 @@
 import { ListTodo, Settings } from 'lucide-react';
 import Link from 'next/link';
 
-interface ProjectHeaderActionsProps {
-    id: string;
-    guidelines: string | InstructionSection[];
-}
 
 export function ProjectHeaderActions({ id }: { id: string }) {
     return (
