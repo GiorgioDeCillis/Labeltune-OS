@@ -110,6 +110,13 @@ export interface TaskComponent {
         canRotate?: boolean;
         labels?: { value: string; background?: string; hotkey?: string }[];
     };
+    // Genomics & API Config
+    genomicsConfig?: {
+        endpoint?: string;
+        apiKey?: string;
+        modelType?: 'alphagenome-1.0' | 'custom';
+        useLiveInference?: boolean;
+    };
 }
 
 export interface Region {

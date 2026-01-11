@@ -2,7 +2,9 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { TaskComponent } from '../types';
-import { Dna, Activity, Info, AlertTriangle, Layers, Search, ZoomIn, ZoomOut } from 'lucide-react';
+import { Dna, Activity, Info, AlertTriangle, Layers, Search, ZoomIn, ZoomOut, Play, Loader2 } from 'lucide-react';
+import { predictVariantImpact } from '@/app/actions/genomics';
+import { useToast } from '@/components/Toast';
 
 interface GenomeSequenceLabelerProps {
     component: TaskComponent;
@@ -17,21 +19,43 @@ export function GenomeSequenceLabeler({ component, value, data, onChange, readOn
     const [scrollOffset, setScrollOffset] = useState(0);
     const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
 
-    // Mock Sequence Data (1k bases for demo, but optimized for scale)
+    // Data Binding: use real data from dataset if available, fallback to mock for demo
     const sequence = useMemo(() => {
+        const rawSeq = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
+        if (rawSeq) return rawSeq;
+
         const bases = ['A', 'C', 'G', 'T'];
         return Array.from({ length: 1000 }).map(() => bases[Math.floor(Math.random() * 4)]).join('');
-    }, []);
+    }, [component.value, data]);
 
-    // Mock AlphaGenome Predictions
-    const predictions = useMemo(() => {
-        return Array.from({ length: 100 }).map((_, i) => ({
-            pos: i * 10,
-            splicing: Math.random(),
-            accessibility: Math.random(),
-            impact: Math.random() > 0.8 ? 'pathogenic' : 'benign'
-        }));
-    }, []);
+    // Initial Predictions Load
+    useEffect(() => {
+        const rawPreds = data?.predictions_json || data?.alphagenome_output;
+        if (rawPreds) {
+            setPredictions(Array.isArray(rawPreds) ? rawPreds : JSON.parse(rawPreds));
+        } else {
+            // Default initial state (empty or basic mock if needed, currently empty to encourage running inference)
+            setPredictions(Array.from({ length: 100 }).map((_, i) => ({
+                pos: i * 10,
+                splicing: Math.random(),
+                accessibility: Math.random(),
+                impact: Math.random() > 0.8 ? 'pathogenic' : 'benign'
+            })));
+        }
+    }, [data]);
+
+    const handleRunInference = async () => {
+        setIsLoading(true);
+        try {
+            const newPredictions = await predictVariantImpact(sequence, component.genomicsConfig);
+            setPredictions(newPredictions);
+            toast({ title: 'Analysis Complete', description: 'AlphaGenome predictions updated.', type: 'success' });
+        } catch (error) {
+            toast({ title: 'Inference Failed', description: 'Could not run AlphaGenome analysis.', type: 'error' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const visibleBases = Math.max(10, Math.floor(100 / zoomLevel));
     const startBase = Math.floor(scrollOffset * (sequence.length - visibleBases));
@@ -51,6 +75,15 @@ export function GenomeSequenceLabeler({ component, value, data, onChange, readOn
                     </div>
                 </div>
                 <div className="flex items-center gap-2 bg-white/5 p-1 rounded-lg border border-white/10">
+                    <button
+                        onClick={handleRunInference}
+                        disabled={isLoading}
+                        className="px-3 py-1.5 bg-primary/20 hover:bg-primary/30 text-primary rounded-md text-xs font-bold flex items-center gap-2 transition-colors disabled:opacity-50"
+                    >
+                        {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} fill="currentColor" />}
+                        {isLoading ? 'Running Model...' : 'Run Analysis'}
+                    </button>
+                    <div className="w-[1px] h-4 bg-white/10 mx-1" />
                     <button onClick={() => setZoomLevel(prev => Math.max(1, prev - 1))} className="p-2 hover:bg-white/10 rounded-md transition-colors"><ZoomOut size={16} /></button>
                     <span className="text-[10px] font-bold px-2">{zoomLevel}x</span>
                     <button onClick={() => setZoomLevel(prev => Math.min(10, prev + 1))} className="p-2 hover:bg-white/10 rounded-md transition-colors"><ZoomIn size={16} /></button>
@@ -64,8 +97,8 @@ export function GenomeSequenceLabeler({ component, value, data, onChange, readOn
                         <span
                             key={i + startBase}
                             className={`transition-all duration-300 ${base === 'A' ? 'text-green-400' :
-                                    base === 'C' ? 'text-blue-400' :
-                                        base === 'G' ? 'text-yellow-400' : 'text-red-400'
+                                base === 'C' ? 'text-blue-400' :
+                                    base === 'G' ? 'text-yellow-400' : 'text-red-400'
                                 }`}
                         >
                             {base}
