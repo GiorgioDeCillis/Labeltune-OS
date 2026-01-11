@@ -25,7 +25,13 @@ import {
     Link,
     Box,
     Radar,
-    AlertCircle
+    AlertCircle,
+    Eraser,
+    GitCompare,
+    Split,
+    Microscope,
+    Dna,
+    Layers
 } from 'lucide-react';
 import { TaskComponentType } from './types';
 
@@ -100,6 +106,7 @@ export function Toolbox() {
                 <DraggableTool type="AIResponseGenerator" label="AI Assistant" icon={Bot} />
                 <DraggableTool type="VideoTimeline" label="Video Timeline" icon={Activity} />
                 <DraggableTool type="AudioSpectrogram" label="Audio Spectrogram" icon={Activity} />
+                <DraggableTool type="ChatEditor" label="Chat Editor (Rewrite)" icon={MessageSquare} />
             </div>
 
             <div className="space-y-2">
@@ -113,12 +120,15 @@ export function Toolbox() {
                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Geospatial & GIS</h4>
                 <DraggableTool type="Map" label="Map / Satellite Imagery" icon={Radar} />
                 <DraggableTool type="GeoJSONLabels" label="GeoJSON / Vector Labels" icon={Box} />
+                <DraggableTool type="SatelliteCompare" label="Satellite Compare (Slider)" icon={Layers} />
             </div>
 
             <div className="space-y-2">
                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Medical & Scientific</h4>
                 <DraggableTool type="DICOM" label="DICOM Medical Viewer" icon={Activity} />
                 <DraggableTool type="SignalPlotter" label="Bio-Signal Plotter" icon={Activity} />
+                <DraggableTool type="WSIViewer" label="Whole Slide Image (Pathology)" icon={Microscope} />
+                <DraggableTool type="MolecularViewer" label="Molecular 3D Viewer" icon={Dna} />
             </div>
 
             <div className="space-y-2">
@@ -130,6 +140,9 @@ export function Toolbox() {
             <div className="space-y-2">
                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Document Intelligence</h4>
                 <DraggableTool type="OCRFormExtractor" label="OCR / Form Extraction" icon={FileText} />
+                <DraggableTool type="Redaction" label="Redaction Tool" icon={Eraser} />
+                <DraggableTool type="LegalRedline" label="Legal Redline / Diff Viewer" icon={GitCompare} />
+                <DraggableTool type="ClauseLinker" label="Clause & Citation Linker" icon={Split} />
             </div>
         </div>
     );

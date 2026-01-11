@@ -18,6 +18,13 @@ const SignalPlotter = dynamic(() => import('@/components/builder/medical/SignalP
 const SideBySideRanking = dynamic(() => import('@/components/builder/ai-eval/SideBySideRanking').then(mod => mod.SideBySideRanking), { ssr: false });
 const HallucinationHighlighter = dynamic(() => import('@/components/builder/ai-eval/HallucinationHighlighter').then(mod => mod.HallucinationHighlighter), { ssr: false });
 const OCRFormExtractor = dynamic(() => import('@/components/builder/doc-intel/OCRFormExtractor').then(mod => mod.OCRFormExtractor), { ssr: false });
+const RedactionLabeler = dynamic(() => import('@/components/builder/doc-intel/RedactionLabeler').then(mod => mod.RedactionLabeler), { ssr: false });
+const LegalRedlineViewer = dynamic(() => import('@/components/builder/doc-intel/LegalRedlineViewer').then(mod => mod.LegalRedlineViewer), { ssr: false });
+const ClauseLinker = dynamic(() => import('@/components/builder/doc-intel/ClauseLinker').then(mod => mod.ClauseLinker), { ssr: false });
+const WSIViewer = dynamic(() => import('@/components/builder/medical/WSIViewer').then(mod => mod.WSIViewer), { ssr: false });
+const MolecularViewer = dynamic(() => import('@/components/builder/medical/MolecularViewer').then(mod => mod.MolecularViewer), { ssr: false });
+const SatelliteCompare = dynamic(() => import('@/components/builder/gis/SatelliteCompare').then(mod => mod.SatelliteCompare), { ssr: false });
+const ChatEditor = dynamic(() => import('@/components/builder/ai-eval/ChatEditor').then(mod => mod.ChatEditor), { ssr: false });
 
 import { getDefaultAvatar } from '@/utils/avatar';
 import ReactMarkdown from 'react-markdown';
@@ -145,11 +152,79 @@ export function HallucinationObject({ component, data }: { component: TaskCompon
     );
 }
 
+
 export function OCRObject({ component, data }: { component: TaskComponent, data: any }) {
     return (
         <div className="space-y-2">
             {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
             <OCRFormExtractor component={component} value={null} readOnly={false} />
+        </div>
+    );
+}
+
+export function RedactionObject({ component, data }: { component: TaskComponent, data: any }) {
+    const src = component.value?.startsWith('$') ? data[component.value.substring(1)] : component.value;
+    // Special handling: Redaction can be text OR image. 
+    // If we bind to a string that is text, we pass it as 'text' prop. If URL, 'value'.
+    // For now, simple binding.
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <RedactionLabeler component={component} value={null} onChange={() => { }} readOnly={false} />
+        </div>
+    );
+}
+
+export function LegalRedlineObject({ component, data }: { component: TaskComponent, data: any }) {
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <LegalRedlineViewer component={component} value={null} onChange={() => { }} readOnly={false} />
+        </div>
+    );
+}
+
+export function ClauseLinkerObject({ component, data }: { component: TaskComponent, data: any }) {
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <ClauseLinker component={component} value={null} onChange={() => { }} readOnly={false} />
+        </div>
+    );
+}
+
+export function WSIObject({ component, data }: { component: TaskComponent, data: any }) {
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <WSIViewer component={component} value={null} readOnly={false} />
+        </div>
+    );
+}
+
+export function MolecularObject({ component, data }: { component: TaskComponent, data: any }) {
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <MolecularViewer component={component} value={null} readOnly={false} />
+        </div>
+    );
+}
+
+export function SatelliteObject({ component, data }: { component: TaskComponent, data: any }) {
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <SatelliteCompare component={component} value={null} readOnly={false} />
+        </div>
+    );
+}
+
+export function ChatEditorObject({ component, data }: { component: TaskComponent, data: any }) {
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <ChatEditor component={component} value={null} onChange={() => { }} readOnly={false} />
         </div>
     );
 }

@@ -46,7 +46,14 @@ import {
     SignalPlotterObject,
     SideBySideObject,
     HallucinationObject,
-    OCRObject
+    OCRObject,
+    RedactionObject,
+    LegalRedlineObject,
+    ClauseLinkerObject,
+    WSIObject,
+    MolecularObject,
+    SatelliteObject,
+    ChatEditorObject
 } from '@/components/builder/Renderers';
 
 export function TaskRenderer({
@@ -562,6 +569,13 @@ function renderComponent(
     if (component.type === 'SideBySideRanking') return <SideBySideObject key={component.id} component={component} data={taskData} />;
     if (component.type === 'HallucinationHighlighter') return <HallucinationObject key={component.id} component={component} data={taskData} />;
     if (component.type === 'OCRFormExtractor') return <OCRObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'RedactionLabeler') return <RedactionObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'LegalRedlineViewer') return <LegalRedlineObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'ClauseLinker') return <ClauseLinkerObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'WSIViewer') return <WSIObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'MolecularViewer') return <MolecularObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'SatelliteCompare') return <SatelliteObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'ChatEditor') return <ChatEditorObject key={component.id} component={component} data={taskData} />;
 
     // Layout
     if (component.type === 'View') {

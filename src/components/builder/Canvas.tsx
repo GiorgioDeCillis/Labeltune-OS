@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { TaskComponent } from './types';
-import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic, ChevronRight, Bot, Brush, Target, Circle, Link, Activity, Box, Radar } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Music, AlignLeft, Type, Mic, ChevronRight, Bot, Brush, Target, Circle, Link, Activity, Box, Radar, EyeOff, FileDiff, Link2, Microscope, Dna, Layers, MessageSquare } from 'lucide-react';
 
 export function Canvas({ components, selectedId, onSelect, onDelete }: {
     components: TaskComponent[],
@@ -267,10 +267,69 @@ function SortableComponent({ component, isSelected, onSelect, onDelete }: {
                     </div>
                 )}
 
-                {component.type === 'Mesh' && (
-                    <div className="h-40 w-full bg-gradient-to-br from-gray-900 to-black rounded-lg border border-white/10 relative overflow-hidden flex items-center justify-center group-hover:border-primary/30 transition-colors">
-                        <Box className="w-12 h-12 text-indigo-500/50" />
-                        <div className="absolute bottom-3 text-[10px] uppercase font-bold text-indigo-400/80 tracking-widest">3D Mesh Viewer</div>
+                     <div className="absolute bottom-3 text-[10px] uppercase font-bold text-indigo-400/80 tracking-widest">3D Mesh Viewer</div>
+                    </div>
+                )}
+
+                {component.type === 'RedactionLabeler' && (
+                    <div className="h-32 w-full bg-white/5 rounded-lg border border-white/10 flex flex-col items-center justify-center gap-2 text-muted-foreground relative">
+                        <EyeOff className="w-8 h-8 opacity-20" />
+                        <div className="absolute w-[80%] h-4 bg-black/50 rounded blur-[2px] mb-2"></div>
+                        <span className="text-[10px] uppercase font-bold tracking-widest">Redaction Tool</span>
+                    </div>
+                )}
+
+                {component.type === 'LegalRedlineViewer' && (
+                    <div className="h-32 w-full bg-white/5 rounded-lg border border-white/10 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <FileDiff className="w-8 h-8 opacity-20 text-yellow-500" />
+                        <span className="text-[10px] uppercase font-bold tracking-widest">Redline / Diff Viewer</span>
+                    </div>
+                )}
+
+                {component.type === 'ClauseLinker' && (
+                    <div className="h-32 w-full bg-white/5 rounded-lg border border-white/10 flex items-center justify-center gap-8 relative">
+                        <div className="w-12 h-16 border border-dashed border-white/20 rounded bg-white/5" />
+                        <Link2 className="w-6 h-6 text-primary opacity-50" />
+                        <div className="w-12 h-16 border border-dashed border-white/20 rounded bg-white/5" />
+                        <div className="absolute bottom-2 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Clause Linker</div>
+                    </div>
+                )}
+
+                {component.type === 'WSIViewer' && (
+                    <div className="h-32 w-full bg-pink-900/10 rounded-lg border border-pink-500/20 flex flex-col items-center justify-center gap-2 text-pink-400 relative overflow-hidden">
+                        <Microscope className="w-8 h-8 opacity-50" />
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                        <span className="text-[10px] uppercase font-bold tracking-widest">Digital Pathology (WSI)</span>
+                    </div>
+                )}
+
+                {component.type === 'MolecularViewer' && (
+                    <div className="h-32 w-full bg-cyan-900/10 rounded-lg border border-cyan-500/20 flex flex-col items-center justify-center gap-2 text-cyan-400">
+                        <Dna className="w-8 h-8 opacity-50 animate-pulse" />
+                        <span className="text-[10px] uppercase font-bold tracking-widest">Molecular Viewer (PDB)</span>
+                    </div>
+                )}
+
+                {component.type === 'SatelliteCompare' && (
+                    <div className="h-32 w-full bg-white/5 rounded-lg border border-white/10 flex items-center justify-center relative overflow-hidden">
+                        <div className="absolute inset-y-0 left-0 w-1/2 bg-blue-900/20 border-r border-white/20 flex items-center justify-center">
+                            <span className="text-[10px] opacity-50">Before</span>
+                        </div>
+                        <div className="absolute inset-y-0 right-0 w-1/2 bg-green-900/20 flex items-center justify-center">
+                            <span className="text-[10px] opacity-50">After</span>
+                        </div>
+                        <Layers className="w-8 h-8 text-white/20 absolute" />
+                        <div className="absolute bottom-2 text-[10px] uppercase font-bold text-muted-foreground tracking-widest bg-black/50 px-2 rounded">Satellite Compare</div>
+                    </div>
+                )}
+
+                {component.type === 'ChatEditor' && (
+                    <div className="h-32 w-full bg-white/5 rounded-lg border border-white/10 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <div className="flex gap-2 items-end">
+                            <MessageSquare className="w-4 h-4 opacity-50" />
+                            <div className="bg-primary/20 w-16 h-8 rounded-t-lg rounded-br-lg"></div>
+                        </div>
+                        <span className="text-[10px] uppercase font-bold tracking-widest">RLHF Chat Editor</span>
                     </div>
                 )}
 
@@ -286,6 +345,6 @@ function SortableComponent({ component, isSelected, onSelect, onDelete }: {
             >
                 <Trash2 className="w-4 h-4" />
             </button>
-        </div>
+        </div >
     );
 }

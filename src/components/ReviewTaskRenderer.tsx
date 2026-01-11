@@ -31,7 +31,28 @@ import {
     ViewLayout,
     AudioRecorderControl,
     ChecklistControl,
-    AccordionChoicesControl
+    ChecklistControl,
+    AccordionChoicesControl,
+    AIResponseGeneratorObject,
+    VideoTimelineControl,
+    AudioSpectrogramControl,
+    LidarObject,
+    MeshObject,
+    ThreeDBoxLabelsControl,
+    MapObject,
+    GeoJSONControl,
+    DICOMObject,
+    SignalPlotterObject,
+    SideBySideObject,
+    HallucinationObject,
+    OCRObject,
+    RedactionObject,
+    LegalRedlineObject,
+    ClauseLinkerObject,
+    WSIObject,
+    MolecularObject,
+    SatelliteObject,
+    ChatEditorObject
 } from '@/components/builder/Renderers';
 
 import { useToast } from '@/components/Toast';
@@ -327,6 +348,41 @@ function renderComponent(
     if (component.type === 'AudioRecorder') return <AudioRecorderControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
     if (component.type === 'Checklist') return <ChecklistControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
     if (component.type === 'AccordionChoices') return <AccordionChoicesControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} />;
+
+    // AI & Advanced
+    if (component.type === 'AIResponseGenerator') return <AIResponseGeneratorObject key={component.id} component={component} readOnly={isReadOnly} />;
+    if (component.type === 'VideoTimeline') return <VideoTimelineControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} data={taskDataSafe} />;
+    if (component.type === 'AudioSpectrogram') return <AudioSpectrogramControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} data={taskDataSafe} />;
+
+    // 3D & Spatial
+    if (component.type === 'Lidar') return <LidarObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'Mesh') return <MeshObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'ThreeDBoxLabels') return <ThreeDBoxLabelsControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} data={taskDataSafe} />;
+
+    // Geospatial
+    if (component.type === 'Map') return <MapObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'GeoJSONLabels') return <GeoJSONControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} data={taskDataSafe} />;
+    if (component.type === 'SatelliteCompare') return <SatelliteObject key={component.id} component={component} data={taskDataSafe} />;
+
+    // Medical
+    if (component.type === 'DICOM') return <DICOMObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'SignalPlotter') return <SignalPlotterObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'WSIViewer') return <WSIObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'MolecularViewer') return <MolecularObject key={component.id} component={component} data={taskDataSafe} />;
+
+    // AI Eval
+    if (component.type === 'SideBySideRanking') return <SideBySideObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'HallucinationHighlighter') return <HallucinationObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'ChatEditor') return <ChatEditorObject key={component.id} component={component} data={taskDataSafe} />;
+
+    // Document Intelligence / Legal
+    if (component.type === 'OCRFormExtractor') return <OCRObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'RedactionLabeler') return <RedactionObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'LegalRedlineViewer') return <LegalRedlineObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'ClauseLinker') return <ClauseLinkerObject key={component.id} component={component} data={taskDataSafe} />;
+
+    // Advanced Vision (if not covered by standard Labels)
+    if (component.type === 'KeypointLabels' || component.type === 'EllipseLabels' || component.type === 'RelationLabels' || component.type === 'BrushLabels') return <ImageLabelsControl key={component.id} component={component} value={value} onChange={onChange} readOnly={isReadOnly} data={taskDataSafe} />;
 
     return <div key={component.id} className="text-red-400 text-xs">Unsupported component: {component.type}</div>;
 }
