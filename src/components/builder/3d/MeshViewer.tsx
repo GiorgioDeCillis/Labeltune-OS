@@ -7,7 +7,7 @@ import { OrbitControls, Stage, useGLTF } from '@react-three/drei';
 
 interface MeshViewerProps {
     modelUrl?: string; // For now we'll just show primitive shapes as demonstration
-    type?: 'cube' | 'sphere' | 'cylinder';
+    type?: 'cube' | 'sphere' | 'cylinder' | 'complex';
 }
 
 function MeshScene({ type }: { type: string }) {
