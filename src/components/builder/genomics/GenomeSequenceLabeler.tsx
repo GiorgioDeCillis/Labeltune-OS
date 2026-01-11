@@ -38,7 +38,7 @@ export function GenomeSequenceLabeler({ component, value, data, onChange, readOn
             setPredictions(Array.isArray(rawPreds) ? rawPreds : JSON.parse(rawPreds));
         } else {
             // Default initial state (empty or basic mock if needed, currently empty to encourage running inference)
-            setPredictions(Array.from({ length: 100 }).map((_, i) => ({
+            setPredictions(Array.from({ length: 100 }).map((_: any, i: number) => ({
                 pos: i * 10,
                 splicing: Math.random(),
                 accessibility: Math.random(),
@@ -96,7 +96,7 @@ export function GenomeSequenceLabeler({ component, value, data, onChange, readOn
             {/* Main Sequence View */}
             <div className="relative group">
                 <div className="h-24 bg-black/40 rounded-xl border border-white/5 flex items-center justify-center font-mono text-2xl tracking-[0.5em] overflow-hidden select-none">
-                    {displaySequence.split('').map((base, i) => (
+                    {displaySequence.split('').map((base: string, i: number) => (
                         <span
                             key={i + startBase}
                             className={`transition-all duration-300 ${base === 'A' ? 'text-green-400' :
@@ -128,7 +128,7 @@ export function GenomeSequenceLabeler({ component, value, data, onChange, readOn
                         <span className="text-primary">82% Confidence</span>
                     </div>
                     <div className="h-8 bg-white/5 rounded-md overflow-hidden flex items-end gap-[1px] p-[2px]">
-                        {predictions.map((p, i) => (
+                        {predictions.map((p: any, i: number) => (
                             <div
                                 key={i}
                                 className="flex-1 bg-primary/40 rounded-t-sm transition-all hover:bg-primary"
@@ -145,7 +145,7 @@ export function GenomeSequenceLabeler({ component, value, data, onChange, readOn
                         <span className="text-amber-400">High Resolution</span>
                     </div>
                     <div className="h-8 bg-white/5 rounded-md overflow-hidden flex items-end gap-[1px] p-[2px]">
-                        {predictions.map((p, i) => (
+                        {predictions.map((p: any, i: number) => (
                             <div
                                 key={i}
                                 className="flex-1 bg-amber-400/20 rounded-t-sm transition-all hover:bg-amber-400/60"
