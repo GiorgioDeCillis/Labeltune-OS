@@ -5,7 +5,7 @@ import { ProjectTemplate, PROJECT_TEMPLATES } from '@/utils/templates';
 import { TaskBuilder } from '@/components/builder/TaskBuilder';
 import { TaskComponent } from '@/components/builder/types';
 import { createProject, saveProjectDraft } from '../actions';
-import { ChevronRight, ChevronLeft, Save, LayoutGrid, Settings2, MessageSquare, Image as ImageIcon, Box, Mic, Bot, BookOpen, FileText, CheckCircle2, Loader2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Save, LayoutGrid, Settings2, MessageSquare, Image as ImageIcon, Box, Mic, Bot, BookOpen, FileText, CheckCircle2, Loader2, Dna } from 'lucide-react';
 import { InstructionsStep } from './steps/InstructionsStep';
 import { CoursesStep } from './steps/CoursesStep';
 import { InstructionSection, Course, Project } from '@/types/manual-types';
