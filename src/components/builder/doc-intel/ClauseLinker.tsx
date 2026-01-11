@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { TaskComponent } from '../types';
-import { Link2, Split, Trash2 } from 'lucide-react';
+import { Link2, Split, Trash2, ArrowRight } from 'lucide-react';
 
 interface ClauseLinkerProps {
     component: TaskComponent;
