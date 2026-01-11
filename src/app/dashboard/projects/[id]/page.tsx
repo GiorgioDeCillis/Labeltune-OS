@@ -172,7 +172,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
                             )}
                         </div>
                     </div>
-                    <ProjectHeaderActions id={id} guidelines={project.guidelines} />
+                    <ProjectHeaderActions id={id} />
                 </div>
 
                 {/* KPI Dashboard - Only for PM/Admin */}

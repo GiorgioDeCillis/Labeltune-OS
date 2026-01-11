@@ -27,10 +27,10 @@ export default async function NewProjectPage({ searchParams }: Props) {
                 </Link>
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">
-                        {initialData ? 'Resume Project Creation' : 'Create New Project'}
+                        {initialData ? (initialData.status === 'draft' ? 'Resume Project Creation' : 'Edit Project') : 'Create New Project'}
                     </h2>
                     <p className="text-muted-foreground">
-                        {initialData ? `Continuing ${initialData.name}` : 'Select a template or start from scratch.'}
+                        {initialData ? (initialData.status === 'draft' ? `Continuing ${initialData.name}` : `Modifying ${initialData.name}`) : 'Select a template or start from scratch.'}
                     </p>
                 </div>
             </div>
