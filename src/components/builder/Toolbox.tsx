@@ -140,8 +140,8 @@ export function Toolbox() {
             <div className="space-y-2">
                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1">Document Intelligence</h4>
                 <DraggableTool type="OCRFormExtractor" label="OCR / Form Extraction" icon={FileText} />
-                <DraggableTool type="Redaction" label="Redaction Tool" icon={Eraser} />
-                <DraggableTool type="LegalRedline" label="Legal Redline / Diff Viewer" icon={GitCompare} />
+                <DraggableTool type="RedactionLabeler" label="Redaction Tool" icon={Eraser} />
+                <DraggableTool type="LegalRedlineViewer" label="Legal Redline / Diff Viewer" icon={GitCompare} />
                 <DraggableTool type="ClauseLinker" label="Clause & Citation Linker" icon={Split} />
             </div>
         </div>
