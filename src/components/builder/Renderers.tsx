@@ -25,6 +25,7 @@ const WSIViewer = dynamic(() => import('@/components/builder/medical/WSIViewer')
 const MolecularViewer = dynamic(() => import('@/components/builder/medical/MolecularViewer').then(mod => mod.MolecularViewer), { ssr: false });
 const SatelliteCompare = dynamic(() => import('@/components/builder/gis/SatelliteCompare').then(mod => mod.SatelliteCompare), { ssr: false });
 const ChatEditor = dynamic(() => import('@/components/builder/ai-eval/ChatEditor').then(mod => mod.ChatEditor), { ssr: false });
+const GenomeSequenceLabeler = dynamic(() => import('@/components/builder/genomics/GenomeSequenceLabeler').then(mod => mod.GenomeSequenceLabeler), { ssr: false });
 
 import { getDefaultAvatar } from '@/utils/avatar';
 import ReactMarkdown from 'react-markdown';
@@ -225,6 +226,15 @@ export function ChatEditorObject({ component, data }: { component: TaskComponent
         <div className="space-y-2">
             {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
             <ChatEditor component={component} value={null} onChange={() => { }} readOnly={false} />
+        </div>
+    );
+}
+
+export function GenomeSequenceObject({ component, data }: { component: TaskComponent, data: any }) {
+    return (
+        <div className="space-y-2">
+            {component.title && <label className="text-sm font-bold block mb-1">{component.title}</label>}
+            <GenomeSequenceLabeler component={component} value={null} onChange={() => { }} readOnly={false} data={data} />
         </div>
     );
 }

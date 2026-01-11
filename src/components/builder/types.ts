@@ -54,7 +54,8 @@ export type TaskComponentType =
     | 'WSIViewer'
     | 'MolecularViewer'
     | 'SatelliteCompare'
-    | 'ChatEditor';
+    | 'ChatEditor'
+    | 'GenomeSequence';
 
 export interface AIGeneratorConfig {
     id: string;

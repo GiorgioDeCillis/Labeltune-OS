@@ -53,7 +53,8 @@ import {
     WSIObject,
     MolecularObject,
     SatelliteObject,
-    ChatEditorObject
+    ChatEditorObject,
+    GenomeSequenceObject
 } from '@/components/builder/Renderers';
 
 export function TaskRenderer({
@@ -576,6 +577,7 @@ function renderComponent(
     if (component.type === 'MolecularViewer') return <MolecularObject key={component.id} component={component} data={taskData} />;
     if (component.type === 'SatelliteCompare') return <SatelliteObject key={component.id} component={component} data={taskData} />;
     if (component.type === 'ChatEditor') return <ChatEditorObject key={component.id} component={component} data={taskData} />;
+    if (component.type === 'GenomeSequence') return <GenomeSequenceObject key={component.id} component={component} data={taskData} />;
 
     // Layout
     if (component.type === 'View') {

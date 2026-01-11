@@ -129,6 +129,7 @@ export function Toolbox() {
                 <DraggableTool type="SignalPlotter" label="Bio-Signal Plotter" icon={Activity} />
                 <DraggableTool type="WSIViewer" label="Whole Slide Image (Pathology)" icon={Microscope} />
                 <DraggableTool type="MolecularViewer" label="Molecular 3D Viewer" icon={Dna} />
+                <DraggableTool type="GenomeSequence" label="Genome Sequence (Long Context)" icon={Layers} />
             </div>
 
             <div className="space-y-2">

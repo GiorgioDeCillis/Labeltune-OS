@@ -382,5 +382,56 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
                 placeholder: 'Response A was top choice because...'
             }
         ]
+    },
+    {
+        id: 'genomic-variant-analysis',
+        name: 'Genomic Variant Analysis',
+        description: 'Advanced DNA variant effect prediction and validation using AlphaGenome.',
+        type: 'genomic_variant_analysis',
+        icon: 'Dna',
+        schema: [
+            {
+                id: nanoid(),
+                type: 'Header',
+                name: 'header_genetics',
+                text: 'AlphaGenome Variant Prediction',
+                title: 'Genomic Workspace'
+            },
+            {
+                id: nanoid(),
+                type: 'GenomeSequence',
+                name: 'dna_sequence',
+                value: '$dna_sequence',
+                title: 'DNA Sequence (1Mb Resolution)',
+                description: 'Analyze long-context DNA sequences with AlphaGenome prediction tracks.'
+            },
+            {
+                id: nanoid(),
+                type: 'MolecularViewer',
+                name: 'molecule_structure',
+                value: '$molecule_data',
+                title: '3D Molecular Structure',
+                description: 'Visualize the impact of genetic variants on protein folding.'
+            },
+            {
+                id: nanoid(),
+                type: 'Choices',
+                name: 'variant_impact',
+                title: 'Validate AlphaGenome Prediction',
+                required: true,
+                options: [
+                    { label: 'Pathogenic (Confirmed)', value: 'pathogenic' },
+                    { label: 'Benign (Confirmed)', value: 'benign' },
+                    { label: 'Uncertain Significance (VUS)', value: 'vus' }
+                ]
+            },
+            {
+                id: nanoid(),
+                type: 'TextArea',
+                name: 'scientific_note',
+                title: 'Evidence / Scientific Notes',
+                placeholder: 'Provide evidence or citations for your validation...'
+            }
+        ]
     }
 ];

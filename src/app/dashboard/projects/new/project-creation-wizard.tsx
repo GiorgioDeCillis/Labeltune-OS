@@ -23,6 +23,7 @@ const PROJECT_TYPE_OPTIONS = [
     { code: 'time_series', name: 'Time Series Anomaly' },
     { code: 'pdf_extraction', name: 'PDF Data Extraction' },
     { code: 'rlhf_pogo', name: 'Safe & Helpful RLHF' },
+    { code: 'genomic_variant_analysis', name: 'Genomic Variant Analysis' },
 ];
 
 const iconMap = {
@@ -30,7 +31,8 @@ const iconMap = {
     Image: ImageIcon,
     Box,
     Mic,
-    Bot
+    Bot,
+    Dna
 };
 
 type Step = 'template' | 'instructions' | 'courses' | 'builder' | 'details';

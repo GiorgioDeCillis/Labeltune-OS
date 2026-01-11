@@ -52,7 +52,8 @@ import {
     WSIObject,
     MolecularObject,
     SatelliteObject,
-    ChatEditorObject
+    ChatEditorObject,
+    GenomeSequenceObject
 } from '@/components/builder/Renderers';
 
 import { useToast } from '@/components/Toast';
@@ -374,6 +375,7 @@ function renderComponent(
     if (component.type === 'SideBySideRanking') return <SideBySideObject key={component.id} component={component} data={taskDataSafe} />;
     if (component.type === 'HallucinationHighlighter') return <HallucinationObject key={component.id} component={component} data={taskDataSafe} />;
     if (component.type === 'ChatEditor') return <ChatEditorObject key={component.id} component={component} data={taskDataSafe} />;
+    if (component.type === 'GenomeSequence') return <GenomeSequenceObject key={component.id} component={component} data={taskDataSafe} />;
 
     // Document Intelligence / Legal
     if (component.type === 'OCRFormExtractor') return <OCRObject key={component.id} component={component} data={taskDataSafe} />;
