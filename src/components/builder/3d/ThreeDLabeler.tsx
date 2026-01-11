@@ -91,7 +91,7 @@ function LabelableBox({
     onSelect: () => void;
     onChange: (id: string, updates: Partial<Box3D>) => void;
     readOnly?: boolean;
-    activeLabel?: { value: string, background: string };
+    activeLabel?: { value: string, background?: string };
 }) {
     const meshRef = useRef<THREE.Mesh>(null);
     const [mode, setMode] = useState<'translate' | 'rotate' | 'scale'>('translate');
