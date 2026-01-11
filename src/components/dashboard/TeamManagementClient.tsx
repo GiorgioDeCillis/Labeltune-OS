@@ -208,10 +208,15 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
             normalize(m.email).includes(normalize(filterQuery));
 
         const matchesDomain = !selectedDomain || normalize(m.locale_tag) === normalize(selectedDomain);
-        const matchesRole = !selectedRole || normalize(m.role) === normalize(selectedRole);
+        if (selectedRole?.toLowerCase() === 'reviewer') {
+            if (!m.isReviewer) return false;
+        } else if (selectedRole && normalize(m.role) !== normalize(selectedRole)) {
+            return false;
+        }
+
         const matchesStatus = !selectedStatus || normalize(m.status) === normalize(selectedStatus);
 
-        return matchesQuery && matchesDomain && matchesRole && matchesStatus;
+        return matchesQuery && matchesDomain && matchesStatus;
     });
 
     const domains = Array.from(new Set(members.map(m => m.locale_tag).filter(Boolean)))
@@ -219,6 +224,13 @@ export function TeamManagementClient({ projectId, initialMembers }: TeamManageme
 
     const roles = Array.from(new Set(members.map(m => m.role).filter(Boolean)))
         .map(role => ({ code: role!, name: role!.charAt(0).toUpperCase() + role!.slice(1) }));
+
+    // Check if Reviewer is already in roles (it shouldn't be as it's a property, not a role string usually)
+    // If not present, we add it manually for filtering purposes
+    const hasReviewerOption = roles.some(r => r.code === 'Reviewer');
+    if (!hasReviewerOption) {
+        roles.push({ code: 'Reviewer', name: 'Reviewer' });
+    }
 
     const statuses = [
         { code: 'active', name: 'Active' },

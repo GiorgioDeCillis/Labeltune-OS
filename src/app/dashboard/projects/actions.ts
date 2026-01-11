@@ -93,9 +93,18 @@ export async function saveProjectDraft(formData: FormData, draftId?: string) {
 
     let project;
     if (draftId) {
+        // Check current status before updating
+        const { data: currentProject } = await supabase
+            .from('projects')
+            .select('status')
+            .eq('id', draftId)
+            .single();
+
+        const newStatus = currentProject?.status === 'draft' ? 'draft' : currentProject?.status;
+
         const { data, error } = await supabase
             .from('projects')
-            .update(projectData)
+            .update({ ...projectData, status: newStatus })
             .eq('id', draftId)
             .select()
             .single();
