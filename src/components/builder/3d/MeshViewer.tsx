@@ -3,7 +3,7 @@
 import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, useGLTF } from '@react-three/drei';
-import { Cube, Cylinder, Sphere } from 'lucide-react'; // Placeholder icons for now
+
 
 interface MeshViewerProps {
     modelUrl?: string; // For now we'll just show primitive shapes as demonstration
