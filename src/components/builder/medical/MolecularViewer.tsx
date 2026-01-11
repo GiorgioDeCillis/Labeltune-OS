@@ -62,6 +62,7 @@ function Molecule({ count = 20 }) {
                                 count={2}
                                 array={new Float32Array([...bond.start, ...bond.end])}
                                 itemSize={3}
+                                args={[new Float32Array([...bond.start, ...bond.end]), 3]}
                             />
                         </bufferGeometry>
                         <lineBasicMaterial color="#cccccc" linewidth={2} opacity={0.5} transparent />
