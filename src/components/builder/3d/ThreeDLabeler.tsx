@@ -59,15 +59,11 @@ function PointCloud({ count = 50000 }: { count?: number }) {
             <bufferGeometry>
                 <bufferAttribute
                     attach="attributes-position"
-                    count={points.positions.length / 3}
-                    array={points.positions}
-                    itemSize={3}
+                    args={[points.positions, 3]}
                 />
                 <bufferAttribute
                     attach="attributes-color"
-                    count={points.colors.length / 3}
-                    array={points.colors}
-                    itemSize={3}
+                    args={[points.colors, 3]}
                 />
             </bufferGeometry>
             <pointsMaterial
